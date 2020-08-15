@@ -31,12 +31,14 @@ export function getLetters(word: string | string[]): string[] {
 
 export type Check = ({
   word,
+  validWords,
   words,
   pangram,
   center,
 }: {
   word: string;
-  words: string[];
+  words?: string[];
+  validWords: string[];
   pangram: Set<string>;
   center: string;
 }) => string | undefined;
@@ -66,9 +68,16 @@ const checks: Check[] = [
   },
 
   // 4. is a valid word
-  ({ word, words }) => {
-    if (!words.includes(word)) {
+  ({ word, validWords }) => {
+    if (!validWords.includes(word)) {
       return 'Invalid word';
+    }
+  },
+
+  // 5. is a found word
+  ({ word, words }) => {
+    if (words && words.includes(word)) {
+      return 'Already found';
     }
   },
 ];
@@ -76,17 +85,25 @@ const checks: Check[] = [
 export function validateWord({
   word,
   words,
+  validWords,
   pangram,
   center,
 }: {
   word: string;
-  words: string[];
+  words?: string[];
+  validWords: string[];
   pangram: string | Set<string>;
   center: string;
 }): string | undefined {
   const pangramChars = typeof pangram === 'string' ? new Set(pangram) : pangram;
   for (const check of checks) {
-    const message = check({ word, words, pangram: pangramChars, center });
+    const message = check({
+      word,
+      validWords,
+      words,
+      pangram: pangramChars,
+      center,
+    });
     if (message) {
       return message;
     }
@@ -94,19 +111,19 @@ export function validateWord({
 }
 
 export function findValidWords({
-  words,
+  allWords,
   pangram,
   center,
 }: {
-  words: string[];
+  allWords: string[];
   pangram: string;
   center: number;
 }): string[] {
   const pangramChars = new Set(pangram);
-  return words.filter(
+  return allWords.filter(
     (word) =>
       !validateWord({
-        words,
+        validWords: allWords,
         word,
         pangram: pangramChars,
         center: pangram[center],

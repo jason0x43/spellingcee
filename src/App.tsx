@@ -24,7 +24,7 @@ function App() {
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const validWords = useMemo(
-    () => findValidWords({ words: wordlist, pangram, center }),
+    () => findValidWords({ allWords: wordlist, pangram, center }),
     [pangram, center]
   );
   const totalScore = useMemo(() => computeScore(validWords), [validWords]);
@@ -42,7 +42,8 @@ function App() {
         } else if (key === 'Enter') {
           const word = input.join('');
           const message = validateWord({
-            words: validWords,
+            words,
+            validWords,
             word,
             pangram,
             center: pangram[center],
