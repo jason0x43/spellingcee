@@ -1,10 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { getLetters, findPangram } from './wordUtil';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  computeScore,
+  getLetters,
+  findPangram,
+  findValidWords,
+  validateWord,
+} from './wordUtil';
 import wordlist, { blocks } from './wordlist';
 import classNames from 'classnames';
 import './App.css';
-
-type Check = (word: string) => string | undefined;
 
 function App() {
   const [pangram] = useState(
@@ -18,56 +22,15 @@ function App() {
   const [input, setInput] = useState<string[]>([]);
   const [words, setWords] = useState<string[]>([]);
   const [message, setMessage] = useState<string>();
+  const validWords = useMemo(
+    () => findValidWords({ words: wordlist, pangram, center }),
+    [pangram, center]
+  );
+  const totalScore = useMemo(() => computeScore(validWords), [validWords]);
 
   console.log(pangram);
-
-  const checks: Check[] = [
-    // 1. only uses valid letters
-    useCallback(
-      (word) => {
-        for (const char of word) {
-          if (pangram.indexOf(char) === -1) {
-            return 'Invalid letter';
-          }
-        }
-      },
-      [pangram]
-    ),
-
-    // 2. is at least 4 characters long
-    useCallback((word) => {
-      if (word.length < 4) {
-        return 'Too short';
-      }
-    }, []),
-
-    // 3. contains center letter
-    useCallback(
-      (word) => {
-        if (word.indexOf(pangram[center]) === -1) {
-          return 'Missing center letter';
-        }
-      },
-      [pangram, center]
-    ),
-
-    // 4. is new word
-    useCallback(
-      (word) => {
-        if (words.includes(word)) {
-          return 'Already found';
-        }
-      },
-      [words]
-    ),
-
-    // 5. is a valid word
-    useCallback((word) => {
-      if (!wordlist.includes(word)) {
-        return 'Invalid word';
-      }
-    }, []),
-  ];
+  console.log(`number valid words: ${validWords.length}`);
+  console.log(`score: ${totalScore}`);
 
   const handleKeyPress = useCallback(
     (event) => {
@@ -77,17 +40,15 @@ function App() {
           setInput(input.slice(0, input.length - 1));
         } else if (key === 'Enter') {
           const word = input.join('');
-          let shouldAdd = true;
-          for (const check of checks) {
-            const message = check(word);
-            if (message) {
-              setMessage(message);
-              shouldAdd = false;
-              break;
-            }
-          }
-
-          if (shouldAdd) {
+          const message = validateWord({
+            words: validWords,
+            word,
+            pangram,
+            center: pangram[center],
+          });
+          if (message) {
+            setMessage(message);
+          } else {
             setWords([...words, word]);
           }
 
@@ -97,7 +58,7 @@ function App() {
         setInput([...input, event.key]);
       }
     },
-    [input, words, checks]
+    [input, words, center, pangram, validWords]
   );
 
   useEffect(() => {
