@@ -22,6 +22,7 @@ function App() {
   const [input, setInput] = useState<string[]>([]);
   const [words, setWords] = useState<string[]>([]);
   const [message, setMessage] = useState<string>();
+  const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const validWords = useMemo(
     () => findValidWords({ words: wordlist, pangram, center }),
     [pangram, center]
@@ -48,6 +49,7 @@ function App() {
           });
           if (message) {
             setMessage(message);
+            setMessageVisible(true);
           } else {
             setWords([...words, word]);
           }
@@ -67,16 +69,18 @@ function App() {
   }, [handleKeyPress]);
 
   useEffect(() => {
-    if (!message) {
-      return;
-    }
-    const timer = setTimeout(() => setMessage(undefined), 2000);
+    const timer = setTimeout(() => setMessageVisible(false), 2000);
     return () => clearTimeout(timer);
   }, [message]);
 
+  const messageClass = classNames({
+    'App-message': true,
+    'App-message-visible': messageVisible,
+  });
+
   return (
     <div className="App">
-      <div className="App-message">{message}</div>
+      <div className={messageClass}>{message}</div>
 
       <div className="App-words">
         {words.map((word, i) => {

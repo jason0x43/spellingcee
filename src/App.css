@@ -11,7 +11,26 @@
   margin: 8px 0;
 }
 
+.App-message {
+  margin: 8px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: block;
+  padding: 8px 16px;
+  background: #ee7;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.App-message-visible {
+  opacity: 1;
+}
+
 .App-words {
+  height: 1.5em;
   display: flex;
   justify-content: center;
 }
