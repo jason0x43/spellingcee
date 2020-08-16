@@ -70,3 +70,14 @@
 .App-input-letter-invalid {
   color: #cccccc;
 }
+
+.App-debug {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  text-align: left;
+  margin: 0;
+  padding: 16px;
+  color: #999;
+  background: #f7f7f7;
+}

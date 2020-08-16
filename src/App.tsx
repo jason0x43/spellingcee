@@ -29,9 +29,13 @@ function App() {
   );
   const totalScore = useMemo(() => computeScore(validWords), [validWords]);
 
-  console.log(pangram);
-  console.log(`number valid words: ${validWords.length}`);
-  console.log(`score: ${totalScore}`);
+  const [debug] = useState<string>(
+    `pangram: ${pangram}\n` +
+      `letters: ${letters}\n` +
+      `permutedLetters: ${permutedLetters}\n` +
+      `number valid words: ${validWords.length}\n` +
+      `score: ${totalScore}`
+  );
 
   const handleKeyPress = useCallback(
     (event) => {
@@ -122,6 +126,10 @@ function App() {
           );
         })}
       </div>
+
+      <pre className="App-debug">
+        {debug}
+      </pre>
     </div>
   );
 }
