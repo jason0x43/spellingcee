@@ -4,6 +4,7 @@ import {
   getLetters,
   findPangram,
   findValidWords,
+  permuteLetters,
   validateWord,
 } from './wordUtil';
 import wordlist, { blocks } from './wordlist';
@@ -17,12 +18,20 @@ function App() {
       blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4]
     )
   );
-  const [center] = useState(Math.floor(Math.random() * pangram.length));
-  const [letters] = useState(getLetters(pangram));
   const [input, setInput] = useState<string[]>([]);
   const [words, setWords] = useState<string[]>([]);
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
+
+  const letters = useMemo(() => getLetters(pangram), [pangram]);
+  const center = useMemo(
+    () => letters[Math.floor(Math.random() * letters.length)],
+    [letters]
+  );
+  const permutedLetters = useMemo(() => permuteLetters(letters, center), [
+    center,
+    letters,
+  ]);
   const validWords = useMemo(
     () => findValidWords({ allWords: wordlist, pangram, center }),
     [pangram, center]
@@ -50,7 +59,7 @@ function App() {
             validWords,
             word,
             pangram,
-            center: pangram[center],
+            center,
           });
           if (message) {
             setMessage(message);
@@ -100,10 +109,10 @@ function App() {
       </div>
 
       <div className="App-letters">
-        {letters.map((letter, i) => {
+        {permutedLetters.map((letter, i) => {
           const className = classNames({
             'App-letter': true,
-            'App-letter-center': letter === pangram[center],
+            'App-letter-center': letter === center,
           });
           return (
             <div key={i} className={className}>

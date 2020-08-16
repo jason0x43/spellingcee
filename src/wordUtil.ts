@@ -29,7 +29,34 @@ export function getLetters(word: string | string[]): string[] {
   return Array.from(new Set(word));
 }
 
-export type Check = ({
+function permute(letters: string[]): string[] {
+  if (letters.length === 1) {
+    return letters;
+  }
+  const index = Math.floor(Math.random() * letters.length);
+  const remaining = [
+    ...letters.slice(0, index),
+    ...letters.slice(index + 1),
+  ];
+  return [ letters[index], ...permute(remaining) ];
+}
+
+export function permuteLetters(letters: string[], center: string): string[] {
+  const centerIndex = letters.indexOf(center);
+  console.log(`centerIndex: ${centerIndex}`);
+  const remaining = [
+    ...letters.slice(0, centerIndex),
+    ...letters.slice(centerIndex + 1),
+  ];
+  const permutation = permute(remaining);
+  return [
+    ...permutation.slice(0, permutation.length / 2),
+    center,
+    ...permutation.slice(permutation.length / 2),
+  ];
+}
+
+type Check = ({
   word,
   validWords,
   words,
@@ -117,7 +144,7 @@ export function findValidWords({
 }: {
   allWords: string[];
   pangram: string;
-  center: number;
+  center: string;
 }): string[] {
   const pangramChars = new Set(pangram);
   return allWords.filter(
@@ -126,7 +153,7 @@ export function findValidWords({
         validWords: allWords,
         word,
         pangram: pangramChars,
-        center: pangram[center],
+        center,
       })
   );
 }
