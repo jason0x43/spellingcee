@@ -70,9 +70,11 @@ function App() {
   }, [handleKeyPress]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setMessageVisible(false), 2000);
-    return () => clearTimeout(timer);
-  }, [message]);
+    if (messageVisible) {
+      const timer = setTimeout(() => setMessageVisible(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [messageVisible]);
 
   const messageClass = classNames({
     'App-message': true,
