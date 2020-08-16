@@ -44,37 +44,37 @@ export type Check = ({
 }) => string | undefined;
 
 const checks: Check[] = [
-  // 1. only uses valid letters
-  ({ word, pangram }) => {
-    for (const char of word) {
-      if (!pangram.has(char)) {
-        return 'Invalid letter';
-      }
-    }
-  },
-
-  // 2. is at least 4 characters long
+  // is at least 4 characters long
   ({ word }) => {
     if (word.length < 4) {
       return 'Too short';
     }
   },
 
-  // 3. contains center letter
+  // only uses valid letters
+  ({ word, pangram }) => {
+    for (const char of word) {
+      if (!pangram.has(char)) {
+        return 'Bad letter';
+      }
+    }
+  },
+
+  // contains center letter
   ({ word, center }) => {
     if (word.indexOf(center) === -1) {
       return 'Missing center letter';
     }
   },
 
-  // 4. is a valid word
+  // is a valid word
   ({ word, validWords }) => {
     if (!validWords.includes(word)) {
-      return 'Invalid word';
+      return 'Not in word list';
     }
   },
 
-  // 5. is a found word
+  // is a found word
   ({ word, words }) => {
     if (words && words.includes(word)) {
       return 'Already found';
