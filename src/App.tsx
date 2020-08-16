@@ -27,21 +27,17 @@ function App() {
   const [words, setWords] = useState<string[]>([]);
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
-
-  const letters = useMemo(() => getLetters(pangram), [pangram]);
+  const uniqueLetters = useMemo(() => getLetters(pangram), [pangram]);
   const center = useMemo(
-    () => letters[Math.floor(Math.random() * letters.length)],
-    [letters]
+    () => uniqueLetters[Math.floor(Math.random() * uniqueLetters.length)],
+    [uniqueLetters]
   );
-  const permutedLetters = useMemo(() => permuteLetters(letters, center), [
-    center,
-    letters,
-  ]);
   const validWords = useMemo(
     () => findValidWords({ allWords: wordlist, pangram, center }),
     [pangram, center]
   );
   const maxScore = useMemo(() => computeScore(validWords), [validWords]);
+  const [letters, setLetters] = useState(permuteLetters(uniqueLetters, center));
 
   const handleKeyPress = useCallback(
     (event) => {
@@ -67,11 +63,13 @@ function App() {
 
           setInput([]);
         }
+      } else if (key === ' ') {
+        setLetters(permuteLetters(uniqueLetters, center));
       } else if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')) {
         setInput([...input, event.key]);
       }
     },
-    [input, words, center, pangram, validWords]
+    [input, words, center, pangram, uniqueLetters, validWords]
   );
 
   useEffect(() => {
@@ -92,18 +90,18 @@ function App() {
 
       <Words words={words} />
 
-      <Letters letters={permutedLetters} center={center} />
+      <Letters letters={letters} center={center} />
 
       <Input input={input} pangram={pangram} />
 
       <pre className="App-debug">
         pangram: {pangram}
         {'\n'}
-        letters: {letters}
+        letters: {uniqueLetters}
         {'\n'}
         center: {center}
         {'\n'}
-        permuted letters: {permutedLetters}
+        permuted letters: {letters}
         {'\n'}
         number of valid words: {validWords.length}
         {'\n'}
