@@ -40,14 +40,6 @@ function App() {
   );
   const totalScore = useMemo(() => computeScore(validWords), [validWords]);
 
-  const [debug] = useState<string>(
-    `pangram: ${pangram}\n` +
-      `letters: ${letters}\n` +
-      `permutedLetters: ${permutedLetters}\n` +
-      `number valid words: ${validWords.length}\n` +
-      `score: ${totalScore}`
-  );
-
   const handleKeyPress = useCallback(
     (event) => {
       const { key } = event;
@@ -139,7 +131,12 @@ function App() {
       </div>
 
       <pre className="App-debug">
-        {debug}
+        pangram: {pangram}{'\n'}
+        letters: {letters}{'\n'}
+        center: {center}{'\n'}
+        permutedLetters: {permutedLetters}{'\n'}
+        number valid words: {validWords.length}{'\n'}
+        score: {totalScore}
       </pre>
     </div>
   );
