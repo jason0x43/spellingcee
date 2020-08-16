@@ -44,13 +44,14 @@
 }
 
 .App-letter {
-  border: solid 1px #ccc;
+  background: #ddd;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 2em;
   width: 2em;
+  font-size: 24px;
 }
 
 .App-letter-center {
