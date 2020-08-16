@@ -11,67 +11,6 @@
   margin: 8px 0;
 }
 
-.App-message {
-  margin: 8px 0;
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  display: block;
-  padding: 8px 16px;
-  background: #ee7;
-  border-radius: 6px;
-  opacity: 0;
-  transition: opacity 0.25s;
-}
-
-.App-message-visible {
-  opacity: 1;
-}
-
-.App-words {
-  height: 1.5em;
-  display: flex;
-  justify-content: center;
-}
-
-.App-words > * {
-  margin: 0 8px;
-}
-
-.App-letters > * {
-  margin: 0 4px;
-}
-
-.App-letter {
-  background: #ddd;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2em;
-  width: 2em;
-  font-size: 24px;
-}
-
-.App-letter-center {
-  background: #ff000040;
-}
-
-.App-input {
-  display: flex;
-  justify-content: center;
-}
-
-.App-input-letter {
-  font-size: 150%;
-  margin: 0 8px;
-}
-
-.App-input-letter-invalid {
-  color: #cccccc;
-}
-
 .App-debug {
   position: absolute;
   bottom: 0;

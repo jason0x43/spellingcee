@@ -8,10 +8,13 @@ import {
   validateWord,
 } from './wordUtil';
 import wordlist, { blocks } from './wordlist';
-import classNames from 'classnames';
+import Input from './Input';
+import Message from './Message';
+import Letters from './Letters';
+import Words from './Words';
 import './App.css';
 
-const messageTimeout = 1000; 
+const messageTimeout = 1000;
 
 function App() {
   const [pangram] = useState(
@@ -38,7 +41,7 @@ function App() {
     () => findValidWords({ allWords: wordlist, pangram, center }),
     [pangram, center]
   );
-  const totalScore = useMemo(() => computeScore(validWords), [validWords]);
+  const maxScore = useMemo(() => computeScore(validWords), [validWords]);
 
   const handleKeyPress = useCallback(
     (event) => {
@@ -83,60 +86,28 @@ function App() {
     }
   }, [messageVisible]);
 
-  const messageClass = classNames({
-    'App-message': true,
-    'App-message-visible': messageVisible,
-  });
-
   return (
     <div className="App">
-      <div className={messageClass}>{message}</div>
+      <Message isVisible={messageVisible}>{message}</Message>
 
-      <div className="App-words">
-        {words.map((word, i) => {
-          return (
-            <div key={i} className="App-word">
-              {word}
-            </div>
-          );
-        })}
-      </div>
+      <Words words={words} />
 
-      <div className="App-letters">
-        {permutedLetters.map((letter, i) => {
-          const className = classNames({
-            'App-letter': true,
-            'App-letter-center': letter === center,
-          });
-          return (
-            <div key={i} className={className}>
-              {letter}
-            </div>
-          );
-        })}
-      </div>
+      <Letters letters={permutedLetters} center={center} />
 
-      <div className="App-input">
-        {input.map((letter, i) => {
-          const className = classNames({
-            'App-input-letter': true,
-            'App-input-letter-invalid': !pangram.includes(letter),
-          });
-          return (
-            <div key={i} className={className}>
-              {letter}
-            </div>
-          );
-        })}
-      </div>
+      <Input input={input} pangram={pangram} />
 
       <pre className="App-debug">
-        pangram: {pangram}{'\n'}
-        letters: {letters}{'\n'}
-        center: {center}{'\n'}
-        permutedLetters: {permutedLetters}{'\n'}
-        number valid words: {validWords.length}{'\n'}
-        score: {totalScore}
+        pangram: {pangram}
+        {'\n'}
+        letters: {letters}
+        {'\n'}
+        center: {center}
+        {'\n'}
+        permuted letters: {permutedLetters}
+        {'\n'}
+        number of valid words: {validWords.length}
+        {'\n'}
+        max score: {maxScore}
       </pre>
     </div>
   );

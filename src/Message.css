@@ -1,0 +1,17 @@
+.Message {
+  margin: 8px 0;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: block;
+  padding: 8px 16px;
+  background: #ee7;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.Message-visible {
+  opacity: 1;
+}

@@ -1,0 +1,18 @@
+.Letters > * {
+  margin: 0 4px;
+}
+
+.Letters-letter {
+  background: #ddd;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2em;
+  width: 2em;
+  font-size: 24px;
+}
+
+.Letters-letter-center {
+  background: #ff000040;
+}

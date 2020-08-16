@@ -1,0 +1,13 @@
+.Input {
+  display: flex;
+  justify-content: center;
+}
+
+.Input-letter {
+  font-size: 150%;
+  margin: 0 8px;
+}
+
+.Input-letter-invalid {
+  color: #cccccc;
+}
