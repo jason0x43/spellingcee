@@ -11,6 +11,8 @@ import wordlist, { blocks } from './wordlist';
 import classNames from 'classnames';
 import './App.css';
 
+const messageTimeout = 1000; 
+
 function App() {
   const [pangram] = useState(
     findPangram(
@@ -84,7 +86,7 @@ function App() {
 
   useEffect(() => {
     if (messageVisible) {
-      const timer = setTimeout(() => setMessageVisible(false), 2000);
+      const timer = setTimeout(() => setMessageVisible(false), messageTimeout);
       return () => clearTimeout(timer);
     }
   }, [messageVisible]);
