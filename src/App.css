@@ -36,3 +36,7 @@
 .App-letters > * {
   margin: 8px 0;
 }
+
+.App-words > * {
+  margin: 8px 0;
+}

@@ -93,7 +93,10 @@ function App() {
         <Letters letters={letters} center={center} />
       </div>
 
-      <Words words={words} />
+      <div className="App-words">
+        <div className="App-score">{computeScore(words)} / {maxScore}</div>
+        <Words words={words} />
+      </div>
 
       <pre className="App-debug">
         pangram: {pangram}
@@ -105,8 +108,6 @@ function App() {
         permuted letters: {letters}
         {'\n'}
         number of valid words: {validWords.length}
-        {'\n'}
-        max score: {maxScore}
       </pre>
     </div>
   );
