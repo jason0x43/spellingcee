@@ -44,3 +44,9 @@
 .App-words > * {
   margin: 8px 0;
 }
+
+.App-score {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+}

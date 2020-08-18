@@ -98,7 +98,14 @@ function App() {
       </div>
 
       <div className="App-words">
-        <div className="App-score">{computeScore(words)} / {maxScore}</div>
+        <div className="App-score">
+          <div>
+            {computeScore(words)} / {maxScore} points
+          </div>
+          <div>
+            {words.length} / {validWords.length} words
+          </div>
+        </div>
         <Words words={words} />
       </div>
 
