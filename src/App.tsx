@@ -4,6 +4,7 @@ import {
   getLetters,
   findPangram,
   findValidWords,
+  isPangram,
   permuteLetters,
   validateWord,
 } from './wordUtil';
@@ -14,7 +15,7 @@ import Letters from './Letters';
 import Words from './Words';
 import './App.css';
 
-const messageTimeout = 1000;
+const messageTimeout = 2000;
 
 function App() {
   const [pangram] = useState(
@@ -59,6 +60,10 @@ function App() {
             setMessageVisible(true);
           } else {
             setWords([...words, word]);
+            if (isPangram(word)) {
+              setMessage('Pangram!');
+              setMessageVisible(true);
+            }
           }
 
           setInput([]);
