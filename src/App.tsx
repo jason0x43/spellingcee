@@ -15,7 +15,7 @@ import Letters from './Letters';
 import Words from './Words';
 import './App.css';
 
-const messageTimeout = 2000;
+const messageTimeout = 1500;
 
 function App() {
   const [pangram] = useState(
@@ -91,9 +91,8 @@ function App() {
 
   return (
     <div className="App">
-      <Message isVisible={messageVisible}>{message}</Message>
-
       <div className="App-letters">
+        <Message isVisible={messageVisible}>{message}</Message>
         <Input input={input} pangram={pangram} />
         <Letters letters={letters} center={center} />
       </div>
