@@ -5,6 +5,20 @@
   height: 1.5em;
 }
 
+.Input-cursor {
+  --blink: blinky steps(2, start) 1500ms infinite;
+  animation: var(--blink);
+  -webkit-animation: var(--blink);
+
+  height: 80%;
+  width: 2px;
+  background: #9999ee;
+}
+
+@keyframes blinky {
+  to { visibility: hidden; }
+}
+
 .Input-letter {
   margin: 0 8px;
 }

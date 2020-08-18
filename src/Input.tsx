@@ -22,6 +22,8 @@ export default function Input(props: InputProps) {
           </div>
         );
       })}
+
+      <div className="Input-cursor" />
     </div>
   );
 }
