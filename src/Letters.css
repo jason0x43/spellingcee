@@ -1,5 +1,5 @@
 .Letters {
-  --letter-size: 56px;
+  --letter-size: 64px;
   --letter-pad: 8px;
   position: relative;
   width: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);

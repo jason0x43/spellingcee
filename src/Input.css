@@ -4,6 +4,7 @@
   font-size: var(--letter-font-size);
   height: 1.5em;
   font-weight: var(--font-weight-bold);
+  text-transform: capitalize;
 }
 
 .Input-cursor {
@@ -21,7 +22,7 @@
 }
 
 .Input-letter {
-  margin: 0 8px;
+  margin-right: 4px;
 }
 
 .Input-letter-invalid {
