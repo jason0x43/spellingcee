@@ -1,10 +1,12 @@
+import random from './random';
+
 export function isPangram(word: string) {
   const chars = new Set(word);
   return chars.size === 7;
 }
 
 export function findPangram(words: string[], end: number): string {
-  const index = Math.floor(Math.random() * end);
+  const index = random(end);
   let pangram = words[0];
   for (let i = index; i < end; i++) {
     const word = words[i];
@@ -33,7 +35,7 @@ function permute(letters: string[]): string[] {
   if (letters.length === 1) {
     return letters;
   }
-  const index = Math.floor(Math.random() * letters.length);
+  const index = random(letters.length);
   const remaining = [
     ...letters.slice(0, index),
     ...letters.slice(index + 1),

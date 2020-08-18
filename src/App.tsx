@@ -9,6 +9,8 @@ import {
   validateWord,
 } from './wordUtil';
 import wordlist, { blocks } from './wordlist';
+import { getDateString } from './util';
+import random, { initRng } from './random';
 import Input from './Input';
 import Message from './Message';
 import Letters from './Letters';
@@ -16,6 +18,8 @@ import Words from './Words';
 import './App.css';
 
 const messageTimeout = 1500;
+const queryArgs = new URLSearchParams(window?.location?.search);
+initRng(queryArgs.get('date') || getDateString());
 
 function App() {
   const [pangram] = useState(
@@ -30,7 +34,7 @@ function App() {
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const uniqueLetters = useMemo(() => getLetters(pangram), [pangram]);
   const center = useMemo(
-    () => uniqueLetters[Math.floor(Math.random() * uniqueLetters.length)],
+    () => uniqueLetters[random(uniqueLetters.length)],
     [uniqueLetters]
   );
   const validWords = useMemo(
