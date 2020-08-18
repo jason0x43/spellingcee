@@ -1,14 +1,10 @@
 .Words {
-  right: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   border: solid 1px #ccc;
   border-radius: 6px;
-  padding: 4px 8px;
-  width: 20em;
-}
-
-.Words > * {
-  margin: 4px 8px;
+  padding: 8px 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 8em);
+  grid-template-rows: repeat(10, 2em);
+  grid-auto-flow: column;
+  justify-items: left;
 }

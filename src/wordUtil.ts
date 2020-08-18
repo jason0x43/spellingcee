@@ -43,7 +43,6 @@ function permute(letters: string[]): string[] {
 
 export function permuteLetters(letters: string[], center: string): string[] {
   const centerIndex = letters.indexOf(center);
-  console.log(`centerIndex: ${centerIndex}`);
   const remaining = [
     ...letters.slice(0, centerIndex),
     ...letters.slice(centerIndex + 1),
