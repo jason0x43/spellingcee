@@ -1,11 +1,11 @@
 .Letters {
   --letter-size: 56px;
   --letter-pad: 8px;
-  --font-size: calc(var(--letter-size) / 2);
   position: relative;
   width: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
   height: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
   margin: 0 auto;
+  font-weight: var(--font-weight-bold);
 }
 
 .Letters-letter {
@@ -16,7 +16,7 @@
   justify-content: center;
   height: var(--letter-size);
   width: var(--letter-size);
-  font-size: var(--font-size);
+  font-size: var(--letter-font-size);
   text-transform: capitalize;
   position: absolute;
 }
