@@ -4,7 +4,10 @@
   color: var(--text-color);
   padding: 40px;
   display: flex;
-  flex-direction: column;
+  justify-content: stretch;
+  align-items: stretch;
+  width: 800px;
+  margin: 64px auto;
 }
 
 .App > * {
@@ -20,4 +23,17 @@
   padding: 16px;
   color: #999;
   background: #f7f7f7;
+}
+
+.App-letters {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 0;
+  flex-grow: 1;
+}
+
+.App-letters > * {
+  margin: 8px 0;
 }

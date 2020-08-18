@@ -88,11 +88,12 @@ function App() {
     <div className="App">
       <Message isVisible={messageVisible}>{message}</Message>
 
+      <div className="App-letters">
+        <Input input={input} pangram={pangram} />
+        <Letters letters={letters} center={center} />
+      </div>
+
       <Words words={words} />
-
-      <Letters letters={letters} center={center} />
-
-      <Input input={input} pangram={pangram} />
 
       <pre className="App-debug">
         pangram: {pangram}

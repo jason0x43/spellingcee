@@ -1,13 +1,14 @@
 .Words {
-  height: 1.5em;
+  right: 32px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: flex-start;
   border: solid 1px #ccc;
   border-radius: 6px;
   padding: 4px 8px;
+  width: 20em;
 }
 
 .Words > * {
-  margin: 0 8px;
+  margin: 4px 8px;
 }

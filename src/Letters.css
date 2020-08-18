@@ -1,18 +1,58 @@
-.Letters > * {
-  margin: 0 4px;
+.Letters {
+  --letter-size: 56px;
+  --letter-pad: 8px;
+  --font-size: calc(var(--letter-size) / 2);
+  position: relative;
+  width: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
+  height: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
+  margin: 0 auto;
 }
 
 .Letters-letter {
   background: #ddd;
-  border-radius: 6px;
-  display: inline-flex;
+  border-radius: 4px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  height: 2em;
-  width: 2em;
-  font-size: 24px;
+  height: var(--letter-size);
+  width: var(--letter-size);
+  font-size: var(--font-size);
+  text-transform: capitalize;
+  position: absolute;
 }
 
-.Letters-letter-center {
+.Letters-letter:nth-child(1) {
+  top: calc(var(--letter-size) / 2);
+  left: 0;
+}
+
+.Letters-letter:nth-child(2) {
+  top: 0;
+  left: calc(var(--letter-size) + var(--letter-pad));
+}
+
+.Letters-letter:nth-child(3) {
+  top: calc(var(--letter-size) / 2);
+  left: calc(var(--letter-size) * 2 + var(--letter-pad) * 2);
+}
+
+.Letters-letter:nth-child(4) {
+  top: calc(var(--letter-size) + var(--letter-pad));
+  left: calc(var(--letter-size) + var(--letter-pad));
   background: #ff000040;
+}
+
+.Letters-letter:nth-child(5) {
+  top: calc(var(--letter-size) * 1.5 + var(--letter-pad));
+  left: 0;
+}
+
+.Letters-letter:nth-child(6) {
+  top: calc(var(--letter-size) * 2 + var(--letter-pad) * 2);
+  left: calc(var(--letter-size) + var(--letter-pad));
+}
+
+.Letters-letter:nth-child(7) {
+  top: calc(var(--letter-size) * 1.5 + var(--letter-pad));
+  left: calc(var(--letter-size) * 2 + var(--letter-pad) * 2);
 }
