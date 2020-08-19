@@ -9,8 +9,7 @@ import {
   validateWord,
 } from './wordUtil';
 import wordlist, { blocks } from './wordlist';
-import { getDateString } from './util';
-import random, { initRng } from './random';
+import random from './random';
 import Input from './Input';
 import Message from './Message';
 import Letters from './Letters';
@@ -18,10 +17,16 @@ import Words from './Words';
 import './App.css';
 
 const messageTimeout = 1500;
-const queryArgs = new URLSearchParams(window?.location?.search);
-initRng(queryArgs.get('date') || getDateString());
 
-function App() {
+interface AppProps {
+  gameId: string;
+  savedWords: string[];
+  saveWords(words: string[]): void;
+}
+
+function App(props: AppProps) {
+  const { gameId, savedWords, saveWords } = props;
+
   const [pangram] = useState(
     findPangram(
       wordlist,
@@ -29,7 +34,7 @@ function App() {
     )
   );
   const [input, setInput] = useState<string[]>([]);
-  const [words, setWords] = useState<string[]>([]);
+  const [words, setWords] = useState<string[]>(savedWords);
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const uniqueLetters = useMemo(() => getLetters(pangram), [pangram]);
@@ -63,7 +68,9 @@ function App() {
             setMessage(message);
             setMessageVisible(true);
           } else {
-            setWords([...words, word]);
+            const newWords = [...words, word];
+            saveWords(newWords);
+            setWords(newWords);
             if (isPangram(word)) {
               setMessage('Pangram!');
               setMessageVisible(true);
@@ -78,7 +85,7 @@ function App() {
         setInput([...input, event.key]);
       }
     },
-    [input, words, center, pangram, uniqueLetters, validWords]
+    [input, center, pangram, uniqueLetters, saveWords, validWords, words]
   );
 
   useEffect(() => {
