@@ -7,4 +7,9 @@
   grid-template-rows: repeat(10, 2em);
   grid-auto-flow: column;
   justify-items: left;
+  font-weight: var(--font-weight-normal);
+}
+
+.Words-word-pangram {
+  color: blue;
 }

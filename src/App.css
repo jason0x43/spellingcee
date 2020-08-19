@@ -1,5 +1,7 @@
 .App {
-  --text-color: #555;
+  --text-color: #222;
+  --text-color-light: #666;
+  --font-weight-normal: 500;
   --font-weight-bold: 800;
   --letter-font-size: 24px;
 
@@ -49,4 +51,5 @@
   display: flex;
   justify-content: space-between;
   padding: 0 8px;
+  color: var(--text-color-light);
 }
