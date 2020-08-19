@@ -1,8 +1,7 @@
 import random from './random';
 
 export function isPangram(word: string) {
-  const chars = new Set(word);
-  return chars.size === 7;
+  return new Set(word).size === 7;
 }
 
 export function findPangram(words: string[], end: number): string {

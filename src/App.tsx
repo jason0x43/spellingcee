@@ -38,10 +38,9 @@ function App(props: AppProps) {
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const uniqueLetters = useMemo(() => getLetters(pangram), [pangram]);
-  const center = useMemo(
-    () => uniqueLetters[random(uniqueLetters.length)],
-    [uniqueLetters]
-  );
+  const center = useMemo(() => uniqueLetters[random(uniqueLetters.length)], [
+    uniqueLetters,
+  ]);
   const validWords = useMemo(
     () => findValidWords({ allWords: wordlist, pangram, center }),
     [pangram, center]
@@ -121,6 +120,8 @@ function App(props: AppProps) {
       </div>
 
       <pre className="App-debug">
+        id: {gameId}
+        {'\n'}
         pangram: {pangram}
         {'\n'}
         letters: {uniqueLetters}
