@@ -51,9 +51,7 @@ export function getState(gameId?: string) {
   if (gameId == null) {
     gameId = id;
   }
-  if (!appState[gameId]) {
-    appState[gameId] = initGame();
-  }
+  appState[gameId] = initGame(appState[gameId]);
   const { rng, ...state } = appState[gameId];
   return state;
 }
@@ -76,14 +74,16 @@ export function saveState(newState: GameState, gameId?: string) {
 /**
  * Initialize a new game for the current ID
  */
-function initGame() {
-  const pangram = findPangram(
-    wordlist,
-    blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4]
-  );
+function initGame(state: Partial<GameState>): SavedGameState {
+  const pangram =
+    state.pangram ??
+    findPangram(
+      wordlist,
+      blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4]
+    );
   const uniqueLetters = getLetters(pangram);
-  const center = uniqueLetters[random(uniqueLetters.length)];
-  const letters = permuteLetters(uniqueLetters, center);
-  const words: string[] = [];
-  return { pangram, center, letters, words, rng: saveRng() };
+  const center = state.center ?? uniqueLetters[random(uniqueLetters.length)];
+  const letters = state.letters ?? permuteLetters(uniqueLetters, center);
+  const words = state.words ?? [];
+  return { pangram, letters, words, center, rng: saveRng() };
 }
