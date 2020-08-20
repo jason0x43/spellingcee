@@ -1,0 +1,89 @@
+import cookies from 'js-cookie';
+import { getDateString } from './util';
+import random, { saveRng, initRng, RngState } from './random';
+import wordlist, { blocks } from './wordlist';
+import { getLetters, findPangram, permuteLetters } from './wordUtil';
+
+export interface GameState {
+  pangram: string;
+  words: string[];
+  letters: string[];
+  center: string;
+}
+
+interface SavedGameState extends GameState {
+  rng: RngState;
+}
+
+interface AppState {
+  [id: string]: SavedGameState;
+}
+
+let id: string;
+let appState: AppState;
+
+/**
+ * Initialize the app state
+ */
+export function init() {
+  // Load the game ID and initialize the random number generator
+  const queryArgs = new URLSearchParams(window?.location?.search);
+  id = queryArgs.get('id') || getDateString();
+
+  // Load the game state for the current ID
+  const appStateCookie = cookies.get('spelling-cee-game-state');
+  appState = appStateCookie ? (JSON.parse(appStateCookie) as AppState) : {};
+
+  // Initialize the random number generator
+  if (appState[id]?.rng) {
+    initRng(appState[id].rng);
+  } else {
+    initRng(id);
+  }
+
+  return id;
+}
+
+/**
+ * Get the current game's state
+ */
+export function getState(gameId?: string) {
+  if (gameId == null) {
+    gameId = id;
+  }
+  if (!appState[gameId]) {
+    appState[gameId] = initGame();
+  }
+  const { rng, ...state } = appState[gameId];
+  return state;
+}
+
+/**
+ * Save the given state for the curent game
+ */
+export function saveState(newState: GameState, gameId?: string) {
+  appState = {
+    ...appState,
+    [gameId ?? id]: {
+      ...appState[gameId ?? id],
+      ...newState,
+      rng: saveRng(),
+    },
+  };
+  cookies.set('spelling-cee-game-state', JSON.stringify(appState));
+}
+
+/**
+ * Initialize a new game for the current ID
+ */
+function initGame() {
+  const pangram = findPangram(
+    wordlist,
+    blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4]
+  );
+  const uniqueLetters = getLetters(pangram);
+  const center = uniqueLetters[random(uniqueLetters.length)];
+  const letters = permuteLetters(uniqueLetters, center);
+  const words: string[] = [];
+  return { pangram, center, letters, words, rng: saveRng() };
+}

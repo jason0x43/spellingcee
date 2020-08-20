@@ -1,15 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   computeScore,
-  getLetters,
-  findPangram,
   findValidWords,
   isPangram,
   permuteLetters,
   validateWord,
 } from './wordUtil';
-import wordlist, { blocks } from './wordlist';
-import random from './random';
+import { GameState } from './state';
+import wordlist from './wordlist';
 import Input from './Input';
 import Message from './Message';
 import Letters from './Letters';
@@ -18,42 +16,16 @@ import './App.css';
 
 const messageTimeout = 1500;
 
-export interface GameState {
-  pangram: string;
-  words: string[];
-  letters: string[];
-  center: string;
-}
-
 export interface AppProps {
   gameId: string;
-  savedState?: GameState;
+  initialState: GameState;
   saveState(state: Partial<GameState>): void;
 }
 
-function initializeState(
-  saveState: AppProps['saveState']
-): GameState {
-  const pangram = findPangram(
-    wordlist,
-    blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4]
-  );
-  const uniqueLetters = getLetters(pangram);
-  const center = uniqueLetters[random(uniqueLetters.length)];
-  const letters = permuteLetters(uniqueLetters, center);
-  const words: string[] = [];
-
-  const newState = { pangram, center, letters, words };
-  saveState(newState);
-  return newState;
-}
-
 function App(props: AppProps) {
-  const { gameId, savedState, saveState } = props;
+  const { gameId, initialState, saveState } = props;
 
-  const [gameState, setGameState] = useState<GameState>(
-    savedState ?? initializeState(saveState)
-  );
+  const [gameState, setGameState] = useState<GameState>(initialState);
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const [input, setInput] = useState<string[]>([]);
@@ -78,9 +50,8 @@ function App(props: AppProps) {
         ...state,
       };
       setGameState(newState);
-      saveState(newState);
     },
-    [gameState, saveState]
+    [gameState]
   );
 
   const handleKeyPress = useCallback(
@@ -135,6 +106,10 @@ function App(props: AppProps) {
       return () => clearTimeout(timer);
     }
   }, [messageVisible]);
+
+  useEffect(() => {
+    saveState(gameState);
+  }, [gameState, saveState]);
 
   return (
     <div className="App">
