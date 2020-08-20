@@ -18,35 +18,70 @@ import './App.css';
 
 const messageTimeout = 1500;
 
-interface AppProps {
+export interface GameState {
+  pangram: string;
+  words: string[];
+  letters: string[];
+  center: string;
+}
+
+export interface AppProps {
   gameId: string;
-  savedWords: string[];
-  saveWords(words: string[]): void;
+  savedState?: GameState;
+  saveState(state: Partial<GameState>): void;
+}
+
+function initializeState(
+  saveState: AppProps['saveState']
+): GameState {
+  const pangram = findPangram(
+    wordlist,
+    blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4]
+  );
+  const uniqueLetters = getLetters(pangram);
+  const center = uniqueLetters[random(uniqueLetters.length)];
+  const letters = permuteLetters(uniqueLetters, center);
+  const words: string[] = [];
+
+  const newState = { pangram, center, letters, words };
+  saveState(newState);
+  return newState;
 }
 
 function App(props: AppProps) {
-  const { gameId, savedWords, saveWords } = props;
+  const { gameId, savedState, saveState } = props;
 
-  const [pangram] = useState(
-    findPangram(
-      wordlist,
-      blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4]
-    )
+  const [gameState, setGameState] = useState<GameState>(
+    savedState ?? initializeState(saveState)
   );
-  const [input, setInput] = useState<string[]>([]);
-  const [words, setWords] = useState<string[]>(savedWords);
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
-  const uniqueLetters = useMemo(() => getLetters(pangram), [pangram]);
-  const center = useMemo(() => uniqueLetters[random(uniqueLetters.length)], [
-    uniqueLetters,
-  ]);
+  const [input, setInput] = useState<string[]>([]);
+
+  const { pangram, center, letters, words } = gameState;
+
   const validWords = useMemo(
-    () => findValidWords({ allWords: wordlist, pangram, center }),
+    () =>
+      findValidWords({
+        allWords: wordlist,
+        pangram: pangram,
+        center: center,
+      }),
     [pangram, center]
   );
   const maxScore = useMemo(() => computeScore(validWords), [validWords]);
-  const [letters, setLetters] = useState(permuteLetters(uniqueLetters, center));
+
+  const updateState = useCallback(
+    (state: Partial<GameState>) => {
+      const newState = {
+        ...gameState,
+        ...state,
+      };
+      setGameState(newState);
+      saveState(newState);
+    },
+    [gameState, saveState]
+  );
 
   const handleKeyPress = useCallback(
     (event) => {
@@ -56,6 +91,7 @@ function App(props: AppProps) {
           setInput(input.slice(0, input.length - 1));
         } else if (key === 'Enter') {
           const word = input.join('');
+          const { words, pangram, center } = gameState;
           const message = validateWord({
             words,
             validWords,
@@ -63,13 +99,13 @@ function App(props: AppProps) {
             pangram,
             center,
           });
+
           if (message) {
             setMessage(message);
             setMessageVisible(true);
           } else {
             const newWords = [...words, word];
-            saveWords(newWords);
-            setWords(newWords);
+            updateState({ words: newWords });
             if (isPangram(word)) {
               setMessage('Pangram!');
               setMessageVisible(true);
@@ -79,12 +115,13 @@ function App(props: AppProps) {
           setInput([]);
         }
       } else if (key === ' ') {
-        setLetters(permuteLetters(uniqueLetters, center));
+        const { letters, center } = gameState;
+        updateState({ letters: permuteLetters(letters, center) });
       } else if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')) {
         setInput([...input, event.key]);
       }
     },
-    [input, center, pangram, uniqueLetters, saveWords, validWords, words]
+    [input, validWords, gameState, updateState]
   );
 
   useEffect(() => {
@@ -123,12 +160,6 @@ function App(props: AppProps) {
         id: {gameId}
         {'\n'}
         pangram: {pangram}
-        {'\n'}
-        letters: {uniqueLetters}
-        {'\n'}
-        center: {center}
-        {'\n'}
-        permuted letters: {letters}
         {'\n'}
         number of valid words: {validWords.length}
       </pre>
