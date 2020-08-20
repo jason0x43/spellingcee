@@ -1,8 +1,9 @@
-import cookies from 'js-cookie';
 import { getDateString } from './util';
 import random, { saveRng, initRng, RngState } from './random';
 import wordlist, { blocks } from './wordlist';
 import { getLetters, findPangram, permuteLetters } from './wordUtil';
+
+const storage = window.localStorage;
 
 export interface GameState {
   pangram: string;
@@ -31,8 +32,8 @@ export function init() {
   id = queryArgs.get('id') || getDateString();
 
   // Load the game state for the current ID
-  const appStateCookie = cookies.get('spelling-cee-game-state');
-  appState = appStateCookie ? (JSON.parse(appStateCookie) as AppState) : {};
+  const data = storage.getItem('spelling-cee-game-state');
+  appState = data ? (JSON.parse(data) as AppState) : {};
 
   // Initialize the random number generator
   if (appState[id]?.rng) {
@@ -68,7 +69,8 @@ export function saveState(newState: GameState, gameId?: string) {
       rng: saveRng(),
     },
   };
-  cookies.set('spelling-cee-game-state', JSON.stringify(appState));
+  const data = JSON.stringify(appState);
+  storage.setItem('spelling-cee-game-state', data);
 }
 
 /**
