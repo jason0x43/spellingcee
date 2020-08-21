@@ -81,9 +81,8 @@ function App(props: AppProps) {
               setMessage('Pangram!');
               setMessageVisible(true);
             }
+            setInput([]);
           }
-
-          setInput([]);
         }
       } else if (key === ' ') {
         const { letters, center } = gameState;
@@ -102,7 +101,10 @@ function App(props: AppProps) {
 
   useEffect(() => {
     if (messageVisible) {
-      const timer = setTimeout(() => setMessageVisible(false), messageTimeout);
+      const timer = setTimeout(() => {
+        setMessageVisible(false);
+        setInput([]);
+      }, messageTimeout);
       return () => clearTimeout(timer);
     }
   }, [messageVisible]);
@@ -115,7 +117,7 @@ function App(props: AppProps) {
     <div className="App">
       <div className="App-letters">
         <Message isVisible={messageVisible}>{message}</Message>
-        <Input input={input} pangram={pangram} />
+        <Input input={input} pangram={pangram} isInvalid={messageVisible} />
         <Letters letters={letters} center={center} />
       </div>
 

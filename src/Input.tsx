@@ -5,12 +5,17 @@ import './Input.css';
 interface InputProps {
   input: string[];
   pangram: string;
+  isInvalid?: boolean;
 }
 
 export default function Input(props: InputProps) {
-  const { input, pangram } = props;
+  const { input, pangram, isInvalid } = props;
+  const className = classNames({
+    Input: true,
+    'Input-invalid': isInvalid,
+  });
   return (
-    <div className="Input">
+    <div className={className}>
       {input.map((letter, i) => {
         const className = classNames({
           'Input-letter': true,
