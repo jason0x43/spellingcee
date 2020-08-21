@@ -76,7 +76,7 @@ export function saveState(newState: GameState, gameId?: string) {
 /**
  * Initialize a new game for the current ID
  */
-function initGame(state: Partial<GameState>): SavedGameState {
+function initGame(state: Partial<GameState> = {}): SavedGameState {
   const pangram =
     state.pangram ??
     findPangram(
