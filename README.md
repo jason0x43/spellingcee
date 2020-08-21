@@ -1,3 +1,4 @@
 # SpellingCee
 
-A word game inspired by the NYT Spelling Bee
+A clone of the [NYT Spelling Bee](https://www.nytimes.com/puzzles/spelling-bee)
+game with some additional features (eventually).
