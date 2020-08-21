@@ -14,7 +14,7 @@ import Letters from './Letters';
 import Words from './Words';
 import './App.css';
 
-const messageTimeout = 1500;
+const messageTimeout = 1000;
 
 export interface AppProps {
   gameId: string;
@@ -56,6 +56,11 @@ function App(props: AppProps) {
 
   const handleKeyPress = useCallback(
     (event) => {
+      // Ignore keystrokes while a message is visible
+      if (messageVisible) {
+        return;
+      }
+
       const { key } = event;
       if (key.length > 1) {
         if (key === 'Backspace') {
@@ -91,7 +96,7 @@ function App(props: AppProps) {
         setInput([...input, event.key]);
       }
     },
-    [input, validWords, gameState, updateState]
+    [input, validWords, gameState, updateState, messageVisible]
   );
 
   useEffect(() => {
