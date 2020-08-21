@@ -6,6 +6,8 @@
   height: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
   margin: 0 auto;
   font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  user-select: none;
 }
 
 .Letters-letter {
@@ -17,6 +19,15 @@
   left: calc(100% / 3);
   height: calc(100% / 3);
   width: calc(100% / 3);
+  transition: all ease-in-out 0.3s;
+}
+
+.Letters-letter:active {
+  transform: scale(0.8);
+}
+
+.Letters-letter:hover {
+  fill: #c9c9c9;
 }
 
 .Letters-letter text {
@@ -47,6 +58,11 @@
 .Letters-letter:nth-child(4) {
   fill: #ff000040;
 }
+
+.Letters-letter:nth-child(4):hover {
+  fill: #ff000050;
+}
+
 
 .Letters-letter:nth-child(5) {
   transform: translate(80%, 46%);

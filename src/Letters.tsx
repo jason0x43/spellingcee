@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, MouseEventHandler } from 'react';
 import classNames from 'classnames';
 import './Letters.css';
 
@@ -49,6 +49,10 @@ export default function Letters(props: LettersProps) {
     'Letters-updating': updating,
   });
 
+  const handleClick: MouseEventHandler = useCallback((event) => {
+    console.log(event.currentTarget);
+  }, []);
+
   return (
     <div className={className}>
       {letters.map((letter) => {
@@ -62,6 +66,7 @@ export default function Letters(props: LettersProps) {
             key={letter}
             className={className}
             viewBox={`0 0 ${tileSize} ${tileSize}`}
+            onClick={handleClick}
           >
             <polygon points={points} />
             <text

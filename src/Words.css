@@ -1,15 +1,25 @@
 .Words {
+  --words-width: 24em;
   border: solid 1px #ccc;
   border-radius: 6px;
-  padding: 8px 16px;
+  font-weight: var(--font-weight-normal);
+  overflow: auto;
+  width: var(--words-width);
+}
+
+.Words-grid {
   display: grid;
-  grid-template-columns: repeat(3, 8em);
+  grid-template-columns: repeat(3, calc(var(--words-width) / 3));
   grid-template-rows: repeat(10, 2em);
   grid-auto-flow: column;
-  justify-items: left;
-  font-weight: var(--font-weight-normal);
+  justify-items: stretch;
 }
 
 .Words-word-pangram {
   color: blue;
+}
+
+.Words-word {
+  padding: 8px 16px;
+  text-align: left;
 }
