@@ -37,10 +37,7 @@
   justify-content: center;
   align-items: center;
   flex-grow: 1;
-}
-
-.App-letters > * {
-  margin: 8px 0;
+  padding-top: 32px;
 }
 
 .App-words > * {
@@ -52,4 +49,9 @@
   justify-content: space-between;
   padding: 0 8px;
   color: var(--text-color-light);
+}
+
+.Message {
+  position: absolute;
+  top: 0;
 }

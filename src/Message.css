@@ -1,9 +1,5 @@
 .Message {
   margin: 8px 0;
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
   display: block;
   padding: 8px 16px;
   background: #ee7;
