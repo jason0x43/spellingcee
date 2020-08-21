@@ -15,7 +15,7 @@ export default function Words(props: WordsProps) {
     setAlphabetical(!alphabetical);
   }, [setAlphabetical, alphabetical]);
 
-  const displayWords = alphabetical ? [...words].sort() : words;
+  const displayWords = alphabetical ? [...words].sort() : [...words].reverse();
 
   return (
     <div className="Words">
