@@ -19,6 +19,15 @@
   font-size: var(--letter-font-size);
   text-transform: capitalize;
   position: absolute;
+  transition: color 0.25s;
+}
+
+.Letters-updating  .Letters-letter {
+  color: transparent;
+}
+
+.Letters-updating  .Letters-letter-center {
+  color: inherit;
 }
 
 .Letters-letter:nth-child(1) {

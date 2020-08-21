@@ -5,12 +5,18 @@ import './Letters.css';
 interface LettersProps {
   letters: string[];
   center: string;
+  updating?: boolean;
 }
 
 export default function Letters(props: LettersProps) {
-  const { letters, center } = props;
+  const { letters, center, updating } = props;
+  const className = classNames({
+    Letters: true,
+    'Letters-updating': updating,
+  });
+
   return (
-    <div className="Letters">
+    <div className={className}>
       {letters.map((letter) => {
         const className = classNames({
           'Letters-letter': true,

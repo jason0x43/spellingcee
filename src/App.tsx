@@ -15,6 +15,7 @@ import Words from './Words';
 import './App.css';
 
 const messageTimeout = 1500;
+const letterSwapTimeout = 400;
 
 export interface AppProps {
   gameId: string;
@@ -28,6 +29,7 @@ function App(props: AppProps) {
   const [gameState, setGameState] = useState<GameState>(initialState);
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
+  const [updateLetters, setUpdateLetters] = useState<boolean>(false);
   const [input, setInput] = useState<string[]>([]);
 
   const { pangram, center, letters, words } = gameState;
@@ -86,8 +88,7 @@ function App(props: AppProps) {
           setInput([]);
         }
       } else if (key === ' ') {
-        const { letters, center } = gameState;
-        updateState({ letters: permuteLetters(letters, center) });
+        setUpdateLetters(true);
       } else if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')) {
         setInput([...input, event.key]);
       }
@@ -95,17 +96,30 @@ function App(props: AppProps) {
     [input, validWords, gameState, updateState]
   );
 
+  // Add a keypress listener for the app
   useEffect(() => {
     window.addEventListener('keypress', handleKeyPress);
     return () => window.removeEventListener('keypress', handleKeyPress);
   }, [handleKeyPress]);
 
+  // Hide the message after messageTimeout
   useEffect(() => {
     if (messageVisible) {
       const timer = setTimeout(() => setMessageVisible(false), messageTimeout);
       return () => clearTimeout(timer);
     }
   }, [messageVisible]);
+
+  // Update and re-show letters
+  useEffect(() => {
+    if (updateLetters) {
+      const timer = setTimeout(() => {
+        updateState({ letters: permuteLetters(letters, center) });
+        setUpdateLetters(false);
+      }, letterSwapTimeout);
+      return () => clearTimeout(timer);
+    }
+  }, [center, letters, updateLetters, updateState]);
 
   useEffect(() => {
     saveState(gameState);
@@ -116,7 +130,7 @@ function App(props: AppProps) {
       <div className="App-letters">
         <Message isVisible={messageVisible}>{message}</Message>
         <Input input={input} pangram={pangram} />
-        <Letters letters={letters} center={center} />
+        <Letters letters={letters} center={center} updating={updateLetters} />
       </div>
 
       <div className="App-words">
