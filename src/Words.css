@@ -3,8 +3,18 @@
   border: solid 1px #ccc;
   border-radius: 6px;
   font-weight: var(--font-weight-normal);
-  overflow: auto;
   width: var(--words-width);
+}
+
+.Words-controls {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px;
+}
+
+.Words-grid {
+  overflow: auto;
+  padding-bottom: 1em;
 }
 
 .Words-grid {
