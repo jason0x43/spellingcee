@@ -1,0 +1,44 @@
+.Progress {
+  height: 1em;
+  display: flex;
+  align-items: center;
+  text-transform: capitalize;
+}
+
+.Progress-thresholds {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  flex-grow: 1;
+}
+
+.Progress-thresholds li {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.Progress-thresholds .Progress-threshold {
+  --size: 16px;
+  font-size: calc(var(--size) / 2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--size) / 4);
+  width: calc(var(--size) * 1.3);
+  height: var(--size);
+  background: #eee;
+  color: #888;
+}
+
+.Progress-thresholds .Progress-threshold-met {
+  background: #ee0;
+  color: #ee0
+}
+
+.Progress-thresholds .Progress-threshold-current {
+  --size: 20px;
+  color: black;
+}

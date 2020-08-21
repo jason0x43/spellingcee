@@ -40,8 +40,17 @@
   padding-top: 32px;
 }
 
+.App-words {
+  display: flex;
+  flex-direction: column;
+}
+
 .App-words > * {
-  margin: 8px 0;
+  margin-bottom: 8px;
+}
+
+.App-words .Progress {
+  margin-bottom: 16px;
 }
 
 .App-score {

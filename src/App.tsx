@@ -11,6 +11,7 @@ import wordlist from './wordlist';
 import Input from './Input';
 import Message from './Message';
 import Letters from './Letters';
+import Progress from './Progress';
 import Words from './Words';
 import './App.css';
 
@@ -118,6 +119,8 @@ function App(props: AppProps) {
     saveState(gameState);
   }, [gameState, saveState]);
 
+  const score = useMemo(() => computeScore(words), [words]);
+
   return (
     <div className="App">
       <div className="App-letters">
@@ -127,9 +130,10 @@ function App(props: AppProps) {
       </div>
 
       <div className="App-words">
+        <Progress score={score} maxScore={maxScore} />
         <div className="App-score">
           <div>
-            {computeScore(words)} / {maxScore} points
+            {score} / {maxScore} points
           </div>
           <div>
             {words.length} / {validWords.length} words
@@ -138,6 +142,7 @@ function App(props: AppProps) {
         <Words words={words} />
       </div>
 
+      {/*
       <pre className="App-debug">
         id: {gameId}
         {'\n'}
@@ -145,6 +150,7 @@ function App(props: AppProps) {
         {'\n'}
         number of valid words: {validWords.length}
       </pre>
+      */}
     </div>
   );
 }
