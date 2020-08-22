@@ -21,7 +21,7 @@ export default function Words(props: WordsProps) {
     <div className="Words">
       <div className="Words-controls">
         <button onClick={handleClick}>
-          {alphabetical ? 'Alphabetical' : 'Chronological'}
+          {alphabetical ? 'Chronological' : 'Alphabetical'}
         </button>
       </div>
       <div className="Words-grid-wrapper">
