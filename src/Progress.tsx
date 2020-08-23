@@ -16,14 +16,14 @@ export default function Progress(props: ProgressProps) {
     <div className="Progress">
       <span>{label}</span>
       <ul className="Progress-thresholds">
-        {thresholds.map((entry) => {
+        {thresholds.map((entry, i) => {
           const className = classNames({
             'Progress-threshold': true,
             'Progress-threshold-met': score >= entry.threshold,
             'Progress-threshold-current': label === entry.label
           });
           return (
-            <li key={entry.threshold}>
+            <li key={i}>
               <span className={className}>{entry.threshold}</span>
             </li>
           );

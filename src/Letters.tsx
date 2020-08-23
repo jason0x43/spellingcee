@@ -1,4 +1,9 @@
-import React, { useCallback, useEffect, useState, MouseEventHandler } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  MouseEventHandler,
+} from 'react';
 import classNames from 'classnames';
 import './Letters.css';
 
@@ -28,7 +33,7 @@ const points = (function () {
 
 export default function Letters(props: LettersProps) {
   const { letters: lettersProp, center } = props;
-  const [letters, setLetters] = useState<string[]>([]);
+  const [letters, setLetters] = useState<string[]>(lettersProp);
   const [updating, setUpdating] = useState<boolean>(false);
 
   // Start updating, set timer to swap letters
@@ -53,9 +58,20 @@ export default function Letters(props: LettersProps) {
     console.log(event.currentTarget);
   }, []);
 
+  const centerIndex = letters.indexOf(center);
+  const otherLetters = [
+    ...letters.slice(0, centerIndex),
+    ...letters.slice(centerIndex + 1),
+  ];
+  const renderLetters = [
+    ...otherLetters.slice(0, otherLetters.length / 2),
+    center,
+    ...otherLetters.slice(otherLetters.length / 2),
+  ];
+
   return (
     <div className={className}>
-      {letters.map((letter) => {
+      {renderLetters.map((letter) => {
         const className = classNames({
           'Letters-letter': true,
           'Letters-letter-center': letter === center,

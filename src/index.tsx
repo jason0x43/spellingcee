@@ -1,19 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import { init, getState, saveState } from './state';
 import * as serviceWorker from './serviceWorker';
 import './index.css';
 
-const id = init();
-
 ReactDOM.render(
   <React.StrictMode>
-    <App
-      gameId={id}
-      initialState={getState()}
-      saveState={saveState}
-    />
+    <App />
   </React.StrictMode>,
   document.getElementById('root')
 );

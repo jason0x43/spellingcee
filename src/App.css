@@ -64,3 +64,14 @@
   position: absolute;
   top: 0;
 }
+
+.App-gameId {
+  color: #bbb;
+}
+
+.App-error {
+  padding: 16px;
+  background: #ffdddd;
+  border-radius: 6px;
+  margin: 0 auto;
+}

@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import AppError from './AppError';
 import {
   computeScore,
   findValidWords,
   isPangram,
-  permuteLetters,
+  permute,
   validateWord,
 } from './wordUtil';
 import { GameState } from './state';
+import { useAppState } from './hooks';
 import wordlist from './wordlist';
 import Input from './Input';
 import Message from './Message';
@@ -17,42 +19,40 @@ import './App.css';
 
 const messageTimeout = 1000;
 
-export interface AppProps {
-  gameId: string;
-  initialState: GameState;
-  saveState(state: Partial<GameState>): void;
-}
-
-function App(props: AppProps) {
-  const { gameId, initialState, saveState } = props;
-
-  const [gameState, setGameState] = useState<GameState>(initialState);
+function App() {
+  const [appState, setAppState] = useAppState();
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const [input, setInput] = useState<string[]>([]);
 
-  const { pangram, center, letters, words } = gameState;
+  const { currentGame } = appState;
+  const gameState = appState.games[currentGame];
+  const center = currentGame[0];
+  const { letters, words } = gameState;
 
-  const validWords = useMemo(
-    () =>
-      findValidWords({
-        allWords: wordlist,
-        pangram: pangram,
-        center: center,
-      }),
-    [pangram, center]
-  );
+  const validWords = useMemo(() => {
+    return findValidWords({
+      allWords: wordlist,
+      pangram: currentGame,
+      center,
+    });
+  }, [currentGame, center]);
   const maxScore = useMemo(() => computeScore(validWords), [validWords]);
 
   const updateState = useCallback(
     (state: Partial<GameState>) => {
-      const newState = {
-        ...gameState,
-        ...state,
-      };
-      setGameState(newState);
+      setAppState({
+        ...appState,
+        games: {
+          ...appState.games,
+          [appState.currentGame!]: {
+            ...appState.games[appState.currentGame!],
+            ...state,
+          },
+        },
+      });
     },
-    [gameState]
+    [appState, setAppState]
   );
 
   const handleKeyPress = useCallback(
@@ -68,12 +68,11 @@ function App(props: AppProps) {
           setInput(input.slice(0, input.length - 1));
         } else if (key === 'Enter') {
           const word = input.join('');
-          const { words, pangram, center } = gameState;
           const message = validateWord({
             words,
             validWords,
             word,
-            pangram,
+            pangram: currentGame,
             center,
           });
 
@@ -91,13 +90,21 @@ function App(props: AppProps) {
           }
         }
       } else if (key === ' ') {
-        const { letters, center } = gameState;
-        updateState({ letters: permuteLetters(letters, center) });
+        updateState({ letters: permute(letters) });
       } else if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')) {
         setInput([...input, event.key]);
       }
     },
-    [input, validWords, gameState, updateState, messageVisible]
+    [
+      center,
+      currentGame,
+      input,
+      letters,
+      words,
+      validWords,
+      updateState,
+      messageVisible,
+    ]
   );
 
   useEffect(() => {
@@ -115,17 +122,37 @@ function App(props: AppProps) {
     }
   }, [messageVisible]);
 
-  useEffect(() => {
-    saveState(gameState);
-  }, [gameState, saveState]);
-
   const score = useMemo(() => computeScore(words), [words]);
+
+  if (appState.error) {
+    const { error } = appState;
+    console.error(error);
+    const message =
+      typeof error === 'string'
+        ? error
+        : AppError.isAppError(error)
+        ? error.appMessage
+        : 'There was an error loading the application';
+    return (
+      <div className="App">
+        <div className="App-error">{message}</div>
+      </div>
+    );
+  }
+
+  if (!appState.games[appState.currentGame]) {
+    return (
+      <div className="App">
+        <h1>Loading...</h1>
+      </div>
+    );
+  }
 
   return (
     <div className="App">
       <div className="App-letters">
         <Message isVisible={messageVisible}>{message}</Message>
-        <Input input={input} pangram={pangram} isInvalid={messageVisible} />
+        <Input input={input} pangram={currentGame} isInvalid={messageVisible} />
         <Letters letters={letters} center={center} />
       </div>
 
@@ -140,17 +167,8 @@ function App(props: AppProps) {
           </div>
         </div>
         <Words words={words} />
+        <div className="App-gameId">Game ID: {appState.currentGame}</div>
       </div>
-
-      {/*
-      <pre className="App-debug">
-        id: {gameId}
-        {'\n'}
-        pangram: {pangram}
-        {'\n'}
-        number of valid words: {validWords.length}
-      </pre>
-      */}
     </div>
   );
 }

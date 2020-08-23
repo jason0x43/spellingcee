@@ -1,91 +1,98 @@
+import AppError from './AppError';
 import { getDateString } from './util';
-import random, { saveRng, initRng, RngState } from './random';
+import { initRng, newRng } from './random';
 import wordlist, { blocks } from './wordlist';
-import { getLetters, findPangram, permuteLetters } from './wordUtil';
+import { getLetters, findPangram, permute } from './wordUtil';
 
 const storage = window.localStorage;
+export const appStateKey = 'spelling-cee-game-state-v2';
 
 export interface GameState {
-  pangram: string;
   words: string[];
   letters: string[];
-  center: string;
 }
 
-interface SavedGameState extends GameState {
-  rng: RngState;
+export interface AppState {
+  games: { [id: string]: GameState };
+  currentGame: string;
+  error?: string | Error;
 }
-
-interface AppState {
-  [id: string]: SavedGameState;
-}
-
-let id: string;
-let appState: AppState;
 
 /**
  * Initialize the app state
  */
-export function init() {
+export function init(): AppState {
+  // Load the game state for the current ID
+  const data = storage.getItem(appStateKey);
+  const appState = data
+    ? (JSON.parse(data) as AppState)
+    : { games: {}, currentGame: '' };
+  initRng();
+
   // Load the game ID and initialize the random number generator
   const queryArgs = new URLSearchParams(window?.location?.search);
-  id = queryArgs.get('id') || getDateString();
+  let currentGame: string;
 
-  // Load the game state for the current ID
-  const data = storage.getItem('spelling-cee-game-state');
-  appState = data ? (JSON.parse(data) as AppState) : {};
+  try {
+    const idArg = queryArgs.get('id');
+    if (idArg) {
+      currentGame = validateGameId(idArg);
+    } else {
+      currentGame = getDailyGameId();
+    }
 
-  // Initialize the random number generator
-  if (appState[id]?.rng) {
-    initRng(appState[id].rng);
-  } else {
-    initRng(id);
+    appState.currentGame = currentGame;
+
+    if (!appState.games) {
+      appState.games = {};
+    }
+
+    if (!appState.games[currentGame]) {
+      appState.games[currentGame] = {
+        letters: currentGame.split(''),
+        words: [],
+      };
+    }
+  } catch (error) {
+    appState.error = error;
   }
 
-  return id;
+  return appState;
 }
 
 /**
- * Get the current game's state
+ * Return the first game ID for a day
  */
-export function getState(gameId?: string) {
-  if (gameId == null) {
-    gameId = id;
-  }
-  appState[gameId] = initGame(appState[gameId]);
-  const { rng, ...state } = appState[gameId];
-  return state;
-}
-
-/**
- * Save the given state for the curent game
- */
-export function saveState(newState: GameState, gameId?: string) {
-  appState = {
-    ...appState,
-    [gameId ?? id]: {
-      ...appState[gameId ?? id],
-      ...newState,
-      rng: saveRng(),
-    },
-  };
-  const data = JSON.stringify(appState);
-  storage.setItem('spelling-cee-game-state', data);
-}
-
-/**
- * Initialize a new game for the current ID
- */
-function initGame(state: Partial<GameState> = {}): SavedGameState {
-  const pangram =
-    state.pangram ??
-    findPangram(
-      wordlist,
-      blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4]
-    );
+function getDailyGameId(): string {
+  const rng = newRng(getDateString());
+  const maxIndex = blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4];
+  const start = rng(maxIndex);
+  const pangram = findPangram(wordlist, start);
   const uniqueLetters = getLetters(pangram);
-  const center = state.center ?? uniqueLetters[random(uniqueLetters.length)];
-  const letters = state.letters ?? permuteLetters(uniqueLetters, center);
-  const words = state.words ?? [];
-  return { pangram, letters, words, center, rng: saveRng() };
+  const randomizedLetters = permute(uniqueLetters).join('');
+  return [
+    randomizedLetters[0],
+    ...randomizedLetters.slice(1).split('').sort(),
+  ].join('');
+}
+
+/**
+ * Validate and normalize a game ID
+ *
+ * A game ID is a set of 7 letters. The first letter is the "center", and the
+ * other 6 letters must appear in alphabetical order.
+ */
+function validateGameId(gameIdOrCenter: string, letters?: string[]) {
+  let id: string;
+  if (letters) {
+    id = [gameIdOrCenter, ...letters].join('').toLowerCase();
+  } else {
+    id = gameIdOrCenter.toLowerCase();
+  }
+
+  if (!/[a-z]{7}/.test(id)) {
+    throw new AppError('ID must be a string of 7 alphabetical characters');
+  }
+
+  return [id[0], ...id.slice(1).split('').sort()].join('');
 }
