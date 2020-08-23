@@ -195,5 +195,6 @@ export function getProgressThresholds(maxScore: number) {
     { label: 'great', threshold: Math.ceil(0.4 * maxScore) },
     { label: 'amazing', threshold: Math.ceil(0.5 * maxScore) },
     { label: 'genius', threshold: Math.ceil(0.7 * maxScore) },
+    { label: 'queen bee', threshold: maxScore },
   ];
 }

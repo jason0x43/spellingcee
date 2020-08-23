@@ -5,10 +5,11 @@ import './Words.css';
 
 interface WordsProps {
   words: string[];
+  validWords: string[];
 }
 
 export default function Words(props: WordsProps) {
-  const { words } = props;
+  const { words, validWords } = props;
   const [alphabetical, setAlphabetical] = useState<boolean>(false);
 
   const handleClick = useCallback(() => {
@@ -20,6 +21,9 @@ export default function Words(props: WordsProps) {
   return (
     <div className="Words">
       <div className="Words-controls">
+        <span className="Words-metrics">
+          {words.length} / {validWords.length} words
+        </span>
         <button onClick={handleClick}>
           {alphabetical ? 'Chronological' : 'Alphabetical'}
         </button>

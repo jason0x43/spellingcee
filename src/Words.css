@@ -8,8 +8,14 @@
 
 .Words-controls {
   display: flex;
-  justify-content: flex-end;
-  padding: 4px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+}
+
+.Words-metrics {
+  font-size: 80%;
+  color: var(--text-color-light);
 }
 
 .Words-grid {

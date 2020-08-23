@@ -158,15 +158,7 @@ function App() {
 
       <div className="App-words">
         <Progress score={score} maxScore={maxScore} />
-        <div className="App-score">
-          <div>
-            {score} / {maxScore} points
-          </div>
-          <div>
-            {words.length} / {validWords.length} words
-          </div>
-        </div>
-        <Words words={words} />
+        <Words words={words} validWords={validWords} />
         <div className="App-gameId">Game ID: {appState.currentGame}</div>
       </div>
     </div>

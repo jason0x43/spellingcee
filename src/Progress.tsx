@@ -20,11 +20,13 @@ export default function Progress(props: ProgressProps) {
           const className = classNames({
             'Progress-threshold': true,
             'Progress-threshold-met': score >= entry.threshold,
-            'Progress-threshold-current': label === entry.label
+            'Progress-threshold-current': label === entry.label,
           });
           return (
             <li key={i}>
-              <span className={className}>{entry.threshold}</span>
+              <span className={className}>
+                {label === entry.label ? score : entry.threshold}
+              </span>
             </li>
           );
         })}
