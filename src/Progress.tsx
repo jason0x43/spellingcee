@@ -23,10 +23,8 @@ export default function Progress(props: ProgressProps) {
             'Progress-threshold-current': label === entry.label,
           });
           return (
-            <li key={i}>
-              <span className={className}>
+            <li key={i} className={className}>
                 {label === entry.label ? score : entry.threshold}
-              </span>
             </li>
           );
         })}

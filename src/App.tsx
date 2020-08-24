@@ -150,16 +150,24 @@ function App() {
 
   return (
     <div className="App">
-      <div className="App-letters">
-        <Message isVisible={messageVisible}>{message}</Message>
-        <Input input={input} pangram={currentGame} isInvalid={messageVisible} />
-        <Letters letters={letters} center={center} />
+      <div className="App-letters-wrapper">
+        <div className="App-letters">
+          <Message isVisible={messageVisible}>{message}</Message>
+          <Input
+            input={input}
+            pangram={currentGame}
+            isInvalid={messageVisible}
+          />
+          <Letters letters={letters} center={center} />
+        </div>
       </div>
 
-      <div className="App-words">
-        <Progress score={score} maxScore={maxScore} />
-        <Words words={words} validWords={validWords} />
-        <div className="App-gameId">Game ID: {appState.currentGame}</div>
+      <div className="App-words-wrapper">
+        <div className="App-words">
+          <Progress score={score} maxScore={maxScore} />
+          <Words words={words} validWords={validWords} />
+          <div className="App-gameId">Game ID: {appState.currentGame}</div>
+        </div>
       </div>
     </div>
   );

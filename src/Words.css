@@ -2,7 +2,7 @@
   border: solid 1px #ccc;
   border-radius: 6px;
   font-weight: var(--font-weight-normal);
-  width: 24em;
+  width: 100%;
 }
 
 .Words-controls {
@@ -74,4 +74,15 @@
 
 .Definition-definition:last-child {
   margin-bottom: 0;
+}
+
+@media screen and (max-width: 800px) {
+  .Words-controls {
+    display: none;
+  }
+
+  .Words-grid {
+    display: flex;
+    padding-bottom: 0;
+  }
 }

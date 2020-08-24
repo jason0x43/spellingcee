@@ -4,30 +4,27 @@
   --font-weight-normal: 400;
   --font-weight-bold: 800;
   --letter-font-size: 24px;
+  --gutter: 32px;
 
   text-align: center;
   color: var(--text-color);
-  padding: 40px;
   display: flex;
   justify-content: stretch;
-  align-items: stretch;
-  width: 800px;
-  margin: 64px auto;
+  align-items: center;
+  height: 100%;
+  width: 100%;
 }
 
 .App > * {
   margin: 8px 0;
 }
 
-.App-debug {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  text-align: left;
-  margin: 0;
-  padding: 16px;
-  color: #999;
-  background: #f7f7f7;
+.App-letters-wrapper {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: var(--gutter);
 }
 
 .App-letters {
@@ -36,13 +33,20 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  flex-grow: 1;
   padding-top: 32px;
+}
+
+.App-words-wrapper {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: var(--gutter);
 }
 
 .App-words {
   display: flex;
   flex-direction: column;
+  width: 400px;
 }
 
 .App-words > * {
@@ -74,4 +78,28 @@
   background: #ffdddd;
   border-radius: 6px;
   margin: 0 auto;
+}
+
+@media screen and (max-width: 800px) {
+  .App {
+    flex-direction: column;
+  }
+
+  .App-letters-wrapper {
+    padding-right: 0;
+    padding-bottom: var(--gutter);
+    flex-direction: column;
+  }
+
+  .App-words-wrapper {
+    padding-left: 0;
+    flex-direction: column;
+    width: 90%;
+    align-items: center;
+  }
+
+  .App-words {
+    width: 100%;
+    max-width: 500px;
+  }
 }

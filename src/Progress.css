@@ -3,6 +3,8 @@
   display: flex;
   align-items: center;
   text-transform: capitalize;
+  justify-content: center;
+  user-select: none;
 }
 
 .Progress-thresholds {
@@ -11,18 +13,18 @@
   margin: 0;
   padding: 0;
   flex-grow: 1;
-}
-
-.Progress-thresholds li {
-  flex-grow: 1;
-  display: flex;
   align-items: center;
-  justify-content: flex-end;
-  cursor: default;
+  justify-content: space-between;
+  margin-left: 1em;
 }
 
 .Progress-thresholds .Progress-threshold {
   --size: 16px;
+  flex-grow: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  cursor: default;
   font-size: calc(var(--size) / 2);
   display: inline-flex;
   align-items: center;
@@ -42,4 +44,18 @@
 .Progress-thresholds .Progress-threshold-current {
   --size: 20px;
   color: black;
+}
+
+@media screen and (max-width: 400px) {
+  .Progress-thresholds {
+    flex-grow: 0;
+  }
+
+  .Progress-thresholds .Progress-threshold {
+    display: none;
+  }
+
+  .Progress-thresholds .Progress-threshold-current {
+    display: flex;
+  }
 }
