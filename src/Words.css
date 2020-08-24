@@ -1,9 +1,8 @@
 .Words {
-  --words-width: 24em;
   border: solid 1px #ccc;
   border-radius: 6px;
   font-weight: var(--font-weight-normal);
-  width: var(--words-width);
+  width: 24em;
 }
 
 .Words-controls {
@@ -25,7 +24,7 @@
 
 .Words-grid {
   display: grid;
-  grid-template-columns: repeat(3, calc(var(--words-width) / 3));
+  grid-template-columns: repeat(3, calc(100% / 3));
   grid-template-rows: repeat(10, 2em);
   grid-auto-flow: column;
   justify-items: stretch;
@@ -38,4 +37,41 @@
 .Words-word {
   padding: 8px 16px;
   text-align: left;
+}
+
+.Words-word-clickable {
+  cursor: pointer;
+}
+
+.Words-word-clickable:hover {
+  text-decoration: underline;
+}
+
+.Definition {
+  font-family: serif;
+  font-size: 20px;
+  padding: 32px;
+}
+
+.Definition-word {
+  font-weight: bold;
+  font-size: 120%;
+}
+
+.Definition-definitions {
+  text-align: left;
+  margin: 0;
+  margin-top: 1em;
+  padding-left: 1.5em;
+  font-style: italic;
+  max-width: 20em;
+}
+
+.Definition-definition {
+  margin-bottom: 1em;
+  font-style: italic;
+}
+
+.Definition-definition:last-child {
+  margin-bottom: 0;
 }
