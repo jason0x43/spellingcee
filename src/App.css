@@ -34,12 +34,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding-top: calc(var(--big-space) * 2);
 }
 
-.App-letters .Message {
+.App .Message {
   position: absolute;
-  top: -30px;
+  top: -48px;
 }
 
 .App-letters .Input {
@@ -59,7 +58,8 @@
   width: 400px;
 }
 
-.App-words > * {
+.App-words .Progress,
+.App-words .Words {
   margin-bottom: 8px;
 }
 
