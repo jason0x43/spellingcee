@@ -56,13 +56,8 @@
 }
 
 .Letters-letter:nth-child(4) {
-  fill: #ff000040;
+  fill: var(--highlight);
 }
-
-.Letters-letter:nth-child(4):hover {
-  fill: #ff000050;
-}
-
 
 .Letters-letter:nth-child(5) {
   transform: translate(80%, 46%);

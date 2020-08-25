@@ -37,8 +37,8 @@
 }
 
 .Progress-thresholds .Progress-threshold-met {
-  background: #ee0;
-  color: #ee0
+  background: var(--highlight);
+  color: var(--highlight);
 }
 
 .Progress-thresholds .Progress-threshold-current {
