@@ -2,6 +2,7 @@ import React, { MouseEventHandler, useCallback, useState } from 'react';
 import classNames from 'classnames';
 import { canGetDefinitions, getDefinition } from './dictionary';
 import { isPangram } from './wordUtil';
+import Button from './Button';
 import Modal from './Modal';
 import './Words.css';
 
@@ -47,9 +48,9 @@ export default function Words(props: WordsProps) {
         <span className="Words-metrics">
           {words.length} / {validWords.length} words
         </span>
-        <button onClick={handleSortClick}>
+        <Button size="small" onClick={handleSortClick}>
           {alphabetical ? 'Chronological' : 'Alphabetical'}
-        </button>
+        </Button>
       </div>
       <div className="Words-grid-wrapper">
         <div className="Words-grid">
