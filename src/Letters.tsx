@@ -1,4 +1,4 @@
-import React, { useCallback, useState, MouseEventHandler } from 'react';
+import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import Button from './Button';
 import './Letters.css';
@@ -46,13 +46,15 @@ export default function Letters(props: LettersProps) {
     indices[otherLetters[i]] = i;
   }
 
-  const handleMouseDown: MouseEventHandler = useCallback(
+  const handleMouseDown = useCallback(
     (event) => {
       // Ignore clicks to the outer SVG; only pay attention to clicks of child
       // nodes
       if (event.target === event.currentTarget) {
         return;
       }
+      // Prevent both touch and click events from firing for a given action
+      event.preventDefault();
       const letter = event.currentTarget.textContent as string;
       onLetter(letter);
       setActiveLetter(letter);
@@ -60,7 +62,9 @@ export default function Letters(props: LettersProps) {
     [onLetter, setActiveLetter]
   );
 
-  const handleMouseUp: MouseEventHandler = useCallback(() => {
+  const handleMouseUp = useCallback((event) => {
+    // Prevent both touch and click events from firing for a given action
+    event.preventDefault();
     setActiveLetter(undefined);
   }, [setActiveLetter]);
 
@@ -78,7 +82,9 @@ export default function Letters(props: LettersProps) {
           className={letterClassName}
           viewBox={`0 0 ${tileSize} ${tileSize}`}
           onMouseDown={handleMouseDown}
+          onTouchStart={handleMouseDown}
           onMouseUp={handleMouseUp}
+          onTouchEnd={handleMouseUp}
         >
           <polygon className={shapeClassName} points={points} />
           <text
@@ -104,7 +110,7 @@ export default function Letters(props: LettersProps) {
       </div>
       <div className="Letters-controls">
         <Button onClick={onDelete}>Delete</Button>
-        <Button onClick={onScramble}>Scramble</Button>
+        <Button onClick={onScramble}>Mix</Button>
         <Button onClick={onEnter}>Enter</Button>
       </div>
     </div>

@@ -3,8 +3,10 @@
   --letter-pad: 8px;
   margin: 0 auto;
   font-weight: var(--font-weight-bold);
-  cursor: pointer;
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .Letters-letters {
@@ -17,10 +19,10 @@
   font-size: calc(var(--letter-size) / 2.8);
   text-transform: capitalize;
   position: absolute;
-  top: calc(100% / 3);
-  left: calc(100% / 3);
-  height: calc(100% / 3);
-  width: calc(100% / 3);
+  top: calc(95% / 3);
+  left: calc(95% / 3);
+  height: calc(110% / 3);
+  width: calc(110% / 3);
   transition: transform 0.5s;
 }
 
@@ -28,6 +30,7 @@
   fill: var(--shaded);
   transform: scale(1);
   transition: all 0.1s;
+  cursor: pointer;
 }
 
 .Letters-letter-shape-active {
@@ -80,4 +83,8 @@
   display: flex;
   justify-content: space-between;
   margin-top: var(--big-space);
+}
+
+.Letters-controls > * {
+  margin: 8px;
 }
