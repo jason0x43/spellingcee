@@ -33,7 +33,7 @@
 }
 
 .Input-invalid {
-  animation: shake 0.75s;
+  animation: shake 0.3s;
 }
 
 @keyframes shake {

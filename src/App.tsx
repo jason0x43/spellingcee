@@ -31,6 +31,7 @@ function App() {
   const gameState = appState.games[currentGame];
   const center = currentGame[0];
   const { letters, words } = gameState;
+  const disabled = messageVisible && input.length > 0;
 
   useEffect(() => {
     if (input.length > 19) {
@@ -67,36 +68,36 @@ function App() {
   const handleLetterPress = useCallback(
     (letter) => {
       // Ignore keystrokes while a message is visible
-      if (messageVisible) {
+      if (disabled) {
         return;
       }
 
       setInput([...input, letter]);
     },
-    [input, messageVisible, setInput]
+    [input, disabled, setInput]
   );
 
   const handleDelete = useCallback(() => {
     // Ignore keystrokes while a message is visible
-    if (messageVisible) {
+    if (disabled) {
       return;
     }
 
     setInput(input.slice(0, input.length - 1));
-  }, [messageVisible, setInput, input]);
+  }, [disabled, setInput, input]);
 
   const handleScramble = useCallback(() => {
     // Ignore keystrokes while a message is visible
-    if (messageVisible) {
+    if (disabled) {
       return;
     }
 
     updateState({ letters: permute(letters) });
-  }, [messageVisible, updateState, letters]);
+  }, [disabled, updateState, letters]);
 
   const handleEnter = useCallback(() => {
     // Ignore keystrokes while a message is visible
-    if (messageVisible) {
+    if (disabled) {
       return;
     }
 
@@ -127,12 +128,12 @@ function App() {
       }
       setInput([]);
     }
-  }, [center, currentGame, input, messageVisible, updateState, validWords, words]);
+  }, [center, currentGame, input, disabled, updateState, validWords, words]);
 
   const handleKeyPress = useCallback(
     (event) => {
       // Ignore keystrokes while a message is visible
-      if (messageVisible) {
+      if (disabled) {
         return;
       }
 
@@ -149,7 +150,7 @@ function App() {
         setInput([...input, event.key]);
       }
     },
-    [handleDelete, handleEnter, handleScramble, input, messageVisible]
+    [handleDelete, handleEnter, handleScramble, input, disabled]
   );
 
   useEffect(() => {
@@ -158,14 +159,18 @@ function App() {
   }, [handleKeyPress]);
 
   useEffect(() => {
+    const timers: number[] = [];
     if (messageVisible) {
-      const timer = setTimeout(() => {
+      timers.push(window.setTimeout(() => {
         setMessageVisible(false);
+      }, messageTimeout));
+      timers.push(window.setTimeout(() => {
         setInput([]);
-        setTimeout(() => setMessageGood(false), 300);
-      }, messageTimeout);
-      return () => clearTimeout(timer);
+      }, 300));
+    } else {
+      timers.push(window.setTimeout(() => setMessageGood(false), 300));
     }
+    return () => timers.forEach(timer => window.clearTimeout(timer));
   }, [messageVisible]);
 
   const score = useMemo(() => computeScore(words), [words]);
