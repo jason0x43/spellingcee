@@ -22,4 +22,9 @@
 
 .GameSelect-games li {
   margin: calc(var(--big-space) * 2);
+  cursor: pointer;
+}
+
+.GameSelect-games li:hover {
+  text-decoration: underline;
 }
