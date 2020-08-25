@@ -4,11 +4,12 @@
   --font-weight-normal: 400;
   --font-weight-bold: 800;
   --letter-font-size: 24px;
-  --gutter: 32px;
   --highlight: #bbddff;
   --highlight-active: #99ccff;
   --shaded: #dddddd;
   --shaded-active: #bbbbbb;
+  --unit: 8px;
+  --big-space: calc(var(--unit) * 2);
 
   text-align: center;
   color: var(--text-color);
@@ -24,7 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: var(--gutter);
+  padding-right: calc(var(--big-space) * 2);
 }
 
 .App-letters {
@@ -33,7 +34,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding-top: 32px;
+  padding-top: calc(var(--big-space) * 2);
 }
 
 .App-letters .Message {
@@ -41,11 +42,15 @@
   top: -30px;
 }
 
+.App-letters .Input {
+  margin-bottom: var(--big-space); 
+}
+
 .App-words-wrapper {
   flex-grow: 1;
   display: flex;
   justify-content: flex-start;
-  padding-left: var(--gutter);
+  padding-left: calc(var(--big-space) * 2);
 }
 
 .App-words {
@@ -59,7 +64,7 @@
 }
 
 .App-words .Progress {
-  margin-bottom: 16px;
+  margin-bottom: var(--big-space);
 }
 
 .App-score {
@@ -87,7 +92,7 @@
 
   .App-letters-wrapper {
     padding-right: 0;
-    padding-bottom: var(--gutter);
+    margin-bottom: var(--big-space);
     flex-direction: column;
   }
 

@@ -75,3 +75,9 @@
 .Letters-letter-5 {
   transform: translate(-80%, 46%);
 }
+
+.Letters-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--big-space);
+}
