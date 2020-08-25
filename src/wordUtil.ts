@@ -172,10 +172,6 @@ export function getProgressLabel(
   score: number,
   maxScore: number
 ): string | undefined {
-  if (score === 0) {
-    return;
-  }
-
   const ratio = score / maxScore;
   let i = 0;
   while (i < thresholds.length && ratio > thresholds[i].threshold) {
