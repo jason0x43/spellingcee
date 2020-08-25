@@ -11,6 +11,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
   overflow: hidden;
+
+  --text-color: #222;
+  --text-color-light: #999;
+  --font-weight-normal: 400;
+  --font-weight-bold: 800;
+  --letter-font-size: 24px;
+  --highlight: #bbddff;
+  --highlight-active: #99ccff;
+  --shaded: #dddddd;
+  --shaded-active: #bbbbbb;
+  --unit: 8px;
+  --big-space: calc(var(--unit) * 2);
 }
 
 code {
