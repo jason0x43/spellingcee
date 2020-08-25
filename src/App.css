@@ -16,10 +16,6 @@
   width: 100%;
 }
 
-.App > * {
-  margin: 8px 0;
-}
-
 .App-letters-wrapper {
   flex-grow: 1;
   display: flex;
@@ -35,6 +31,11 @@
   justify-content: center;
   align-items: center;
   padding-top: 32px;
+}
+
+.App-letters .Message {
+  position: absolute;
+  top: -30px;
 }
 
 .App-words-wrapper {
@@ -63,11 +64,6 @@
   justify-content: space-between;
   padding: 0 8px;
   color: var(--text-color-light);
-}
-
-.Message {
-  position: absolute;
-  top: 0;
 }
 
 .App-gameId {
