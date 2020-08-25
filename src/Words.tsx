@@ -56,6 +56,8 @@ export default function Words(props: WordsProps) {
     displayWords.push('');
   }
 
+  const clickable = canGetDefinitions();
+
   return (
     <div className="Words">
       <div className="Words-controls">
@@ -72,7 +74,7 @@ export default function Words(props: WordsProps) {
             const className = classNames({
               'Words-word': true,
               'Words-word-pangram': isPangram(word),
-              'Words-word-clickable': canGetDefinitions(),
+              'Words-word-clickable': clickable,
             });
             return (
               <div key={i} className={className} onClick={handleWordClick}>
@@ -105,11 +107,21 @@ export default function Words(props: WordsProps) {
             </div>
           ) : (
             <ul className="Words-grid">
-              {words.map((word) => (
-                <li className="Words-word" key={word} onClick={handleWordClick}>
-                  {word}
-                </li>
-              ))}
+              {words.map((word) => {
+                const className = classNames({
+                  'Words-word': true,
+                  'Words-word-clickable': clickable,
+                });
+                return (
+                  <li
+                    className={className}
+                    key={word}
+                    onClick={handleWordClick}
+                  >
+                    {word}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Modal>
