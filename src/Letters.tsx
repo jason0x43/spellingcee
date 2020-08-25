@@ -1,5 +1,6 @@
 import React, { useCallback, useState, MouseEventHandler } from 'react';
 import classNames from 'classnames';
+import Button from './Button';
 import './Letters.css';
 
 interface LettersProps {
@@ -7,6 +8,9 @@ interface LettersProps {
   center: string;
   updating?: boolean;
   onLetter(letter: string): void;
+  onDelete(): void;
+  onScramble(): void;
+  onEnter(): void;
 }
 
 const tileSize = 100;
@@ -28,7 +32,7 @@ const points = (function () {
 type Indices = { [letter: string]: number | 'center' };
 
 export default function Letters(props: LettersProps) {
-  const { letters: lettersProp, center, onLetter } = props;
+  const { letters, center, onLetter, onDelete, onScramble, onEnter } = props;
   const [activeLetter, setActiveLetter] = useState<string>();
 
   const centerIndex = letters.indexOf(center);
@@ -44,6 +48,11 @@ export default function Letters(props: LettersProps) {
 
   const handleMouseDown: MouseEventHandler = useCallback(
     (event) => {
+      // Ignore clicks to the outer SVG; only pay attention to clicks of child
+      // nodes
+      if (event.target === event.currentTarget) {
+        return;
+      }
       const letter = event.currentTarget.textContent as string;
       onLetter(letter);
       setActiveLetter(letter);
@@ -92,6 +101,11 @@ export default function Letters(props: LettersProps) {
       <div className="Letters-letters">
         {renderLetter(center)}
         {renderLetters.map((letter) => renderLetter(letter))}
+      </div>
+      <div className="Letters-controls">
+        <Button onClick={onDelete}>Delete</Button>
+        <Button onClick={onScramble}>Scramble</Button>
+        <Button onClick={onEnter}>Enter</Button>
       </div>
     </div>
   );

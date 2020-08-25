@@ -1,0 +1,15 @@
+.Button {
+  --color: black;
+  border-radius: 6px;
+  border: none;
+  background: var(--highlight);
+  padding: 4px 16px;
+  font-size: inherit;
+  color: var(--color);
+  transition: background 0.1s;
+}
+
+.Button:active {
+  background: var(--highlight-active);
+  color: var(--color);
+}

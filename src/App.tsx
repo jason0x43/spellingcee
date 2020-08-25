@@ -62,6 +62,45 @@ function App() {
     [appState, setAppState]
   );
 
+  const handleLetterPress = useCallback(
+    (letter) => {
+      setInput([...input, letter]);
+    },
+    [input, setInput]
+  );
+
+  const handleDelete = useCallback(() => {
+    setInput(input.slice(0, input.length - 1));
+  }, [setInput, input]);
+
+  const handleScramble = useCallback(() => {
+    updateState({ letters: permute(letters) });
+  }, [updateState, letters]);
+
+  const handleEnter = useCallback(() => {
+    const word = input.join('');
+    const message = validateWord({
+      words,
+      validWords,
+      word,
+      pangram: currentGame,
+      center,
+    });
+
+    if (message) {
+      setMessage(message);
+      setMessageVisible(true);
+    } else {
+      const newWords = [...words, word];
+      updateState({ words: newWords });
+      if (isPangram(word)) {
+        setMessage('Pangram!');
+        setMessageVisible(true);
+      }
+      setInput([]);
+    }
+  }, [center, currentGame, input, updateState, validWords, words]);
+
   const handleKeyPress = useCallback(
     (event) => {
       // Ignore keystrokes while a message is visible
@@ -72,51 +111,18 @@ function App() {
       const { key } = event;
       if (key.length > 1) {
         if (key === 'Backspace') {
-          setInput(input.slice(0, input.length - 1));
+          handleDelete();
         } else if (key === 'Enter') {
-          const word = input.join('');
-          const message = validateWord({
-            words,
-            validWords,
-            word,
-            pangram: currentGame,
-            center,
-          });
-
-          if (message) {
-            setMessage(message);
-            setMessageVisible(true);
-          } else {
-            const newWords = [...words, word];
-            updateState({ words: newWords });
-            if (isPangram(word)) {
-              setMessage('Pangram!');
-              setMessageVisible(true);
-            }
-            setInput([]);
-          }
+          handleEnter();
         }
       } else if (key === ' ') {
-        updateState({ letters: permute(letters) });
+        handleScramble();
       } else if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')) {
         setInput([...input, event.key]);
       }
     },
-    [
-      center,
-      currentGame,
-      input,
-      letters,
-      words,
-      validWords,
-      updateState,
-      messageVisible,
-    ]
+    [handleDelete, handleEnter, handleScramble, input, messageVisible]
   );
-
-  const handleLetterPress = useCallback((letter) => {
-    setInput([...input, letter]);
-  }, [input, setInput]);
 
   useEffect(() => {
     window.addEventListener('keypress', handleKeyPress);
@@ -169,7 +175,14 @@ function App() {
             pangram={currentGame}
             isInvalid={messageVisible}
           />
-          <Letters letters={letters} center={center} onLetter={handleLetterPress} />
+          <Letters
+            letters={letters}
+            center={center}
+            onLetter={handleLetterPress}
+            onDelete={handleDelete}
+            onScramble={handleScramble}
+            onEnter={handleEnter}
+          />
         </div>
       </div>
 
