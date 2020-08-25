@@ -114,6 +114,10 @@ function App() {
     ]
   );
 
+  const handleLetterPress = useCallback((letter) => {
+    setInput([...input, letter]);
+  }, [input, setInput]);
+
   useEffect(() => {
     window.addEventListener('keypress', handleKeyPress);
     return () => window.removeEventListener('keypress', handleKeyPress);
@@ -165,7 +169,7 @@ function App() {
             pangram={currentGame}
             isInvalid={messageVisible}
           />
-          <Letters letters={letters} center={center} />
+          <Letters letters={letters} center={center} onLetter={handleLetterPress} />
         </div>
       </div>
 

@@ -11,6 +11,7 @@ interface LettersProps {
   letters: string[];
   center: string;
   updating?: boolean;
+  onLetter(letter: string): void;
 }
 
 const letterSwapTimeout = 300;
@@ -32,8 +33,9 @@ const points = (function () {
 })();
 
 export default function Letters(props: LettersProps) {
-  const { letters: lettersProp, center } = props;
+  const { letters: lettersProp, center, onLetter } = props;
   const [letters, setLetters] = useState<string[]>(lettersProp);
+  const [activeLetter, setActiveLetter] = useState<string>();
   const [updating, setUpdating] = useState<boolean>(false);
 
   // Start updating, set timer to swap letters
@@ -54,8 +56,17 @@ export default function Letters(props: LettersProps) {
     'Letters-updating': updating,
   });
 
-  const handleClick: MouseEventHandler = useCallback((event) => {
-    console.log(event.currentTarget);
+  const handleMouseDown: MouseEventHandler = useCallback(
+    (event) => {
+      const letter = event.currentTarget.textContent as string;
+      onLetter(letter);
+      setActiveLetter(letter);
+    },
+    [onLetter]
+  );
+
+  const handleMouseUp: MouseEventHandler = useCallback(() => {
+    setActiveLetter(undefined);
   }, []);
 
   const centerIndex = letters.indexOf(center);
@@ -71,32 +82,39 @@ export default function Letters(props: LettersProps) {
 
   return (
     <div className={className}>
-      {renderLetters.map((letter) => {
-        const className = classNames({
-          'Letters-letter': true,
-          'Letters-letter-center': letter === center,
-        });
+      <div className="Letters-letters">
+        {renderLetters.map((letter) => {
+          const letterClassName = classNames({
+            'Letters-letter': true,
+            'Letters-letter-center': letter === center,
+          });
+          const shapeClassName = classNames({
+            'Letters-letter-shape': true,
+            'Letters-letter-shape-active': letter === activeLetter,
+          });
 
-        return (
-          <svg
-            key={letter}
-            className={className}
-            viewBox={`0 0 ${tileSize} ${tileSize}`}
-            onClick={handleClick}
-          >
-            <polygon points={points} />
-            <text
-              x="50%"
-              y="50%"
-              dy="3%"
-              dominantBaseline="middle"
-              textAnchor="middle"
+          return (
+            <svg
+              key={letter}
+              className={letterClassName}
+              viewBox={`0 0 ${tileSize} ${tileSize}`}
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
             >
-              {letter}
-            </text>
-          </svg>
-        );
-      })}
+              <polygon className={shapeClassName} points={points} />
+              <text
+                x="50%"
+                y="50%"
+                dy="3%"
+                dominantBaseline="middle"
+                textAnchor="middle"
+              >
+                {letter}
+              </text>
+            </svg>
+          );
+        })}
+      </div>
     </div>
   );
 }

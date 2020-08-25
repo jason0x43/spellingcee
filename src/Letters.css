@@ -1,13 +1,16 @@
 .Letters {
   --letter-size: 84px;
   --letter-pad: 8px;
-  position: relative;
-  width: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
-  height: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
   margin: 0 auto;
   font-weight: var(--font-weight-bold);
   cursor: pointer;
   user-select: none;
+}
+
+.Letters-letters {
+  position: relative;
+  width: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
+  height: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
 }
 
 .Letters-letter {
@@ -22,12 +25,14 @@
   transition: all ease-in-out 0.3s;
 }
 
-.Letters-letter:active {
-  transform: scale(0.8);
+.Letters-letter-shape {
+  transform: scale(1);
+  transition: all 0.1s;
 }
 
-.Letters-letter:hover {
-  fill: #c9c9c9;
+.Letters-letter-shape-active {
+  transform: scale(0.8);
+  transform-origin: center center;
 }
 
 .Letters-letter text {
