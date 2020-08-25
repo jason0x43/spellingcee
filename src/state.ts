@@ -31,13 +31,15 @@ export function init(): AppState {
 
   // Load the game ID and initialize the random number generator
   const queryArgs = new URLSearchParams(window?.location?.search);
-  let currentGame: string;
+  let currentGame = appState.currentGame;
 
   try {
     const idArg = queryArgs.get('id');
     if (idArg) {
       currentGame = validateGameId(idArg);
-    } else {
+    }
+
+    if (!currentGame) {
       currentGame = getDailyGameId();
     }
 

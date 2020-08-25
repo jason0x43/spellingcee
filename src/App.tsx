@@ -11,6 +11,7 @@ import { GameState } from './state';
 import { useAppState } from './hooks';
 import wordlist from './wordlist';
 import Input from './Input';
+import GameSelect from './GameSelect';
 import Message from './Message';
 import Letters from './Letters';
 import Progress from './Progress';
@@ -218,7 +219,7 @@ function App() {
         <div className="App-words">
           <Progress score={score} maxScore={maxScore} />
           <Words words={words} validWords={validWords} />
-          <div className="App-gameId">Game ID: {appState.currentGame}</div>
+          <GameSelect/>
         </div>
       </div>
     </div>

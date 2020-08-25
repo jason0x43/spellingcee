@@ -62,10 +62,6 @@
   color: var(--text-color-light);
 }
 
-.App-gameId {
-  color: var(--text-color-light);
-}
-
 .App-error {
   padding: 16px;
   background: #ffdddd;

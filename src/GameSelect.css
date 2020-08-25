@@ -1,0 +1,25 @@
+.GameSelect {
+  color: var(--text-color-light);
+}
+
+.GameSelect-id {
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  color: inherit;
+  background: none;
+  font-size: 18px;
+  font-family: monospace;
+}
+
+.GameSelect-games {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  font-size: 120%;
+  font-family: monospace;
+}
+
+.GameSelect-games li {
+  margin: calc(var(--big-space) * 2);
+}
