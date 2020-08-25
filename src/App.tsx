@@ -23,6 +23,7 @@ function App() {
   const [appState, setAppState] = useAppState();
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
+  const [messageGood, setMessageGood] = useState<boolean>(false);
   const [input, setInput] = useState<string[]>([]);
 
   const { currentGame } = appState;
@@ -89,12 +90,18 @@ function App() {
 
     if (message) {
       setMessage(message);
+      setMessageGood(false);
       setMessageVisible(true);
     } else {
       const newWords = [...words, word];
       updateState({ words: newWords });
       if (isPangram(word)) {
         setMessage('Pangram!');
+        setMessageGood(false);
+        setMessageVisible(true);
+      } else {
+        setMessage('Great!');
+        setMessageGood(true);
         setMessageVisible(true);
       }
       setInput([]);
@@ -134,6 +141,7 @@ function App() {
       const timer = setTimeout(() => {
         setMessageVisible(false);
         setInput([]);
+        setTimeout(() => setMessageGood(false), 300);
       }, messageTimeout);
       return () => clearTimeout(timer);
     }
@@ -169,11 +177,11 @@ function App() {
     <div className="App">
       <div className="App-letters-wrapper">
         <div className="App-letters">
-          <Message isVisible={messageVisible}>{message}</Message>
+          <Message isVisible={messageVisible} isGood={messageGood}>{message}</Message>
           <Input
             input={input}
             pangram={currentGame}
-            isInvalid={messageVisible}
+            isInvalid={messageVisible && !messageGood}
           />
           <Letters
             letters={letters}

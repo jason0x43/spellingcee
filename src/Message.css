@@ -2,13 +2,19 @@
   margin: 8px 0;
   display: flex;
   padding: 8px 16px;
-  background: #ee7;
   border-radius: 6px;
   opacity: 0;
-  transition: opacity 0.25s;
+  transition: opacity, 0.25s, transform 0.5s;
   align-items: center;
 }
 
 .Message-visible {
   opacity: 1;
+  background: #ee7;
+}
+
+.Message-good {
+  background: none;
+  border: solid 1px #ccc;
+  transform: translateY(-10px);
 }
