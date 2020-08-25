@@ -12,6 +12,7 @@ export default function Input(props: InputProps) {
   const { input, pangram, isInvalid } = props;
   const className = classNames({
     Input: true,
+    [`Input-${input.length}`]: true,
     'Input-invalid': isInvalid,
   });
   return (

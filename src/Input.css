@@ -1,6 +1,7 @@
 .Input {
   display: flex;
   justify-content: center;
+  align-items: center;
   font-size: var(--letter-font-size);
   height: 1.5em;
   font-weight: var(--font-weight-bold);
@@ -12,7 +13,7 @@
   animation: var(--blink);
   -webkit-animation: var(--blink);
 
-  height: 80%;
+  height: 90%;
   width: 2px;
   background: #9999ee;
 }
@@ -23,6 +24,8 @@
 
 .Input-letter {
   margin-right: 4px;
+  display: flex;
+  align-items: center;
 }
 
 .Input-letter-invalid {
@@ -45,4 +48,42 @@
   80% { transform: translateX(-3px); }
   90% { transform: translateX(0px); }
   100% { transform: translateX(0px); }
+}
+
+.Input-11 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.95);
+}
+.Input-12 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.90);
+}
+.Input-13 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.85);
+}
+.Input-14 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.80);
+  margin-right: 3px;
+}
+.Input-15 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.75);
+  margin-right: 3px;
+}
+.Input-16 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.70);
+  margin-right: 3px;
+}
+.Input-17 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.65);
+  margin-right: 2px;
+}
+.Input-18 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.60);
+  margin-right: 2px;
+}
+.Input-19 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.55);
+  margin-right: 1px;
+}
+.Input-20 .Input-letter {
+  font-size: calc(var(--letter-font-size) * 0.55);
+  margin-right: 1px;
 }
