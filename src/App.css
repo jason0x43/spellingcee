@@ -5,7 +5,10 @@
   --font-weight-bold: 800;
   --letter-font-size: 24px;
   --gutter: 32px;
-  --highlight: #dddd33;
+  --highlight: #bbddff;
+  --highlight-active: #99ccff;
+  --shaded: #dddddd;
+  --shaded-active: #bbbbbb;
 
   text-align: center;
   color: var(--text-color);

@@ -26,12 +26,14 @@
 }
 
 .Letters-letter-shape {
+  fill: var(--shaded);
   transform: scale(1);
   transition: all 0.1s;
 }
 
 .Letters-letter-shape-active {
   transform: scale(0.8);
+  fill: var(--shaded-active);
   transform-origin: center center;
 }
 
