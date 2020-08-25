@@ -22,3 +22,20 @@
   padding: 4px 8px;
   border-radius: 4px;
 }
+
+.Button-link {
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+.Button-link:hover {
+  text-decoration: underline;
+}
+
+.Button-link:active {
+  background: none;
+  color: inherit;
+}
