@@ -36,7 +36,7 @@
 
 @media screen and (max-width: 800px) {
   .Modal {
-    max-width: 80%;
+    max-width: 90%;
     max-height: 80%;
     overflow: auto;
   }
