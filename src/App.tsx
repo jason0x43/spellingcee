@@ -65,20 +65,40 @@ function App() {
 
   const handleLetterPress = useCallback(
     (letter) => {
+      // Ignore keystrokes while a message is visible
+      if (messageVisible) {
+        return;
+      }
+
       setInput([...input, letter]);
     },
-    [input, setInput]
+    [input, messageVisible, setInput]
   );
 
   const handleDelete = useCallback(() => {
+    // Ignore keystrokes while a message is visible
+    if (messageVisible) {
+      return;
+    }
+
     setInput(input.slice(0, input.length - 1));
-  }, [setInput, input]);
+  }, [messageVisible, setInput, input]);
 
   const handleScramble = useCallback(() => {
+    // Ignore keystrokes while a message is visible
+    if (messageVisible) {
+      return;
+    }
+
     updateState({ letters: permute(letters) });
-  }, [updateState, letters]);
+  }, [messageVisible, updateState, letters]);
 
   const handleEnter = useCallback(() => {
+    // Ignore keystrokes while a message is visible
+    if (messageVisible) {
+      return;
+    }
+
     const word = input.join('');
     const message = validateWord({
       words,
@@ -106,7 +126,7 @@ function App() {
       }
       setInput([]);
     }
-  }, [center, currentGame, input, updateState, validWords, words]);
+  }, [center, currentGame, input, messageVisible, updateState, validWords, words]);
 
   const handleKeyPress = useCallback(
     (event) => {
