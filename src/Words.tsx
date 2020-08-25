@@ -1,7 +1,7 @@
 import React, {
+  Fragment,
   MouseEventHandler,
   useCallback,
-  useEffect,
   useState,
 } from 'react';
 import classNames from 'classnames';
@@ -58,8 +58,8 @@ export default function Words(props: WordsProps) {
 
   const clickable = canGetDefinitions();
 
-  return (
-    <div className="Words">
+  const wordsContent = (
+    <Fragment>
       <div className="Words-controls">
         <span className="Words-metrics">
           {words.length} / {validWords.length} words
@@ -91,6 +91,12 @@ export default function Words(props: WordsProps) {
           ▲
         </Button>
       </div>
+    </Fragment>
+  );
+
+  return (
+    <div className="Words">
+      {wordsContent}
 
       {(definition || showWords) && (
         <Modal onHide={handleHideModal}>
@@ -106,23 +112,7 @@ export default function Words(props: WordsProps) {
               </ol>
             </div>
           ) : (
-            <ul className="Words-grid">
-              {words.map((word) => {
-                const className = classNames({
-                  'Words-word': true,
-                  'Words-word-clickable': clickable,
-                });
-                return (
-                  <li
-                    className={className}
-                    key={word}
-                    onClick={handleWordClick}
-                  >
-                    {word}
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="Words-modal">{wordsContent}</div>
           )}
         </Modal>
       )}

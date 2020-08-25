@@ -86,11 +86,35 @@
 }
 
 @media screen and (max-width: 800px) {
-  .Words-controls {
+  .Words-modal {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 100vw;
+  }
+
+  .Words-modal .Words-controls {
+    padding-top: 0;
+    flex-shrink: 0;
+  }
+
+  .Words-modal .Words-grid-wrapper {
+    width: 80vw;
+    overflow: hidden;
+    overflow-y: auto;
+  }
+
+  .Words-modal .Words-grid {
+    grid-template-columns: repeat(2, calc(100% / 2));
+    grid-template-rows: repeat(10, 2em);
+    grid-auto-flow: row;
+  }
+
+  .Words .Words-controls {
     display: none;
   }
 
-  .Words-grid-wrapper .Words-grid {
+  .Words .Words-grid-wrapper .Words-grid {
     display: flex;
     align-items: center;
     padding-bottom: 0;
@@ -98,18 +122,16 @@
     overflow-x: hidden;
   }
 
-  .Words-grid-wrapper .Words-word {
+  .Words .Words-grid-wrapper .Words-word {
     padding: 8px;
   }
 
-  .Words-grid {
-    grid-template-columns: repeat(2, calc(100% / 2));
-    grid-auto-flow: row;
+  .Words .Words-grid {
     overflow-x: hidden;
     overflow-y: auto;
   }
 
-  .Words-show-list {
+  .Words .Words-show-list {
     display: block;
     position: absolute;
     right: 0;
@@ -120,7 +142,7 @@
     box-shadow: 0 0 8px 8px white;
   }
 
-  .Words-show-list:active {
+  .Words .Words-show-list:active {
     background: white;
   }
 }
