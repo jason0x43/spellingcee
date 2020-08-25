@@ -33,3 +33,11 @@
 .Modal-content {
   padding: 1em;
 }
+
+@media screen and (max-width: 800px) {
+  .Modal {
+    max-width: 80%;
+    max-height: 80%;
+    overflow: auto;
+  }
+}
