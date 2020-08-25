@@ -30,6 +30,13 @@ function App() {
   const center = currentGame[0];
   const { letters, words } = gameState;
 
+  useEffect(() => {
+    if (input.length > 19) {
+      setMessage('Word too long');
+      setMessageVisible(true);
+    }
+  }, [input, setMessage, setMessageVisible]);
+
   const validWords = useMemo(() => {
     return findValidWords({
       allWords: wordlist,
