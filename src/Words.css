@@ -3,6 +3,7 @@
   border-radius: 6px;
   font-weight: var(--font-weight-normal);
   width: 100%;
+  overflow: hidden;
 }
 
 .Words-controls {
@@ -17,12 +18,15 @@
   color: var(--text-color-light);
 }
 
-.Words-grid {
-  overflow-x: scroll;
-  padding-bottom: 1em;
+.Words-grid-wrapper {
+  position: relative;
 }
 
 .Words-grid {
+  list-style-type: none;
+  overflow-x: auto;
+  padding: 0;
+  padding-bottom: 1em;
   display: grid;
   grid-template-columns: repeat(3, calc(100% / 3));
   grid-template-rows: repeat(10, 2em);
@@ -35,6 +39,7 @@
 }
 
 .Words-word {
+  display: block;
   padding: 8px var(--big-space);
   text-align: left;
 }
@@ -45,6 +50,10 @@
 
 .Words-word-clickable:hover {
   text-decoration: underline;
+}
+
+.Words-show-list {
+  display: none;
 }
 
 .Definition {
@@ -81,12 +90,37 @@
     display: none;
   }
 
-  .Words-grid {
+  .Words-grid-wrapper .Words-grid {
     display: flex;
+    align-items: center;
     padding-bottom: 0;
+    min-height: 2.3em;
+    overflow-x: hidden;
   }
 
-  .Words-word {
+  .Words-grid-wrapper .Words-word {
     padding: 8px;
+  }
+
+  .Words-grid {
+    grid-template-columns: repeat(2, calc(100% / 2));
+    grid-auto-flow: row;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .Words-show-list {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    background: white;
+    border: none;
+    box-shadow: 0 0 8px 8px white;
+  }
+
+  .Words-show-list:active {
+    background: white;
   }
 }

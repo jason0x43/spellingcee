@@ -1,4 +1,9 @@
-import React, { MouseEventHandler, useCallback, useState } from 'react';
+import React, {
+  MouseEventHandler,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import classNames from 'classnames';
 import { canGetDefinitions, getDefinition } from './dictionary';
 import { isPangram } from './wordUtil';
@@ -18,8 +23,9 @@ type DefinedWord = {
 
 export default function Words(props: WordsProps) {
   const { words, validWords } = props;
-  const [alphabetical, setAlphabetical] = useState<boolean>(false);
+  const [alphabetical, setAlphabetical] = useState(false);
   const [definition, setDefinition] = useState<DefinedWord>();
+  const [showWords, setShowWords] = useState(false);
 
   const handleSortClick = useCallback(() => {
     setAlphabetical(!alphabetical);
@@ -38,9 +44,17 @@ export default function Words(props: WordsProps) {
 
   const handleHideModal = useCallback(() => {
     setDefinition(undefined);
+    setShowWords(false);
   }, [setDefinition]);
 
+  const handleShowWords = useCallback(() => {
+    setShowWords(true);
+  }, [setShowWords]);
+
   const displayWords = alphabetical ? [...words].sort() : [...words].reverse();
+  if (displayWords.length === 0) {
+    displayWords.push('');
+  }
 
   return (
     <div className="Words">
@@ -67,19 +81,37 @@ export default function Words(props: WordsProps) {
             );
           })}
         </div>
+        <Button
+          className="Words-show-list"
+          size="small"
+          onClick={handleShowWords}
+        >
+          ▲
+        </Button>
       </div>
-      {definition && (
+
+      {(definition || showWords) && (
         <Modal onHide={handleHideModal}>
-          <div className="Definition">
-            <div className="Definition-word">{definition.word}</div>
-            <ol className="Definition-definitions">
-              {definition.definition.map((def, i) => (
-                <li className="Definition-definition" key={i}>
-                  {def}
+          {definition ? (
+            <div className="Definition">
+              <div className="Definition-word">{definition.word}</div>
+              <ol className="Definition-definitions">
+                {definition.definition.map((def, i) => (
+                  <li className="Definition-definition" key={i}>
+                    {def}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : (
+            <ul className="Words-grid">
+              {words.map((word) => (
+                <li className="Words-word" key={word} onClick={handleWordClick}>
+                  {word}
                 </li>
               ))}
-            </ol>
-          </div>
+            </ul>
+          )}
         </Modal>
       )}
     </div>
