@@ -40,7 +40,7 @@
 }
 
 .Letters-letter text {
-  fill: black;
+  fill: var(--text-color);
 }
 
 .Letters-letter-center .Letters-letter-shape {

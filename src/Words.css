@@ -1,5 +1,5 @@
 .Words {
-  border: solid 1px #ccc;
+  border: solid 1px var(--shaded);
   border-radius: 6px;
   font-weight: var(--font-weight-normal);
   width: 100%;
@@ -137,9 +137,10 @@
     right: 0;
     top: 0;
     height: 100%;
-    background: white;
+    margin: 0;
+    background: rgb(var(--background-rgb));
     border: none;
-    box-shadow: 0 0 8px 8px white;
+    box-shadow: -8px 0 8px  rgb(var(--background-rgb));
   }
 
   .Words .Words-show-list:active {

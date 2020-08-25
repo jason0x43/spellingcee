@@ -1,9 +1,9 @@
 .Button {
   --color: var(--text-color);
-  --border-color: #ddd;
+  --border-color: var(--shaded-active);
+  background: var(--shaded);
   border-radius: 8px;
   border: solid 1px var(--border-color);
-  background: #eee;
   padding: 16px 24px;
   font-size: 120%;
   color: var(--color);
@@ -13,7 +13,7 @@
 }
 
 .Button:active {
-  background: var(--border-color);
+  background: var(--shaded-active);
   color: var(--color);
 }
 

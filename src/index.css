@@ -12,6 +12,7 @@ body {
   height: 100%;
   overflow: hidden;
 
+  --background-rgb: 255, 255, 255;
   --text-color: #222;
   --text-color-light: #999;
   --font-weight-normal: 400;
@@ -23,6 +24,8 @@ body {
   --shaded-active: #bbbbbb;
   --unit: 8px;
   --big-space: calc(var(--unit) * 2);
+
+  background: rgb(var(--background-rgb));
 }
 
 code {
@@ -32,4 +35,21 @@ code {
 
 #root {
   height: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    --background-rgb: 17, 17, 17;
+    --text-color: #aaa;
+    --text-color-light: #777;
+    --font-weight-normal: 400;
+    --font-weight-bold: 800;
+    --letter-font-size: 24px;
+    --highlight: #336677;
+    --highlight-active: #447788;
+    --shaded: #555555;
+    --shaded-active: #777777;
+    --unit: 8px;
+    --big-space: calc(var(--unit) * 2);
+  }
 }

@@ -6,11 +6,12 @@
   opacity: 0;
   transition: opacity, 0.25s, transform 0.5s;
   align-items: center;
+  background: var(--highlight);
+  color: var(--text-color);
 }
 
 .Message-visible {
   opacity: 1;
-  background: #ee7;
 }
 
 .Message-good {
