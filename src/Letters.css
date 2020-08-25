@@ -14,7 +14,6 @@
 }
 
 .Letters-letter {
-  fill: #ddd;
   font-size: calc(var(--letter-size) / 2.8);
   text-transform: capitalize;
   position: absolute;
@@ -22,7 +21,7 @@
   left: calc(100% / 3);
   height: calc(100% / 3);
   width: calc(100% / 3);
-  transition: all ease-in-out 0.3s;
+  transition: transform 0.5s;
 }
 
 .Letters-letter-shape {
@@ -32,48 +31,47 @@
 }
 
 .Letters-letter-shape-active {
-  transform: scale(0.8);
   fill: var(--shaded-active);
+  transform: scale(0.9);
   transform-origin: center center;
 }
 
 .Letters-letter text {
-  transition: opacity 0.3s;
   fill: black;
 }
 
-.Letters-updating .Letters-letter text {
-  opacity: 0;
-}
-
-.Letters-updating .Letters-letter-center text {
-  opacity: 1;
-}
-
-.Letters-letter:nth-child(1) {
-  transform: translate(-80%, -46%);
-}
-
-.Letters-letter:nth-child(2) {
-  transform: translate(0%, -92%);
-}
-
-.Letters-letter:nth-child(3) {
-  transform: translate(80%, -46%);
-}
-
-.Letters-letter:nth-child(4) {
+.Letters-letter-center .Letters-letter-shape {
   fill: var(--highlight);
 }
 
-.Letters-letter:nth-child(5) {
+.Letters-letter-center .Letters-letter-shape-active {
+  fill: var(--highlight-active);
+}
+
+.Letters-letter-0 {
+  transform: translate(-80%, -46%);
+}
+
+.Letters-letter-1 {
+  transform: translate(0%, -92%);
+}
+
+.Letters-letter-2 {
+  transform: translate(80%, -46%);
+}
+
+.Letters-letter-center {
+  fill: var(--highlight);
+}
+
+.Letters-letter-3 {
   transform: translate(80%, 46%);
 }
 
-.Letters-letter:nth-child(6) {
+.Letters-letter-4 {
   transform: translate(0%, 92%);
 }
 
-.Letters-letter:nth-child(7) {
+.Letters-letter-5 {
   transform: translate(-80%, 46%);
 }
