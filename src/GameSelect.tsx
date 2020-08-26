@@ -36,11 +36,37 @@ export default function GameSelect() {
       {selecting && (
         <Modal onHide={handleHideModal}>
           <ul className="GameSelect-games">
-            {Object.keys(appState.games).map((game) => (
-              <li key={game}>
-                <span onClick={handleGameSelect}>{game}</span>
-              </li>
-            ))}
+            {Object.keys(appState.games).map((game) => {
+              const gameState = appState.games[game];
+              return (
+                <li
+                  className="GameSelect-game"
+                  key={game}
+                  data-game-id={game}
+                  onClick={handleGameSelect}
+                >
+                  <div className="GameSelect-id">{game}</div>
+                  <dl className="GameSelect-info">
+                    <div>
+                      <dt>Last played</dt>
+                      <dd>
+                        {new Date(gameState.lastPlayed).toLocaleDateString()}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Difficulty</dt>
+                      <dd>{gameState.difficulty}</dd>
+                    </div>
+                    <div>
+                      <dt>Words</dt>
+                      <dd>
+                        {gameState.words.length} / {gameState.totalWords}
+                      </dd>
+                    </div>
+                  </dl>
+                </li>
+              );
+            })}
           </ul>
         </Modal>
       )}
