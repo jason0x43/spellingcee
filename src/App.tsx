@@ -153,16 +153,20 @@ function App() {
   useEffect(() => {
     const timers: number[] = [];
     if (messageVisible) {
-      timers.push(window.setTimeout(() => {
-        setMessageVisible(false);
-      }, messageTimeout));
-      timers.push(window.setTimeout(() => {
-        setInput([]);
-      }, 300));
+      timers.push(
+        window.setTimeout(() => {
+          setMessageVisible(false);
+        }, messageTimeout)
+      );
+      timers.push(
+        window.setTimeout(() => {
+          setInput([]);
+        }, 300)
+      );
     } else {
       timers.push(window.setTimeout(() => setMessageGood(false), 300));
     }
-    return () => timers.forEach(timer => window.clearTimeout(timer));
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [messageVisible]);
 
   const score = useMemo(() => computeScore(words), [words]);
@@ -195,7 +199,9 @@ function App() {
     <div className="App">
       <div className="App-letters-wrapper">
         <div className="App-letters">
-          <Message isVisible={messageVisible} isGood={messageGood}>{message}</Message>
+          <Message isVisible={messageVisible} isGood={messageGood}>
+            {message}
+          </Message>
           <Input
             input={input}
             pangram={currentGame}
@@ -216,7 +222,7 @@ function App() {
         <div className="App-words">
           <Progress score={score} maxScore={maxScore} />
           <Words words={words} validWords={validWords} />
-          <GameSelect/>
+          <GameSelect />
         </div>
       </div>
     </div>
