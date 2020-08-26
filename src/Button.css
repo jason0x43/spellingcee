@@ -1,11 +1,10 @@
 .Button {
-  --color: var(--text-color);
-  --border-color: var(--shaded-active);
+  --color: var(--text-color-bright);
   background: var(--shaded);
   border-radius: 8px;
-  border: solid 1px var(--border-color);
+  border: none;
   padding: 16px 24px;
-  font-size: 120%;
+  font-size: var(--font-size);
   color: var(--color);
   transition: background 0.1s;
   cursor: pointer;
@@ -18,7 +17,7 @@
 }
 
 .Button-small {
-  font-size: 73%;
+  font-size: var(--font-size-small);
   padding: 4px 8px;
   border-radius: 4px;
 }
@@ -29,10 +28,11 @@
   background: none;
   padding: 0;
   border: none;
+  border-radius: 0;
 }
 
 .Button-link:hover {
-  text-decoration: underline;
+  color: var(--text-color-bright);
 }
 
 .Button-link:active {

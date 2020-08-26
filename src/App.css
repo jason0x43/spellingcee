@@ -59,7 +59,7 @@
   display: flex;
   justify-content: space-between;
   padding: 0 8px;
-  color: var(--text-color-light);
+  color: var(--text-color-dim);
 }
 
 .App-error {

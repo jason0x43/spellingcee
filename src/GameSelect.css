@@ -1,5 +1,5 @@
 .GameSelect {
-  color: var(--text-color-light);
+  color: var(--text-color-dim);
 }
 
 .GameSelect-id {
@@ -9,7 +9,8 @@
   color: inherit;
   background: none;
   font-size: 18px;
-  font-family: monospace;
+  text-align: center;
+  letter-spacing: var(--unit);
 }
 
 .GameSelect-games {
@@ -17,14 +18,38 @@
   margin: 0;
   padding: 0;
   font-size: 120%;
-  font-family: monospace;
 }
 
-.GameSelect-games li {
-  margin: calc(var(--big-space) * 2);
+.GameSelect-game {
+  margin: calc(var(--big-space));
   cursor: pointer;
+  border: solid 1px var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--unit) calc(var(--unit) * 2);
+  background: var(--shaded);
 }
 
-.GameSelect-games li:hover {
-  text-decoration: underline;
+.GameSelect-game:hover {
+  background: var(--shaded-hover);
+}
+
+.GameSelect-game:active {
+  background: var(--shaded);
+}
+
+.GameSelect-info {
+  font-size: var(--font-size-small);
+}
+
+.GameSelect-info > div {
+  display: flex;
+}
+
+.GameSelect-info dt {
+  width: 7em;
+  color: var(--text-color-dim);
+}
+
+.GameSelect-info dd {
+  margin: 0;
 }

@@ -1,6 +1,6 @@
 .Words {
-  border: solid 1px var(--shaded);
-  border-radius: 6px;
+  border: solid 1px var(--border-color);
+  border-radius: var(--border-radius);
   font-weight: var(--font-weight-normal);
   width: 100%;
   overflow: hidden;
@@ -10,12 +10,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
+  padding: var(--unit);
 }
 
 .Words-metrics {
-  font-size: 80%;
-  color: var(--text-color-light);
+  font-size: var(--font-size-small);
+  color: var(--text-color-dim);
 }
 
 .Words-grid-wrapper {
@@ -26,7 +26,7 @@
   list-style-type: none;
   overflow-x: auto;
   padding: 0;
-  padding-bottom: 1em;
+  padding-bottom: var(--unit);
   display: grid;
   grid-template-columns: repeat(3, calc(100% / 3));
   grid-template-rows: repeat(10, 2em);
@@ -40,7 +40,7 @@
 
 .Words-word {
   display: block;
-  padding: 8px var(--big-space);
+  padding: var(--unit) var(--big-space);
   text-align: left;
 }
 
@@ -58,13 +58,13 @@
 
 .Definition {
   font-family: serif;
-  font-size: 20px;
-  padding: 32px;
+  font-size: var(--font-size-normal);
+  padding: calc(var(--big-space) * 2);
 }
 
 .Definition-word {
-  font-weight: bold;
-  font-size: 120%;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-large);
 }
 
 .Definition-definitions {
