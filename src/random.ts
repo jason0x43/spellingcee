@@ -1,8 +1,8 @@
-import seedrandom, { prng } from 'seedrandom';
+import seedrandom from 'seedrandom';
 
 let rng: RandomNumberGenerator;
 
-export function initRng(seed?: string | null) {
+export function initRng(seed?: string) {
   rng = newRng(seed);
 }
 
@@ -17,18 +17,8 @@ export interface RandomNumberGenerator {
   (max?: number): number;
 }
 
-export function newRng(
-  seed?: string | null
-): RandomNumberGenerator {
-  let rng: prng;
-
-  if (typeof seed === 'string') {
-    rng = seedrandom(seed, { state: true });
-  } else if (seed && typeof seed === 'object') {
-    rng = seedrandom('', seed);
-  } else {
-    rng = seedrandom('', { state: true });
-  }
+export function newRng(seed?: string): RandomNumberGenerator {
+  const rng = seedrandom(seed);
 
   function random(max?: number): number {
     const r = rng();

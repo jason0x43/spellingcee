@@ -14,10 +14,12 @@
 }
 
 .GameSelect-games {
+  max-height: 75vh;
   list-style-type: none;
   margin: 0;
   padding: 0;
   font-size: 120%;
+  overflow-y: auto;
 }
 
 .GameSelect-game {
@@ -35,6 +37,10 @@
 
 .GameSelect-game:active {
   background: var(--shaded);
+}
+
+.GameSelect-new-game {
+  text-align: center;
 }
 
 .GameSelect-info {

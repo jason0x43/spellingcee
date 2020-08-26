@@ -5,7 +5,7 @@ import Modal from './Modal';
 import './GameSelect.css';
 
 export default function GameSelect() {
-  const [appState, setAppState] = useAppState();
+  const [appState, setAppState, , addGame] = useAppState();
   const [selecting, setSelecting] = useState(false);
 
   const handleClick = useCallback(() => {
@@ -19,13 +19,17 @@ export default function GameSelect() {
   const handleGameSelect: MouseEventHandler = useCallback(
     (event) => {
       const gameId = event.currentTarget.getAttribute('data-game-id')!;
-      setAppState({
-        ...appState,
-        currentGame: gameId,
-      });
+      if (gameId) {
+        setAppState({
+          ...appState,
+          currentGame: gameId,
+        });
+      } else {
+        addGame();
+      }
       setSelecting(false);
     },
-    [appState, setAppState]
+    [addGame, appState, setAppState]
   );
 
   return (
@@ -36,6 +40,13 @@ export default function GameSelect() {
       {selecting && (
         <Modal onHide={handleHideModal}>
           <ul className="GameSelect-games">
+            <li
+              className="GameSelect-game GameSelect-new-game"
+              role="button"
+              onClick={handleGameSelect}
+            >
+              +
+            </li>
             {Object.keys(appState.games).map((game) => {
               const gameState = appState.games[game];
               return (

@@ -31,7 +31,8 @@ export interface AppState {
 export default function useAppState(): [
   AppState,
   Dispatch<AppState>,
-  Dispatch<GameState>
+  Dispatch<GameState>,
+  Dispatch<void>
 ] {
   const [state, setState] = useState<AppState>(init());
   const id = useListenerId();
@@ -63,13 +64,45 @@ export default function useAppState(): [
     [state, setAppState]
   );
 
+  // Update the current game state
+  const addGame = useCallback(
+    () => {
+      const newGameId = getNewGameId();
+      setAppState({
+        ...state,
+        currentGame: newGameId,
+        games: {
+          ...state.games,
+          [newGameId]: createGame(newGameId),
+        },
+      });
+    },
+    [state, setAppState]
+  );
+
   // Keep track of this component's real state update method
   useEffect(() => {
     listeners[id] = setState;
     return () => (listeners[id] = undefined);
   }, [id, setState]);
 
-  return [state, setAppState, setGameState];
+  return [state, setAppState, setGameState, addGame];
+}
+
+/**
+ * Create a new random game ID
+ */
+function getNewGameId(rngSeed?: string): string {
+  const rng = newRng(rngSeed);
+  const maxIndex = blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4];
+  const start = rng(maxIndex);
+  const pangram = findPangram(wordlist, start);
+  const uniqueLetters = getLetters(pangram);
+  const randomizedLetters = permute(uniqueLetters).join('');
+  return [
+    randomizedLetters[0],
+    ...randomizedLetters.slice(1).split('').sort(),
+  ].join('');
 }
 
 /**
@@ -140,15 +173,7 @@ function init(): AppState {
     }
 
     if (!appState.games[currentGame]) {
-      appState.games[currentGame] = {
-        letters: currentGame.split(''),
-        words: [],
-        totalWords: 0,
-        maxScore: 0,
-        score: 0,
-        difficulty: 0,
-        lastPlayed: Date.now(),
-      };
+      appState.games[currentGame] = createGame(currentGame);
     }
 
     const game = appState.games[currentGame];
@@ -168,16 +193,22 @@ function init(): AppState {
  * Return the first game ID for a day
  */
 function getDailyGameId(): string {
-  const rng = newRng(getDateString());
-  const maxIndex = blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4];
-  const start = rng(maxIndex);
-  const pangram = findPangram(wordlist, start);
-  const uniqueLetters = getLetters(pangram);
-  const randomizedLetters = permute(uniqueLetters).join('');
-  return [
-    randomizedLetters[0],
-    ...randomizedLetters.slice(1).split('').sort(),
-  ].join('');
+  return getNewGameId(getDateString());
+}
+
+/**
+ * Return a new empty game
+ */
+function createGame(gameId: string): GameState {
+  return {
+    letters: permute(gameId.split('')),
+    words: [],
+    totalWords: 0,
+    maxScore: 0,
+    score: 0,
+    difficulty: 0,
+    lastPlayed: Date.now(),
+  }
 }
 
 /**
