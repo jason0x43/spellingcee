@@ -171,6 +171,23 @@ function App() {
 
   const score = useMemo(() => computeScore(words), [words]);
 
+  useEffect(() => {
+    // Do a pre-check before calling setGameState since setGameState will cause
+    // this effect to run again.
+    if (
+      gameState.maxScore !== maxScore ||
+      gameState.totalWords !== validWords.length ||
+      gameState.score !== score
+    ) {
+      setGameState({
+        ...gameState,
+        maxScore,
+        totalWords: validWords.length,
+        score,
+      });
+    }
+  }, [gameState, maxScore, setGameState, validWords, score]);
+
   if (appState.error) {
     const { error } = appState;
     console.error(error);
