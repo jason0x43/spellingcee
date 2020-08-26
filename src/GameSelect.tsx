@@ -63,6 +63,12 @@ export default function GameSelect() {
                         {gameState.words.length} / {gameState.totalWords}
                       </dd>
                     </div>
+                    <div>
+                      <dt>Score</dt>
+                      <dd>
+                        {gameState.score} / {gameState.maxScore}
+                      </dd>
+                    </div>
                   </dl>
                 </li>
               );

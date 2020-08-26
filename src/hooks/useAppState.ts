@@ -10,9 +10,11 @@ const appStateKey = 'spelling-cee-game-state-v2';
 const listeners: { [key: string]: Dispatch<AppState> | undefined } = {};
 
 export interface GameState {
-  words: string[];
   letters: string[];
+  words: string[];
   totalWords: number;
+  score: number;
+  maxScore: number;
   difficulty: number;
   lastPlayed: number;
 }
@@ -142,6 +144,8 @@ function init(): AppState {
         letters: currentGame.split(''),
         words: [],
         totalWords: 0,
+        maxScore: 0,
+        score: 0,
         difficulty: 0,
         lastPlayed: Date.now(),
       };
@@ -149,13 +153,10 @@ function init(): AppState {
 
     const game = appState.games[currentGame];
 
-    if (game.totalWords == null) {
-      game.totalWords = 0;
-    }
-
-    if (game.difficulty == null) {
-      game.difficulty = 0;
-    }
+    game.totalWords = game.totalWords ?? 0;
+    game.difficulty = game.difficulty ?? 0;
+    game.score = game.score ?? 0;
+    game.maxScore = game.score ?? 0;
   } catch (error) {
     appState.error = error;
   }
