@@ -35,7 +35,7 @@
 }
 
 .Words-word-pangram {
-  color: blue;
+  font-weight: var(--font-weight-bold);
 }
 
 .Words-word {
