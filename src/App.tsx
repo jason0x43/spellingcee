@@ -17,7 +17,7 @@ import Progress from './Progress';
 import Words from './Words';
 import './App.css';
 
-const messageTimeout = 1000;
+const messageTimeout = 500;
 
 function App() {
   const [appState, , setGameState] = useAppState();
