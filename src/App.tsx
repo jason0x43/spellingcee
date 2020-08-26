@@ -7,8 +7,7 @@ import {
   permute,
   validateWord,
 } from './wordUtil';
-import { GameState } from './state';
-import { useAppState } from './hooks';
+import useAppState from './hooks/useAppState';
 import wordlist from './wordlist';
 import Input from './Input';
 import GameSelect from './GameSelect';
@@ -21,7 +20,7 @@ import './App.css';
 const messageTimeout = 1000;
 
 function App() {
-  const [appState, setAppState] = useAppState();
+  const [appState, , setGameState] = useAppState();
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const [messageGood, setMessageGood] = useState<boolean>(false);
@@ -48,22 +47,6 @@ function App() {
     });
   }, [currentGame, center]);
   const maxScore = useMemo(() => computeScore(validWords), [validWords]);
-
-  const updateState = useCallback(
-    (state: Partial<GameState>) => {
-      setAppState({
-        ...appState,
-        games: {
-          ...appState.games,
-          [appState.currentGame!]: {
-            ...appState.games[appState.currentGame!],
-            ...state,
-          },
-        },
-      });
-    },
-    [appState, setAppState]
-  );
 
   const handleLetterPress = useCallback(
     (letter) => {
@@ -92,8 +75,8 @@ function App() {
       return;
     }
 
-    updateState({ letters: permute(letters) });
-  }, [disabled, updateState, letters]);
+    setGameState({ ...gameState, letters: permute(letters) });
+  }, [disabled, setGameState, gameState, letters]);
 
   const handleEnter = useCallback(() => {
     // Ignore keystrokes while a message is visible
@@ -116,7 +99,7 @@ function App() {
       setMessageVisible(true);
     } else {
       const newWords = [...words, word];
-      updateState({ words: newWords });
+      setGameState({ ...gameState, words: newWords });
       if (isPangram(word)) {
         setMessage('Pangram!');
         setMessageGood(false);
@@ -128,7 +111,16 @@ function App() {
       }
       setInput([]);
     }
-  }, [center, currentGame, input, disabled, updateState, validWords, words]);
+  }, [
+    center,
+    currentGame,
+    input,
+    disabled,
+    setGameState,
+    gameState,
+    validWords,
+    words,
+  ]);
 
   const handleKeyPress = useCallback(
     (event) => {
