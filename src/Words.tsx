@@ -18,7 +18,7 @@ interface WordsProps {
 
 type DefinedWord = {
   word: string;
-  definition: string[];
+  definition: string[] | undefined;
 };
 
 export default function Words(props: WordsProps) {
@@ -35,8 +35,16 @@ export default function Words(props: WordsProps) {
     async (event) => {
       if (canGetDefinitions()) {
         const word = event.currentTarget.textContent as string;
+        setDefinition({ word, definition: undefined });
+        const start = Date.now();
         const definition = await getDefinition(word);
-        setDefinition({ word, definition });
+        setTimeout(
+          () => {
+            setDefinition({ word, definition });
+          },
+          Math.max(1000 - (Date.now() - start)),
+          0
+        );
       }
     },
     [setDefinition]
@@ -101,16 +109,18 @@ export default function Words(props: WordsProps) {
       {(definition || showWords) && (
         <Modal onHide={handleHideModal}>
           {definition ? (
-            <div className="Definition">
-              <div className="Definition-word">{definition.word}</div>
-              <ol className="Definition-definitions">
-                {definition.definition.map((def, i) => (
-                  <li className="Definition-definition" key={i}>
-                    {def}
-                  </li>
-                ))}
-              </ol>
-            </div>
+            definition.definition && (
+              <div className="Definition">
+                <div className="Definition-word">{definition.word}</div>
+                <ol className="Definition-definitions">
+                  {definition.definition.map((def, i) => (
+                    <li className="Definition-definition" key={i}>
+                      {def}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )
           ) : (
             <div className="Words-modal">{wordsContent}</div>
           )}
