@@ -5,7 +5,7 @@ import './Button.css';
 export interface ButtonProps {
   className?: string;
   size?: 'large' | 'normal' | 'small';
-  type?: 'link' | 'normal';
+  type?: 'link' | 'text' | 'normal';
   children: ReactNode;
   onClick?(): void;
 }
@@ -17,6 +17,7 @@ export default function Button(props: ButtonProps) {
     'Button-small': size === 'small',
     'Button-large': size === 'large',
     'Button-link': type === 'link',
+    'Button-text': type === 'text',
   });
   if (propClass) {
     className += ` ${propClass}`;

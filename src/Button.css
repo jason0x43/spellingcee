@@ -39,3 +39,15 @@
   background: none;
   color: inherit;
 }
+
+.Button-text {
+  background: none;
+  color: inherit;
+  padding: 2px 4px;
+  margin: 0;
+}
+
+.Button-text:active {
+  background: none;
+  color: var(--text-bright);
+}
