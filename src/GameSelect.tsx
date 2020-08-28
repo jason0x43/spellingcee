@@ -5,7 +5,7 @@ import Modal from './Modal';
 import './GameSelect.css';
 
 export default function GameSelect() {
-  const [appState, setAppState, , addGame] = useAppState();
+  const [appState, setAppState, , addGame, removeGame] = useAppState();
   const [selecting, setSelecting] = useState(false);
 
   const handleClick = useCallback(() => {
@@ -32,6 +32,27 @@ export default function GameSelect() {
     [addGame, appState, setAppState]
   );
 
+  const handleRemoveGame: MouseEventHandler = useCallback(
+    (event) => {
+      // Walk up the DOM from the button that fired the event, looking for a
+      // node with a game ID attribute
+      let node: HTMLElement | null = event.currentTarget as HTMLElement;
+      while (node && !node.getAttribute('data-game-id')) {
+        node = node.parentElement;
+      }
+      const gameId = node?.getAttribute('data-game-id');
+      if (gameId) {
+        removeGame(gameId);
+      }
+
+      // Don't let events propogate -- they'd end up being handled by the
+      // containing game element, which we don't want since we just deleted the
+      // game.
+      event.stopPropagation();
+    },
+    [removeGame]
+  );
+
   return (
     <div className="GameSelect">
       <Button className="GameSelect-id" type="link" onClick={handleClick}>
@@ -56,6 +77,13 @@ export default function GameSelect() {
                   data-game-id={game}
                   onClick={handleGameSelect}
                 >
+                  <Button
+                    className="GameSelect-remove"
+                    type="text"
+                    onClickCapture={handleRemoveGame}
+                  >
+                    ✕
+                  </Button>
                   <div className="GameSelect-id">{game}</div>
                   <dl className="GameSelect-info">
                     <div>

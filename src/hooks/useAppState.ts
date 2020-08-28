@@ -32,7 +32,8 @@ export default function useAppState(): [
   AppState,
   Dispatch<AppState>,
   Dispatch<GameState>,
-  Dispatch<void>
+  Dispatch<void>,
+  Dispatch<string>
 ] {
   const [state, setState] = useState<AppState>(init());
   const id = useListenerId();
@@ -64,17 +65,32 @@ export default function useAppState(): [
     [state, setAppState]
   );
 
-  // Update the current game state
-  const addGame = useCallback(
-    () => {
-      const newGameId = getNewGameId();
+  // Create and use a new game
+  const addGame = useCallback(() => {
+    const newGameId = getNewGameId();
+    setAppState({
+      ...state,
+      currentGame: newGameId,
+      games: {
+        ...state.games,
+        [newGameId]: createGame(newGameId),
+      },
+    });
+  }, [state, setAppState]);
+
+  // Create and use a new game
+  const removeGame = useCallback(
+    (gameId: string) => {
+      const { [gameId]: removed, ...otherGames } = state.games;
+      const currentGame =
+        state.currentGame === gameId
+          ? Object.keys(state.games)[0]
+          : state.currentGame;
+
       setAppState({
         ...state,
-        currentGame: newGameId,
-        games: {
-          ...state.games,
-          [newGameId]: createGame(newGameId),
-        },
+        currentGame,
+        games: otherGames,
       });
     },
     [state, setAppState]
@@ -86,7 +102,7 @@ export default function useAppState(): [
     return () => (listeners[id] = undefined);
   }, [id, setState]);
 
-  return [state, setAppState, setGameState, addGame];
+  return [state, setAppState, setGameState, addGame, removeGame];
 }
 
 /**
@@ -98,7 +114,7 @@ function getNewGameId(rngSeed?: string): string {
   const start = rng(maxIndex);
   const pangram = findPangram(wordlist, start);
   const uniqueLetters = getLetters(pangram);
-  const randomizedLetters = permute(uniqueLetters).join('');
+  const randomizedLetters = permute(uniqueLetters, rng).join('');
   return [
     randomizedLetters[0],
     ...randomizedLetters.slice(1).split('').sort(),
@@ -146,15 +162,13 @@ function init(): AppState {
     appState.error = undefined;
   }
 
+  if (!appState.games) {
+    appState.games = {};
+  }
+
   // Load the game ID and initialize the random number generator
   const queryArgs = new URLSearchParams(window?.location?.search);
   let currentGame: string | undefined;
-
-  try {
-    currentGame = validateGameId(appState.currentGame);
-  } catch (error) {
-    // ignore
-  }
 
   try {
     const idArg = queryArgs.get('id');
@@ -163,21 +177,24 @@ function init(): AppState {
     }
 
     if (!currentGame) {
-      currentGame = getDailyGameId();
+      const dailyGame = getDailyGameId();
+
+      // Create the daily game and start that one if it hasn't been created yet
+      // today
+      if (!appState.games[dailyGame] || !appState.currentGame) {
+        currentGame = dailyGame;
+      } else {
+        currentGame = appState.currentGame;
+      }
     }
 
     appState.currentGame = currentGame;
-
-    if (!appState.games) {
-      appState.games = {};
-    }
 
     if (!appState.games[currentGame]) {
       appState.games[currentGame] = createGame(currentGame);
     }
 
     const game = appState.games[currentGame];
-
     game.totalWords = game.totalWords ?? 0;
     game.difficulty = game.difficulty ?? 0;
     game.score = game.score ?? 0;
@@ -208,7 +225,7 @@ function createGame(gameId: string): GameState {
     score: 0,
     difficulty: 0,
     lastPlayed: Date.now(),
-  }
+  };
 }
 
 /**
