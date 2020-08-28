@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, MouseEvent } from 'react';
 import classNames from 'classnames';
 import './Button.css';
 
@@ -7,11 +7,19 @@ export interface ButtonProps {
   size?: 'large' | 'normal' | 'small';
   type?: 'link' | 'text' | 'normal';
   children: ReactNode;
-  onClick?(): void;
+  onClick?(event: MouseEvent): void;
+  onClickCapture?(event: MouseEvent): void;
 }
 
 export default function Button(props: ButtonProps) {
-  const { className: propClass, children, onClick, size, type } = props;
+  const {
+    className: propClass,
+    children,
+    onClick,
+    onClickCapture,
+    size,
+    type,
+  } = props;
   let className = classNames({
     Button: true,
     'Button-small': size === 'small',
@@ -23,5 +31,13 @@ export default function Button(props: ButtonProps) {
     className += ` ${propClass}`;
   }
 
-  return <button className={className} onClick={onClick}>{children}</button>;
+  return (
+    <button
+      className={className}
+      onClick={onClick}
+      onClickCapture={onClickCapture}
+    >
+      {children}
+    </button>
+  );
 }
