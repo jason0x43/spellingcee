@@ -78,7 +78,7 @@ export default function useAppState(): [
     });
   }, [state, setAppState]);
 
-  // Create and use a new game
+  // Remove a game
   const removeGame = useCallback(
     (gameId: string) => {
       const { [gameId]: removed, ...otherGames } = state.games;
