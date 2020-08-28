@@ -17,7 +17,8 @@ import Progress from './Progress';
 import Words from './Words';
 import './App.css';
 
-const messageTimeout = 500;
+const messageTimeout = 1000;
+const inputShakeTimeout = 300;
 
 function App() {
   const [appState, , setGameState] = useAppState();
@@ -25,17 +26,18 @@ function App() {
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const [messageGood, setMessageGood] = useState<boolean>(false);
   const [input, setInput] = useState<string[]>([]);
+  const [inputDisabled, setInputDisabled] = useState(false);
 
   const { currentGame } = appState;
   const gameState = appState.games[currentGame];
   const center = currentGame[0];
   const { letters, words } = gameState;
-  const disabled = messageVisible && input.length > 0;
 
   useEffect(() => {
     if (input.length > 19) {
       setMessage('Word too long');
       setMessageVisible(true);
+      setInputDisabled(true);
     }
   }, [input, setMessage, setMessageVisible]);
 
@@ -51,36 +53,36 @@ function App() {
   const handleLetterPress = useCallback(
     (letter) => {
       // Ignore keystrokes while a message is visible
-      if (disabled) {
+      if (inputDisabled) {
         return;
       }
 
       setInput([...input, letter]);
     },
-    [input, disabled, setInput]
+    [input, inputDisabled, setInput]
   );
 
   const handleDelete = useCallback(() => {
     // Ignore keystrokes while a message is visible
-    if (disabled) {
+    if (inputDisabled) {
       return;
     }
 
     setInput(input.slice(0, input.length - 1));
-  }, [disabled, setInput, input]);
+  }, [inputDisabled, setInput, input]);
 
   const handleScramble = useCallback(() => {
     // Ignore keystrokes while a message is visible
-    if (disabled) {
+    if (inputDisabled) {
       return;
     }
 
     setGameState({ ...gameState, letters: permute(letters) });
-  }, [disabled, setGameState, gameState, letters]);
+  }, [inputDisabled, setGameState, gameState, letters]);
 
   const handleEnter = useCallback(() => {
     // Ignore keystrokes while a message is visible
-    if (disabled) {
+    if (inputDisabled) {
       return;
     }
 
@@ -97,6 +99,7 @@ function App() {
       setMessage(message);
       setMessageGood(false);
       setMessageVisible(true);
+      setInputDisabled(true);
     } else {
       const newWords = [...words, word];
       setGameState({ ...gameState, words: newWords });
@@ -115,7 +118,7 @@ function App() {
     center,
     currentGame,
     input,
-    disabled,
+    inputDisabled,
     setGameState,
     gameState,
     validWords,
@@ -125,7 +128,7 @@ function App() {
   const handleKeyPress = useCallback(
     (event) => {
       // Ignore keystrokes while a message is visible
-      if (disabled) {
+      if (inputDisabled) {
         return;
       }
 
@@ -142,7 +145,7 @@ function App() {
         setInput([...input, event.key]);
       }
     },
-    [handleDelete, handleEnter, handleScramble, input, disabled]
+    [handleDelete, handleEnter, handleScramble, input, inputDisabled]
   );
 
   useEffect(() => {
@@ -150,6 +153,7 @@ function App() {
     return () => window.removeEventListener('keypress', handleKeyPress);
   }, [handleKeyPress]);
 
+  // Hide the message, clear and enable the input area
   useEffect(() => {
     const timers: number[] = [];
     if (messageVisible) {
@@ -161,10 +165,13 @@ function App() {
       timers.push(
         window.setTimeout(() => {
           setInput([]);
-        }, 300)
+          setInputDisabled(false);
+        }, inputShakeTimeout)
       );
     } else {
-      timers.push(window.setTimeout(() => setMessageGood(false), 300));
+      timers.push(
+        window.setTimeout(() => setMessageGood(false), inputShakeTimeout)
+      );
     }
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [messageVisible]);
