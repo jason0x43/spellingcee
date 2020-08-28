@@ -65,6 +65,7 @@
 
 .Letters-letter-center {
   fill: var(--highlight);
+  transform: translate(0, 0);
 }
 
 .Letters-letter-3 {

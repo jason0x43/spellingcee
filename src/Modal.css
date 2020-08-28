@@ -4,7 +4,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(var(--background-rgb), 0.8);
+  background: var(--background-glass);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -18,11 +19,12 @@
 
 .Modal {
   position: relative;
-  background: rgb(var(--background-rgb));
+  background: var(--background);
   border: solid 1px var(--border-color); 
   border-radius: var(--unit);
-  box-shadow: 0 0 8px 2px var(--shadow-color);
   color: var(--text-color);
+  transition: all 1s;
+  overflow: hidden;
 }
 
 .Modal-close {
@@ -33,12 +35,12 @@
 
 .Modal-content {
   padding: var(--unit);
+  overflow: auto;
 }
 
 @media screen and (max-width: 800px) {
   .Modal {
     max-width: 90%;
     max-height: 80%;
-    overflow: auto;
   }
 }

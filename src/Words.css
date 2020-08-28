@@ -138,9 +138,9 @@
     top: 0;
     height: 100%;
     margin: 0;
-    background: rgb(var(--background-rgb));
+    background: var(--background);
     border: none;
-    box-shadow: -8px 0 8px  rgb(var(--background-rgb));
+    box-shadow: -8px 0 8px  var(--background);
   }
 
   .Words .Words-show-list:active {
