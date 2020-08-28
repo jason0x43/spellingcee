@@ -14,20 +14,25 @@ export default function Modal(props: ModalProps) {
   const nodeRef = useRef(document.createElement('div'));
   const node = nodeRef.current;
 
-  const handleKeyPress = useCallback((event) => {
-    event.stopPropagation();
-    const { key } = event;
-    if (key === 'Escape') {
-      onHide();
-    }
-  }, [onHide]);
+  const handleKeyPress = useCallback(
+    (event) => {
+      event.stopPropagation();
+      const { key } = event;
+      if (key === 'Escape') {
+        onHide();
+      }
+    },
+    [onHide]
+  );
 
-
-  const handleClick = useCallback((event) => {
-    if (event.target === node) {
-      onHide();
-    }
-  }, [node, onHide]);
+  const handleClick = useCallback(
+    (event) => {
+      if (event.target === node) {
+        onHide();
+      }
+    },
+    [node, onHide]
+  );
 
   useEffect(() => {
     node.addEventListener('keypress', handleKeyPress, { capture: true });
