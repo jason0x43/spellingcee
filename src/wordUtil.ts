@@ -29,13 +29,16 @@ export function getLetters(word: string | string[]): string[] {
   return Array.from(new Set(word));
 }
 
-export function permute(letters: string[]): string[] {
+export function permute(
+  letters: string[],
+  rng = random
+): string[] {
   if (letters.length === 1) {
     return letters;
   }
-  const index = random(letters.length);
+  const index = rng(letters.length);
   const remaining = [...letters.slice(0, index), ...letters.slice(index + 1)];
-  return [letters[index], ...permute(remaining)];
+  return [letters[index], ...permute(remaining, rng)];
 }
 
 type Check = ({
@@ -96,7 +99,7 @@ export function validateWord({
   words,
   validWords,
   pangram,
-  center
+  center,
 }: {
   word: string;
   words?: string[];
@@ -110,7 +113,7 @@ export function validateWord({
       validWords,
       words,
       pangram,
-      center
+      center,
     });
     if (message) {
       return message;
