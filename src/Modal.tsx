@@ -1,5 +1,6 @@
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import Spinner from './Spinner';
 import './Modal.css';
 
 interface ModalProps {
@@ -51,10 +52,14 @@ export default function Modal(props: ModalProps) {
   }, [node, handleClick, handleKeyPress]);
 
   return createPortal(
-    <div className="Modal">
-      {showCloseButton && <div className="Modal-close">X</div>}
-      <div className="Modal-content">{children}</div>
-    </div>,
+    children ? (
+      <div className="Modal">
+        {showCloseButton && <div className="Modal-close">X</div>}
+        <div className="Modal-content">{children}</div>
+      </div>
+    ) : (
+      <Spinner />
+    ),
     node
   );
 }
