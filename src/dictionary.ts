@@ -1,5 +1,5 @@
 const api = 'https://www.dictionaryapi.com/api/v3/references/collegiate/json/';
-const apiKey = process.env.REACT_APP_DICTIONARY_API_KEY;
+const apiKey = (import.meta as any).env.SNOWPACK_PUBLIC_DICTIONARY_API_KEY;
 
 type DictionaryResult = [
   {

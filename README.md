@@ -16,7 +16,7 @@ Every player will be presented with the same initial game on a given day. Player
 If dictionary support is enabled, clicking a guessed word will retrieve its definition from the Merriam-Webster online dictionary and display it. To enable dictionary support, add a `.env.local` file to your local repository containing an API key, like:
 
 ```sh
-REACT_APP_DICTIONARY_API_KEY="12345678-abcd-1234-12ab-1234abcd1234"
+SNOWPACK_PUBLIC_DICTIONARY_API_KEY="12345678-abcd-1234-12ab-1234abcd1234"
 ```
 
 This file should **not** be committed to the repository.
