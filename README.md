@@ -3,6 +3,14 @@
 A clone of the [NYT Spelling Bee](https://www.nytimes.com/puzzles/spelling-bee)
 game with some additional features (eventually).
 
+## Getting started
+
+1. Clone this repo
+2. `pnpm install`
+3. `pnpm start`
+
+To enable dictionary support (for word lookups), see [Dictionary lookups](#dictionary-lookups).
+
 ## Game IDs
 
 Games are identified by IDs. A game ID is a string of 7 lowercase alphabetic characters, where the first character is the “center” letter, and the other 6 letters are in alphabetical order, e.g. `icerotu`.
