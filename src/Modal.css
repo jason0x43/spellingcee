@@ -6,11 +6,19 @@
   height: 100%;
   background: var(--background-glass);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   transition: opacity 0.25s;
   opacity: 0;
+}
+
+.Modal-background-loading {
+  background: var(--background);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
 }
 
 .Modal-background-active {

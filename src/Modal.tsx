@@ -4,21 +4,22 @@ import Spinner from './Spinner';
 import './Modal.css';
 
 interface ModalProps {
-  children: ReactNode;
-  onHide(): void;
+  children?: ReactNode;
+  onHide?(): void;
   showCloseButton?: boolean;
 }
 
 export default function Modal(props: ModalProps) {
   const { children, onHide, showCloseButton } = props;
   const nodeRef = useRef(document.createElement('div'));
+  const loadingMode = children == null;
   const node = nodeRef.current;
 
   const handleKeyPress = useCallback(
     (event) => {
       event.stopPropagation();
       const { key } = event;
-      if (key === 'Escape') {
+      if (key === 'Escape' && onHide) {
         onHide();
       }
     },
@@ -27,7 +28,7 @@ export default function Modal(props: ModalProps) {
 
   const handleClick = useCallback(
     (event) => {
-      if (event.target === node) {
+      if (event.target === node && onHide) {
         onHide();
       }
     },
@@ -35,10 +36,17 @@ export default function Modal(props: ModalProps) {
   );
 
   useEffect(() => {
-    node.addEventListener('keypress', handleKeyPress, { capture: true });
-    node.addEventListener('click', handleClick);
     node.className = 'Modal-background';
     node.tabIndex = -1;
+
+    if (loadingMode) {
+      node.classList.add('Modal-background-loading');
+      node.classList.add('Modal-background-active');
+    } else {
+      node.addEventListener('keypress', handleKeyPress, { capture: true });
+      node.addEventListener('click', handleClick);
+    }
+
     document.body.appendChild(node);
     node.focus();
 
@@ -49,12 +57,15 @@ export default function Modal(props: ModalProps) {
     return () => {
       clearTimeout(showTimer);
       node.classList.remove('Modal-background-active');
-      node.removeEventListener('keypress', handleKeyPress);
+      if (!loadingMode) {
+        node.removeEventListener('keypress', handleKeyPress);
+        node.removeEventListener('click', handleClick);
+      }
       setTimeout(() => {
         node.remove();
       }, 1000);
     };
-  }, [node, handleClick, handleKeyPress]);
+  }, [node, handleClick, handleKeyPress, loadingMode]);
 
   return createPortal(
     children ? (

@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import AppError from './AppError';
 import {
   computeScore,
@@ -11,17 +17,21 @@ import useAppState from './hooks/useAppState';
 import wordlist from './wordlist';
 import Input from './Input';
 import GameSelect from './GameSelect';
+import MenuBar from './MenuBar';
 import Message from './Message';
 import Letters from './Letters';
 import Progress from './Progress';
 import Words from './Words';
+import Modal from './Modal';
+import { getCurrentUser } from './firebase';
 import './App.css';
 
 const messageTimeout = 1000;
 const inputShakeTimeout = 300;
 
 function App() {
-  const [appState, , setGameState] = useAppState();
+  const [starting, setStarting] = useState(true);
+  const [appState, setAppState, setGameState] = useAppState();
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const [messageGood, setMessageGood] = useState<boolean>(false);
@@ -33,6 +43,21 @@ function App() {
   const center = currentGame[0];
   const { letters, words } = gameState;
 
+  // Check the login state of the application
+  useEffect(() => {
+    (async function () {
+      const user = await getCurrentUser();
+      if (user) {
+        setAppState({
+          ...appState,
+          user,
+        });
+      }
+      setTimeout(() => setStarting(false), 1000);
+    })();
+  }, []);
+
+  // Emit an error if the input word is too long
   useEffect(() => {
     if (input.length > 19) {
       setMessage('Word too long');
@@ -50,6 +75,7 @@ function App() {
   }, [currentGame, center]);
   const maxScore = useMemo(() => computeScore(validWords), [validWords]);
 
+  // Handle a letter activation
   const handleLetterPress = useCallback(
     (letter) => {
       // Ignore keystrokes while a message is visible
@@ -62,7 +88,8 @@ function App() {
     [input, inputDisabled, setInput]
   );
 
-  const handleDelete = useCallback(() => {
+  // Delete the last input character
+  const deleteLastInput = useCallback(() => {
     // Ignore keystrokes while a message is visible
     if (inputDisabled) {
       return;
@@ -71,7 +98,8 @@ function App() {
     setInput(input.slice(0, input.length - 1));
   }, [inputDisabled, setInput, input]);
 
-  const handleScramble = useCallback(() => {
+  // Permute the letters
+  const mixLetters = useCallback(() => {
     // Ignore keystrokes while a message is visible
     if (inputDisabled) {
       return;
@@ -80,7 +108,8 @@ function App() {
     setGameState({ ...gameState, letters: permute(letters) });
   }, [inputDisabled, setGameState, gameState, letters]);
 
-  const handleEnter = useCallback(() => {
+  // Handle a word submission
+  const submitWord = useCallback(() => {
     // Ignore keystrokes while a message is visible
     if (inputDisabled) {
       return;
@@ -125,6 +154,7 @@ function App() {
     words,
   ]);
 
+  // Handle a general keypress event
   const handleKeyPress = useCallback(
     (event) => {
       // Ignore keystrokes while a message is visible
@@ -135,19 +165,20 @@ function App() {
       const { key } = event;
       if (key.length > 1) {
         if (key === 'Backspace') {
-          handleDelete();
+          deleteLastInput();
         } else if (key === 'Enter') {
-          handleEnter();
+          submitWord();
         }
       } else if (key === ' ') {
-        handleScramble();
+        mixLetters();
       } else if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')) {
         setInput([...input, event.key]);
       }
     },
-    [handleDelete, handleEnter, handleScramble, input, inputDisabled]
+    [deleteLastInput, submitWord, mixLetters, input, inputDisabled]
   );
 
+  // Add event listeners
   useEffect(() => {
     window.addEventListener('keypress', handleKeyPress);
     return () => window.removeEventListener('keypress', handleKeyPress);
@@ -186,6 +217,7 @@ function App() {
       gameState.totalWords !== validWords.length ||
       gameState.score !== score
     ) {
+      console.log(`difference in (${gameState.maxScore} vs ${maxScore}), (${gameState.totalWords} vs ${validWords.length}), (${gameState.score} vs ${score})`);
       setGameState({
         ...gameState,
         maxScore,
@@ -221,34 +253,41 @@ function App() {
 
   return (
     <div className="App">
-      <div className="App-letters-wrapper">
-        <div className="App-letters">
-          <Message isVisible={messageVisible} isGood={messageGood}>
-            {message}
-          </Message>
-          <Input
-            input={input}
-            pangram={currentGame}
-            isInvalid={messageVisible && !messageGood}
-          />
-          <Letters
-            letters={letters}
-            center={center}
-            onLetter={handleLetterPress}
-            onDelete={handleDelete}
-            onScramble={handleScramble}
-            onEnter={handleEnter}
-          />
-        </div>
-      </div>
+      {starting ? (
+        <Modal />
+      ) : (
+        <Fragment>
+          <MenuBar />
+          <div className="App-letters-wrapper">
+            <div className="App-letters">
+              <Message isVisible={messageVisible} isGood={messageGood}>
+                {message}
+              </Message>
+              <Input
+                input={input}
+                pangram={currentGame}
+                isInvalid={messageVisible && !messageGood}
+              />
+              <Letters
+                letters={letters}
+                center={center}
+                onLetter={handleLetterPress}
+                onDelete={deleteLastInput}
+                onScramble={mixLetters}
+                onEnter={submitWord}
+              />
+            </div>
+          </div>
 
-      <div className="App-words-wrapper">
-        <div className="App-words">
-          <Progress score={score} maxScore={maxScore} />
-          <Words words={words} validWords={validWords} />
-          <GameSelect />
-        </div>
-      </div>
+          <div className="App-words-wrapper">
+            <div className="App-words">
+              <Progress score={score} maxScore={maxScore} />
+              <Words words={words} validWords={validWords} />
+              <GameSelect />
+            </div>
+          </div>
+        </Fragment>
+      )}
     </div>
   );
 }
