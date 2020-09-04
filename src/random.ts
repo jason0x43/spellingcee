@@ -8,7 +8,7 @@ export function initRng(seed?: string) {
 
 export default function random(max?: number): number {
   if (!rng) {
-    throw new Error('The random number generator has not been initialized');
+    initRng();
   }
   return rng(max);
 }
