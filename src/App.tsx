@@ -13,7 +13,6 @@ import {
   permute,
   validateWord,
 } from './wordUtil';
-import useAppState from './hooks/useAppState';
 import wordlist from './wordlist';
 import Input from './Input';
 import GameSelect from './GameSelect';
@@ -23,7 +22,9 @@ import Letters from './Letters';
 import Progress from './Progress';
 import Words from './Words';
 import Modal from './Modal';
-import { getCurrentUser } from './firebase';
+import useError from './hooks/useError';
+import useUser from './hooks/useUser';
+import useCurrentGame from './hooks/useCurrentGame';
 import './App.css';
 
 const messageTimeout = 1000;
@@ -33,18 +34,18 @@ const renderLimit = 20;
 let renderCount = 0;
 
 function App() {
+  const [user] = useUser();
+  const [error] = useError();
   const [starting, setStarting] = useState(true);
-  const [appState, setAppState, setGameState] = useAppState();
+  const [currentGame, setCurrentGame] = useCurrentGame();
   const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const [messageGood, setMessageGood] = useState<boolean>(false);
   const [input, setInput] = useState<string[]>([]);
   const [inputDisabled, setInputDisabled] = useState(false);
 
-  const { currentGame } = appState;
-  const gameState = appState.games[currentGame];
-  const center = currentGame[0];
-  const { letters, words } = gameState;
+  const center = currentGame.id[0];
+  const { letters, words } = currentGame;
 
   renderCount++;
   if (renderCount > renderLimit) {
@@ -88,7 +89,7 @@ function App() {
   const validWords = useMemo(() => {
     return findValidWords({
       allWords: wordlist,
-      pangram: currentGame,
+      pangram: currentGame.id,
       center,
     });
   }, [currentGame, center]);
@@ -124,8 +125,8 @@ function App() {
       return;
     }
 
-    setGameState({ ...gameState, letters: permute(letters) });
-  }, [inputDisabled, setGameState, gameState, letters]);
+    setCurrentGame({ ...currentGame, letters: permute(letters) });
+  }, [inputDisabled, setCurrentGame, currentGame, letters]);
 
   // Handle a word submission
   const submitWord = useCallback(() => {
@@ -139,7 +140,7 @@ function App() {
       words,
       validWords,
       word,
-      pangram: currentGame,
+      pangram: currentGame.id,
       center,
     });
 
@@ -150,7 +151,7 @@ function App() {
       setInputDisabled(true);
     } else {
       const newWords = [...words, word];
-      setGameState({ ...gameState, words: newWords });
+      setCurrentGame({ ...currentGame, words: newWords });
       if (isPangram(word)) {
         setMessage('Pangram!');
         setMessageGood(false);
@@ -167,8 +168,8 @@ function App() {
     currentGame,
     input,
     inputDisabled,
-    setGameState,
-    gameState,
+    setCurrentGame,
+    currentGame,
     validWords,
     words,
   ]);
@@ -232,22 +233,20 @@ function App() {
     // Do a pre-check before calling setGameState since setGameState will cause
     // this effect to run again.
     if (
-      gameState.maxScore !== maxScore ||
-      gameState.totalWords !== validWords.length ||
-      gameState.score !== score
+      currentGame.maxScore !== maxScore ||
+      currentGame.totalWords !== validWords.length ||
+      currentGame.score !== score
     ) {
-      console.log(`difference in (${gameState.maxScore} vs ${maxScore}), (${gameState.totalWords} vs ${validWords.length}), (${gameState.score} vs ${score})`);
-      setGameState({
-        ...gameState,
+      setCurrentGame({
+        ...currentGame,
         maxScore,
         totalWords: validWords.length,
         score,
       });
     }
-  }, [gameState, maxScore, setGameState, validWords, score]);
+  }, [currentGame, maxScore, setCurrentGame, validWords, score]);
 
-  if (appState.error) {
-    const { error } = appState;
+  if (error) {
     console.error(error);
     const message =
       typeof error === 'string'
@@ -258,14 +257,6 @@ function App() {
     return (
       <div className="App">
         <div className="App-error">{message}</div>
-      </div>
-    );
-  }
-
-  if (!appState.games[appState.currentGame]) {
-    return (
-      <div className="App">
-        <h1>Loading...</h1>
       </div>
     );
   }
@@ -284,7 +275,7 @@ function App() {
               </Message>
               <Input
                 input={input}
-                pangram={currentGame}
+                pangram={currentGame.id}
                 isInvalid={messageVisible && !messageGood}
               />
               <Letters

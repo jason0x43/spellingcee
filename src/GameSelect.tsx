@@ -1,11 +1,14 @@
 import React, { MouseEventHandler, useCallback, useState } from 'react';
-import useAppState from './hooks/useAppState';
+import { createGame } from './gameUtils';
+import useCurrentGame from './hooks/useCurrentGame';
+import useGames from './hooks/useGames';
 import Button from './Button';
 import Modal from './Modal';
 import './GameSelect.css';
 
 export default function GameSelect() {
-  const [appState, setAppState, , addGame, removeGame] = useAppState();
+  const [games, setGames] = useGames();
+  const [currentGame, setCurrentGame] = useCurrentGame();
   const [selecting, setSelecting] = useState(false);
 
   const handleClick = useCallback(() => {
@@ -20,16 +23,17 @@ export default function GameSelect() {
     (event) => {
       const gameId = event.currentTarget.getAttribute('data-game-id')!;
       if (gameId) {
-        setAppState({
-          ...appState,
-          currentGame: gameId,
-        });
+        setCurrentGame(gameId);
       } else {
-        addGame();
+        const newGame = createGame();
+        setGames({
+          ...games,
+          [newGame.id]: newGame
+        });
       }
       setSelecting(false);
     },
-    [addGame, appState, setAppState]
+    [games, setCurrentGame, setGames]
   );
 
   const handleRemoveGame: MouseEventHandler = useCallback(
@@ -42,7 +46,8 @@ export default function GameSelect() {
       }
       const gameId = node?.getAttribute('data-game-id');
       if (gameId) {
-        removeGame(gameId);
+        const { [gameId]: _, ...rest } = games;
+        setGames(rest);
       }
 
       // Don't let events propogate -- they'd end up being handled by the
@@ -50,13 +55,13 @@ export default function GameSelect() {
       // game.
       event.stopPropagation();
     },
-    [removeGame]
+    [games, setGames]
   );
 
   return (
     <div className="GameSelect">
       <Button className="GameSelect-id" type="link" onClick={handleClick}>
-        {appState.currentGame}
+        {currentGame.id}
       </Button>
       {selecting && (
         <Modal onHide={handleHideModal}>
@@ -68,8 +73,8 @@ export default function GameSelect() {
             >
               +
             </li>
-            {Object.keys(appState.games).map((game) => {
-              const gameState = appState.games[game];
+            {Object.keys(games).map((game) => {
+              const gameState = games[game];
               return (
                 <li
                   className="GameSelect-game"
@@ -89,7 +94,7 @@ export default function GameSelect() {
                     <div>
                       <dt>Last played</dt>
                       <dd>
-                        {new Date(gameState.lastPlayed).toLocaleDateString()}
+                        {new Date(gameState.lastUpdated).toLocaleDateString()}
                       </dd>
                     </div>
                     <div>

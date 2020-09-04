@@ -12,6 +12,8 @@ const firebaseConfig = {
   appId: '1:87201244588:web:8d4cb54274aa8f6a744609',
 };
 
+type Reference = firebase.database.Reference;
+
 export async function init() {
   firebase.initializeApp(firebaseConfig);
 }
@@ -22,7 +24,7 @@ type UserData = {
   name: string;
 };
 
-export async function getCurrentUser(): Promise<UserData | undefined> {
+export async function getCurrentUser(): Promise<UserData | null> {
   return await new Promise((resolve) => {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
@@ -32,10 +34,22 @@ export async function getCurrentUser(): Promise<UserData | undefined> {
           name: user.displayName!,
         });
       } else {
-        resolve(undefined);
+        resolve(null);
       }
     });
   });
+}
+
+/**
+ * Return the full path of a database reference
+ */
+export function getRefPath(ref: Reference): string;
+export function getRefPath(ref: undefined): undefined;
+export function getRefPath(ref: Reference | undefined) {
+  if (ref == null) {
+    return undefined;
+  }
+  return ref.toString().slice(ref.root.toString().length);
 }
 
 export async function signIn() {
@@ -53,6 +67,63 @@ export async function signOut() {
   await firebase.auth().signOut();
 }
 
+/**
+ * Return a handle to the database
+ */
 export function getDatabase() {
   return firebase.database();
+}
+
+/**
+ * Load a value from the database
+ */
+export async function load<T>(ref: string | Reference): Promise<T | undefined> {
+  const dbRef = typeof ref === 'string' ? getDatabase().ref(ref) : ref;
+  const snapshot = await dbRef.once('value');
+  const val = snapshot.val();
+  if (val == null) {
+    return;
+  }
+  return val;
+}
+
+/**
+ * Store a value in the database
+ */
+export function save(key: string, value: any): void {
+  const ref = getDatabase().ref(key);
+  ref.set(value);
+}
+
+/**
+ * A handle to an database subscription
+ */
+export interface Subscription {
+  key: string;
+  off(): void;
+}
+
+/**
+ * Load a value from the database
+ */
+export function subscribe<T>(ref: string | Reference, callback: (value: T | undefined) => void): Subscription {
+  const dbRef = typeof ref === 'string' ? getDatabase().ref(ref) : ref;
+  dbRef.on('value', (snapshot) => {
+    const value = snapshot.val();
+    if (value == null) {
+      callback(undefined);
+    } else {
+      callback(value);
+    }
+  });
+
+  return {
+    get key() {
+      return getRefPath(dbRef);
+    },
+
+    off() {
+      dbRef.off();
+    }
+  };
 }

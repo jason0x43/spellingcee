@@ -1,31 +1,25 @@
 import React, { useCallback } from 'react';
 import Button from './Button';
-import useAppState from './hooks/useAppState';
+import useUser from './hooks/useUser';
 import { signIn, signOut } from './firebase';
 import './MenuBar.css';
 
 export default function MenuBar() {
-  const [appState, setAppState] = useAppState();
+  const [user, setUser] = useUser();
 
   const handleSignin = useCallback(async () => {
     const data = await signIn();
-    setAppState({
-      ...appState,
-      user: data
-    });
-  }, [appState, setAppState]);
+    setUser(data);
+  }, [setUser]);
 
   const handleSignout = useCallback(async () => {
     await signOut();
-    setAppState({
-      ...appState,
-      user: undefined
-    });
-  }, [appState, setAppState]);
+    setUser(null);
+  }, [setUser]);
 
   return (
     <div className="MenuBar">
-      {appState.user ? (
+      {user ? (
         <Button type="link" onClick={handleSignout}>
           Sign out
         </Button>
