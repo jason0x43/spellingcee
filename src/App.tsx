@@ -28,6 +28,9 @@ import './App.css';
 
 const messageTimeout = 1000;
 const inputShakeTimeout = 300;
+const renderWindow = 500;
+const renderLimit = 20;
+let renderCount = 0;
 
 function App() {
   const [starting, setStarting] = useState(true);
@@ -42,6 +45,22 @@ function App() {
   const gameState = appState.games[currentGame];
   const center = currentGame[0];
   const { letters, words } = gameState;
+
+  renderCount++;
+  if (renderCount > renderLimit) {
+    throw new Error(
+      `Too many renders (${renderCount} in ${renderWindow} ms)`
+    );
+  }
+
+  useEffect(() => {
+    const renderTimer = setInterval(() => {
+      renderCount = 0;
+    }, renderWindow);
+    return () => {
+      clearInterval(renderTimer);
+    };
+  }, []);
 
   // Check the login state of the application
   useEffect(() => {
