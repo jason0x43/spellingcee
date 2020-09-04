@@ -64,17 +64,17 @@ function App() {
 
   // Check the login state of the application
   useEffect(() => {
-    (async function () {
-      const user = await getCurrentUser();
-      if (user) {
-        setAppState({
-          ...appState,
-          user,
-        });
+    let startTimer: ReturnType<typeof setTimeout> | undefined;
+    if (user || user === null) {
+      startTimer = setTimeout(() => setStarting(false), 1000);
+    }
+
+    return () => {
+      if (startTimer) {
+        clearTimeout(startTimer);
       }
-      setTimeout(() => setStarting(false), 1000);
-    })();
-  }, []);
+    };
+  }, [user]);
 
   // Emit an error if the input word is too long
   useEffect(() => {
