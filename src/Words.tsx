@@ -2,6 +2,8 @@ import React, {
   Fragment,
   MouseEventHandler,
   useCallback,
+  useEffect,
+  useRef,
   useState,
 } from 'react';
 import classNames from 'classnames';
@@ -9,6 +11,7 @@ import { canGetDefinitions, getDefinition } from './dictionary';
 import { isPangram } from './wordUtil';
 import Button from './Button';
 import Modal from './Modal';
+import Spinner from './Spinner';
 import './Words.css';
 
 interface WordsProps {
@@ -31,14 +34,27 @@ export default function Words(props: WordsProps) {
     setAlphabetical(!alphabetical);
   }, [setAlphabetical, alphabetical]);
 
+  const modalTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => {
+      if (modalTimer.current) {
+        clearTimeout(modalTimer.current);
+      }
+    }
+  }, []);
+
   const handleWordClick: MouseEventHandler = useCallback(
     async (event) => {
       if (canGetDefinitions()) {
+        if (modalTimer.current) {
+          clearTimeout(modalTimer.current);
+        }
         const word = event.currentTarget.textContent as string;
         setDefinition({ word, definition: undefined });
         const start = Date.now();
         const definition = await getDefinition(word);
-        setTimeout(
+        modalTimer.current = setTimeout(
           () => {
             setDefinition({ word, definition });
           },
@@ -109,7 +125,7 @@ export default function Words(props: WordsProps) {
       {(definition || showWords) && (
         <Modal onHide={handleHideModal}>
           {definition ? (
-            definition.definition && (
+            definition.definition ? (
               <div className="Definition">
                 <div className="Definition-word">{definition.word}</div>
                 <ol className="Definition-definitions">
@@ -120,6 +136,8 @@ export default function Words(props: WordsProps) {
                   ))}
                 </ol>
               </div>
+            ) : (
+                <Spinner />
             )
           ) : (
             <div className="Words-modal">{wordsContent}</div>
