@@ -19,6 +19,9 @@ export async function getCurrentUser(): Promise<Profile | null> {
 
 export async function signIn(): Promise<Profile | null> {
   const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({
+    prompt: 'select_account'
+  });
   const result = await firebase.auth().signInWithPopup(provider);
   const { user } = result;
 
