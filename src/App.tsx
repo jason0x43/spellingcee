@@ -28,6 +28,7 @@ import Message from './Message';
 import Modal from './Modal';
 import Progress from './Progress';
 import { init, reducer } from './state';
+import { Games } from './types';
 import wordlist from './wordlist';
 import Words from './Words';
 import {
@@ -252,8 +253,12 @@ function App() {
     (async () => {
       localSaveGames(state.games);
       if (user) {
-        await remoteSaveGame(user, currentGame);
+        try {
+          await remoteSaveGame(user, currentGame);
           logger.log('Saved updated game to remote');
+        } catch (error) {
+          logger.error('Error saving game:', error);
+        }
       }
     })();
   }, [currentGame]);
@@ -264,33 +269,37 @@ function App() {
   // Watch for remote updates to the current game
   useEffect(() => {
     if (user) {
-      subscription.current = subscribeToGame(
-        user,
-        currentGame.id,
-        (remoteGame) => {
-          debug(
-            'Saw game update:',
-            remoteGame?.lastUpdated,
-            'vs',
-            currentGame?.lastUpdated
-          );
-          if (
-            remoteGame &&
-            remoteGame.lastUpdated > currentGame.lastUpdated &&
-            remoteGame.words.length > 0
-          ) {
-            dispatch({ type: 'setGame', payload: remoteGame });
+      try {
+        subscription.current = subscribeToGame(
+          user,
+          currentGame.id,
+          (remoteGame) => {
+            logger.debug(
+              'Saw game update:',
+              remoteGame?.lastUpdated,
+              'vs',
+              currentGame?.lastUpdated
+            );
+            if (
+              remoteGame &&
+              remoteGame.lastUpdated > currentGame.lastUpdated &&
+              remoteGame.words.length > 0
+            ) {
               logger.log('Using remote game');
+              dispatch({ type: 'setGame', payload: remoteGame });
+            }
           }
-        }
-      );
+        );
 
-      return () => {
-        if (subscription.current) {
-          subscription.current.off();
-          subscription.current = undefined;
-        }
-      };
+        return () => {
+          if (subscription.current) {
+            subscription.current.off();
+            subscription.current = undefined;
+          }
+        };
+      } catch (error) {
+        logger.error('Error subscribing to game updates:', error);
+      }
     } else {
       if (subscription.current) {
         subscription.current.off();
@@ -304,7 +313,14 @@ function App() {
   useEffect(() => {
     (async () => {
       if (user) {
-        let remoteGames = await remoteLoadGames(user);
+        let remoteGames: Games | undefined;
+
+        try {
+          remoteGames = await remoteLoadGames(user);
+        } catch (error) {
+          logger.error('Error loading remote games:', error);
+        }
+
         if (remoteGames) {
           let localGames = state.games;
           for (const gameId of Object.keys(remoteGames)) {
@@ -324,7 +340,11 @@ function App() {
           }
 
           localSaveGames(localGames);
-          await remoteSaveGames(user, localGames);
+          try {
+            await remoteSaveGames(user, localGames);
+          } catch (error) {
+            logger.error('Error saving games to database:', error);
+          }
         }
         logger.log('Loaded and merged remote games');
       }
