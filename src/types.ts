@@ -14,8 +14,7 @@ export interface Games {
   [id: string]: Game;
 }
 
-export interface User {
+export interface Profile {
   userId: string;
   name: string;
-  email: string;
 }

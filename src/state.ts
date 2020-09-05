@@ -3,7 +3,7 @@ import { createGame, getDailyGameId } from './gameUtils';
 import { createLogger } from './logging';
 import { localLoadGames } from './storage';
 import { computeScore, permute } from './wordUtil';
-import { Game, User } from './types';
+import { Game, Profile } from './types';
 
 export type AppDispatch = Dispatch<AppAction>;
 
@@ -66,7 +66,7 @@ export interface SetMessageAction {
 
 export interface SetUserAction {
   type: 'setUser';
-  payload: User | null;
+  payload: Profile | null;
 }
 
 export interface UpdateGameAction {
@@ -91,7 +91,7 @@ export type AppAction =
 
 export interface AppState {
   currentGame: string;
-  user: User | undefined | null;
+  user: Profile | undefined | null;
   error?: Error | string;
   message?: string;
   input: string[];

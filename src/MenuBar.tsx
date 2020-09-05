@@ -2,11 +2,11 @@ import React, {useCallback} from 'react';
 import {signIn, signOut} from './auth';
 import Button from './Button';
 import {AppDispatch} from './state';
-import {User} from './types';
+import {Profile} from './types';
 import './MenuBar.css';
 
 export interface MenuBarProps {
-  user: User | undefined | null;
+  user: Profile | undefined | null;
   dispatch: AppDispatch;
 }
 

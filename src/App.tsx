@@ -15,6 +15,7 @@ import {
   remoteLoadGames,
   remoteSaveGame,
   remoteSaveGames,
+  remoteSaveProfile,
   subscribeToGame,
   Subscription,
 } from './storage';
@@ -83,6 +84,7 @@ function App() {
       dispatch({ type: 'setUser', payload: user });
       if (user) {
         logger.log('User is logged in');
+        remoteSaveProfile(user);
       }
 
       if (user || user === null) {
