@@ -10,7 +10,7 @@ const localKey = 'spellingcee/games';
 function getDbKey(user: User | string, gameId?: string) {
   const userId = typeof user === 'string' ? user : user.userId;
   const gameIdPath = gameId ? `/${gameId}` : '';
-  return `user/${userId}/games${gameIdPath}`;
+  return `users/${userId}/games${gameIdPath}`;
 }
 
 /**
