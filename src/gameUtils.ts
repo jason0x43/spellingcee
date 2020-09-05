@@ -32,6 +32,27 @@ export function getDailyGameId(): string {
 }
 
 /**
+ * Return the newest game from a set of games
+ */
+export function getNewestGame(games: Games): Game {
+  const gameIds = Object.keys(games);
+  if (gameIds.length === 0) {
+    throw new Error('Must be at least one game');
+  }
+
+  let newestGameId = gameIds[0];
+  let lastUpdated = 0;
+  for (const gameId of gameIds) {
+    if (games[gameId].lastUpdated > lastUpdated) {
+      lastUpdated = games[gameId].lastUpdated;
+      newestGameId = gameId;
+    }
+  }
+
+  return games[newestGameId];
+}
+
+/**
  * Create a new random game ID
  */
 export function getNewGameId(rngSeed?: string): string {

@@ -11,6 +11,7 @@ import './App.css';
 import AppError from './AppError';
 import { getCurrentUser } from './auth';
 import {
+  localLoadGames,
   localSaveGames,
   remoteLoadGames,
   remoteSaveGame,
@@ -96,6 +97,54 @@ function App() {
       clearTimeout(startTimer);
     };
   }, []);
+
+  // Load the remote game state and merge it into the local state. Save the
+  // result back to the remote.
+  useEffect(() => {
+    (async () => {
+      const localGames = localLoadGames(user);
+      if (localGames) {
+        dispatch({ type: 'setGames', payload: localGames });
+      }
+
+      if (user) {
+        let remoteGames: Games | undefined;
+
+        try {
+          remoteGames = await remoteLoadGames(user);
+        } catch (error) {
+          logger.error('Error loading remote games:', error);
+        }
+
+        if (remoteGames) {
+          let localGames = state.games;
+          for (const gameId of Object.keys(remoteGames)) {
+            const localGame = localGames[gameId];
+            const remoteGame = remoteGames[gameId];
+
+            if (
+              !localGame ||
+              (remoteGame.lastUpdated > localGame.lastUpdated &&
+                remoteGame.words.length > 0)
+            ) {
+              localGames = {
+                ...localGames,
+                [gameId]: remoteGame,
+              };
+            }
+          }
+
+          localSaveGames(localGames, user);
+          try {
+            await remoteSaveGames(user, localGames);
+          } catch (error) {
+            logger.error('Error saving games to database:', error);
+          }
+        }
+        logger.log('Loaded and merged remote games');
+      }
+    })();
+  }, [user]);
 
   // Emit an error if the input word is too long
   useEffect(() => {
@@ -253,7 +302,7 @@ function App() {
   useUpdateEffect(() => {
     logger.log('Saving updated game');
     (async () => {
-      localSaveGames(state.games);
+      localSaveGames(state.games, user);
       if (user) {
         try {
           await remoteSaveGame(user, currentGame);
@@ -263,7 +312,7 @@ function App() {
         }
       }
     })();
-  }, [currentGame]);
+  }, [currentGame, user]);
 
   // A subscription to a remote game state
   const subscription = useRef<Subscription>();
@@ -309,49 +358,6 @@ function App() {
       }
     }
   }, [user, currentGame.id]);
-
-  // Load the remote game state and merge it into the local state. Save the
-  // result back to the remote.
-  useEffect(() => {
-    (async () => {
-      if (user) {
-        let remoteGames: Games | undefined;
-
-        try {
-          remoteGames = await remoteLoadGames(user);
-        } catch (error) {
-          logger.error('Error loading remote games:', error);
-        }
-
-        if (remoteGames) {
-          let localGames = state.games;
-          for (const gameId of Object.keys(remoteGames)) {
-            const localGame = localGames[gameId];
-            const remoteGame = remoteGames[gameId];
-
-            if (
-              !localGame ||
-              (remoteGame.lastUpdated > localGame.lastUpdated &&
-                remoteGame.words.length > 0)
-            ) {
-              localGames = {
-                ...localGames,
-                [gameId]: remoteGame,
-              };
-            }
-          }
-
-          localSaveGames(localGames);
-          try {
-            await remoteSaveGames(user, localGames);
-          } catch (error) {
-            logger.error('Error saving games to database:', error);
-          }
-        }
-        logger.log('Loaded and merged remote games');
-      }
-    })();
-  }, [user]);
 
   // If there was an error, display an error message rather than the normal UI
   if (error) {

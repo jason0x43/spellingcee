@@ -18,3 +18,7 @@ export interface Profile {
   userId: string;
   name: string;
 }
+
+export interface User extends Profile {
+  email: string;
+}

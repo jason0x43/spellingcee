@@ -3,9 +3,18 @@ import 'firebase/auth';
 import 'firebase/database';
 import { Game, Games, Profile } from './types';
 import { normalizeGame, normalizeGames } from './gameUtils';
+import { createLogger } from './logging';
 
+const logger = createLogger({ prefix: 'storage' });
 const storage = window.localStorage;
-const localKey = 'spellingcee/games';
+
+function getLocalGamesKey(user: Profile | string | undefined | null) {
+  let userId = 'local';
+  if (user != null) {
+    userId = typeof user === 'string' ? user : user.userId;
+  }
+  return `spellingcee/${userId}/games`;
+}
 
 function getUserKey(user: Profile | string) {
   const userId = typeof user === 'string' ? user : user.userId;
@@ -31,8 +40,11 @@ function getRef(key: string) {
 /**
  * Load games from local storage
  */
-export function localLoadGames(): Games | undefined {
-  const games = storage.getItem(localKey);
+export function localLoadGames(
+  user?: Profile | string | null
+): Games | undefined {
+  const games = storage.getItem(getLocalGamesKey(user));
+  logger.log('Loaded local games for', user);
   if (games == null) {
     return;
   }
@@ -42,14 +54,16 @@ export function localLoadGames(): Games | undefined {
 /**
  * Save games to local storage
  */
-export function localSaveGames(games: Games) {
-  storage.setItem(localKey, JSON.stringify(games));
+export function localSaveGames(games: Games, user?: Profile | null) {
+  storage.setItem(getLocalGamesKey(user), JSON.stringify(games));
 }
 
 /**
  * Load games from the database
  */
-export async function remoteLoadGames(user: Profile): Promise<Games | undefined> {
+export async function remoteLoadGames(
+  user: Profile
+): Promise<Games | undefined> {
   const ref = getRef(getGamesKey(user));
   const snapshot = await ref.once('value');
   const games = snapshot.val();
@@ -69,7 +83,10 @@ export async function remoteSaveGame(user: Profile, game: Game): Promise<void> {
 /**
  * Save games to the database
  */
-export async function remoteSaveGames(user: Profile, games: Games): Promise<void> {
+export async function remoteSaveGames(
+  user: Profile,
+  games: Games
+): Promise<void> {
   await getRef(getGamesKey(user)).set(games);
 }
 
@@ -77,7 +94,11 @@ export async function remoteSaveGames(user: Profile, games: Games): Promise<void
  * Save the current user profile to the database
  */
 export async function remoteSaveProfile(user: Profile): Promise<void> {
-  await getRef(getProfileKey(user)).set(user);
+  const profileData = {
+    userId: user.userId,
+    name: user.name
+  }
+  await getRef(getProfileKey(user)).set(profileData);
 }
 
 /**

@@ -1,5 +1,5 @@
 import { Dispatch } from 'react';
-import { createGame, getDailyGameId } from './gameUtils';
+import { createGame, getDailyGameId, getNewestGame } from './gameUtils';
 import { createLogger } from './logging';
 import { localLoadGames } from './storage';
 import { computeScore, permute } from './wordUtil';
@@ -59,6 +59,11 @@ export interface SetGameAction {
   payload: Game;
 }
 
+export interface SetGamesAction {
+  type: 'setGames';
+  payload: Games;
+}
+
 export interface SetMessageAction {
   type: 'setMessage';
   payload: string | undefined;
@@ -85,6 +90,7 @@ export type AppAction =
   | MixLettersAction
   | SetCurrentGameAction
   | SetGameAction
+  | SetGamesAction
   | SetMessageAction
   | SetUserAction
   | UpdateGameAction;
@@ -100,17 +106,16 @@ export interface AppState {
 
 export function init(): AppState {
   let games = localLoadGames();
-  let currentGame: string;
+  let currentGame: string | undefined;
 
   if (games) {
-    let lastUpdated = 0;
-    for (const gameId of Object.keys(games)) {
-      if (games[gameId].lastUpdated > lastUpdated) {
-        lastUpdated = games[gameId].lastUpdated;
-        currentGame = gameId;
-      }
+    let newestGame = getNewestGame(games);
+    if (newestGame) {
+      currentGame = newestGame.id;
     }
-  } else {
+  }
+
+  if (!currentGame) {
     currentGame = getDailyGameId();
     games = {
       [currentGame]: createGame(currentGame),
@@ -118,7 +123,7 @@ export function init(): AppState {
   }
 
   return {
-    games,
+    games: games!,
     currentGame: currentGame!,
     user: undefined,
     input: [],
@@ -235,6 +240,17 @@ export function reducer(state: AppState, action: AppAction): AppState {
           ...state.games,
           [game.id]: game
         }
+      };
+    }
+
+    case 'setGames': {
+      logger.debug('Action: setGames');
+      const games = action.payload;
+      const currentGame = getNewestGame(games);
+      return {
+        ...state,
+        games: action.payload,
+        currentGame: currentGame.id
       };
     }
 
