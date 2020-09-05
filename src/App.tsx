@@ -28,7 +28,6 @@ import Message from './Message';
 import Modal from './Modal';
 import Progress from './Progress';
 import { init, reducer } from './state';
-import { User } from './types';
 import wordlist from './wordlist';
 import Words from './Words';
 import {
@@ -394,11 +393,3 @@ function App() {
 }
 
 export default App;
-
-function getLocalStoreKey() {
-  return 'spellingcee/games';
-}
-
-function getDbKey(user: User, gameId?: string) {
-  return `user/${user.userId}${gameId ? '/' + gameId : ''}`;
-}
