@@ -22,6 +22,7 @@ import GameSelect from './GameSelect';
 import useUpdateEffect from './hooks/useUpdateEffect';
 import Input from './Input';
 import Letters from './Letters';
+import { debug, error as logError, log } from './logging';
 import MenuBar from './MenuBar';
 import Message from './Message';
 import Modal from './Modal';
@@ -79,6 +80,9 @@ function App() {
     (async () => {
       const user = await getCurrentUser();
       dispatch({ type: 'setUser', payload: user });
+      if (user) {
+        log('User is logged in');
+      }
 
       if (user || user === null) {
         startTimer = setTimeout(() => setStarting(false), 1000);
@@ -161,7 +165,7 @@ function App() {
     }
 
     const word = input.join('');
-    console.log('validating', word);
+    log('validating', word);
     const message = validateWord({
       words,
       validWords,
@@ -244,12 +248,12 @@ function App() {
 
   // If the current game changes, save it
   useUpdateEffect(() => {
-    console.log('Saving updated game');
+    log('Saving updated game');
     (async () => {
       localSaveGames(state.games);
       if (user) {
         await remoteSaveGame(user, currentGame);
-        console.log('Saved updated game to remote');
+        log('Saved updated game to remote');
       }
     })();
   }, [currentGame]);
@@ -264,15 +268,18 @@ function App() {
         user,
         currentGame.id,
         (remoteGame) => {
-          console.log(
-            `Saw game update: ${remoteGame?.lastUpdated} vs ${currentGame?.lastUpdated}`
+          debug(
+            'Saw game update:',
+            remoteGame?.lastUpdated,
+            'vs',
+            currentGame?.lastUpdated
           );
           if (
             remoteGame &&
             remoteGame.lastUpdated > currentGame.lastUpdated &&
             remoteGame.words.length > 0
           ) {
-            console.log('Using remote game');
+            log('Using remote game');
             dispatch({ type: 'setGame', payload: remoteGame });
           }
         }
@@ -298,7 +305,6 @@ function App() {
     (async () => {
       if (user) {
         let remoteGames = await remoteLoadGames(user);
-        console.log('Loaded remote games:', remoteGames);
         if (remoteGames) {
           let localGames = state.games;
           for (const gameId of Object.keys(remoteGames)) {
@@ -319,15 +325,15 @@ function App() {
 
           localSaveGames(localGames);
           await remoteSaveGames(user, localGames);
-          console.log('Saved merged games', localGames);
         }
+        log('Loaded and merged remote games');
       }
     })();
   }, [user]);
 
   // If there was an error, display an error message rather than the normal UI
   if (error) {
-    console.error(error);
+    logError(error);
     const message =
       typeof error === 'string'
         ? error

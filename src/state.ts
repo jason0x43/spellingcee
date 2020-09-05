@@ -1,5 +1,6 @@
 import { Dispatch } from 'react';
-import { createGame, getDailyGameId, normalizeGames } from './gameUtils';
+import { createGame, getDailyGameId } from './gameUtils';
+import { debug } from './logging';
 import { localLoadGames } from './storage';
 import { computeScore, permute } from './wordUtil';
 import { Game, User } from './types';
@@ -125,7 +126,7 @@ export function init(): AppState {
 export function reducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'addGame': {
-      console.log('Action: addGame');
+      debug('Action: addGame');
       const game = createGame(action.payload);
       return {
         ...state,
@@ -137,7 +138,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'addInput': {
-      console.log('Action: addInput');
+      debug('Action: addInput');
       const { input } = state;
       return {
         ...state,
@@ -146,7 +147,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'addWord': {
-      console.log('Action: addWord');
+      debug('Action: addWord');
       const game = state.games[state.currentGame];
       const newWords = [...game.words, action.payload];
       return {
@@ -164,7 +165,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'clearInput': {
-      console.log('Action: clearInput');
+      debug('Action: clearInput');
       return {
         ...state,
         input: [],
@@ -172,7 +173,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'clearUser': {
-      console.log('Action: clearUser');
+      debug('Action: clearUser');
       return {
         ...state,
         user: null,
@@ -180,7 +181,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'deleteGame': {
-      console.log('Action: deleteGame');
+      debug('Action: deleteGame');
       const gameId =
         typeof action.payload === 'string' ? action.payload : action.payload.id;
       const { [gameId]: _, ...rest } = state.games;
@@ -191,7 +192,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'deleteInput': {
-      console.log('Action: deleteInput');
+      debug('Action: deleteInput');
       const { input } = state;
       return {
         ...state,
@@ -200,7 +201,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'mixLetters': {
-      console.log('Action: mixLetters');
+      debug('Action: mixLetters');
       const game = state.games[state.currentGame];
       return {
         ...state,
@@ -216,7 +217,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'setCurrentGame': {
-      console.log('Action: setCurrentGame');
+      debug('Action: setCurrentGame');
       return {
         ...state,
         currentGame: action.payload
@@ -224,7 +225,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'setGame': {
-      console.log('Action: setGame');
+      debug('Action: setGame');
       const game = action.payload;
       return {
         ...state,
@@ -236,7 +237,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'setMessage': {
-      console.log('Action: setMessage');
+      debug('Action: setMessage');
       return {
         ...state,
         message: action.payload,
@@ -244,7 +245,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'setUser': {
-      console.log('Action: setUser');
+      debug('Action: setUser');
       return {
         ...state,
         user: action.payload,
@@ -252,7 +253,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'updateGame': {
-      console.log('Action: updateGame:', action.payload);
+      debug('Action: updateGame:', action.payload);
       return {
         ...state,
         games: {
