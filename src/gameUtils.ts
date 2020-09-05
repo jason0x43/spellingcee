@@ -1,19 +1,8 @@
 import { newRng } from './random';
 import { getDateString } from './util';
 import wordlist, { blocks } from './wordlist';
-import { getLetters, findPangram, permute } from './wordUtil';
-
-export interface Game {
-  id: string;
-  letters: string[];
-  words: string[];
-  totalWords: number;
-  score: number;
-  maxScore: number;
-  difficulty: number;
-  lastUpdated: number;
-  lastPlayed?: number;
-}
+import { computeScore, getLetters, findPangram, permute } from './wordUtil';
+import { Game, Games } from './types';
 
 /**
  * Return a new empty game
@@ -72,9 +61,39 @@ export function normalizeGame(game: Game): Game {
     const { lastPlayed, ...rest } = game;
     game = {
       ...rest,
-      lastUpdated: lastPlayed
-    }
+      lastUpdated: lastPlayed,
+    };
   }
 
   return game;
+}
+
+/**
+ * Perform any cleanup on game data
+ */
+export function normalizeGames(state: Games): Games {
+  let games: Games = state || {};
+
+  for (const gameId in games) {
+    games = {
+      ...games,
+      [gameId]: normalizeGame(games[gameId]),
+    };
+
+    if (!games[gameId].id) {
+      games = {
+        ...games,
+        [gameId]: {
+          ...games[gameId],
+          id: gameId,
+        },
+      };
+    }
+  }
+
+  return games;
+}
+
+function arraysAreEqual(arr1: string[], arr2: string[]) {
+  return arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
 }

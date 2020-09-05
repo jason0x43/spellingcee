@@ -1,21 +1,27 @@
-import React, { useCallback } from 'react';
+import React, {useCallback} from 'react';
+import {signIn, signOut} from './auth';
 import Button from './Button';
-import useUser from './hooks/useUser';
-import { signIn, signOut } from './firebase';
+import {AppDispatch} from './state';
+import {User} from './types';
 import './MenuBar.css';
 
-export default function MenuBar() {
-  const [user, setUser] = useUser();
+export interface MenuBarProps {
+  user: User | undefined | null;
+  dispatch: AppDispatch;
+}
+
+export default function MenuBar(props: MenuBarProps) {
+  const { dispatch, user } = props;
 
   const handleSignin = useCallback(async () => {
     const data = await signIn();
-    setUser(data);
-  }, [setUser]);
+    dispatch({ type: 'setUser', payload: data });
+  }, [dispatch]);
 
   const handleSignout = useCallback(async () => {
     await signOut();
-    setUser(null);
-  }, [setUser]);
+    dispatch({ type: 'clearUser' });
+  }, [dispatch]);
 
   return (
     <div className="MenuBar">

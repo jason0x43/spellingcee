@@ -3,29 +3,39 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
+  useReducer,
   useState,
 } from 'react';
+import './App.css';
 import AppError from './AppError';
+import { getCurrentUser } from './auth';
+import {
+  localSaveGames,
+  remoteLoadGames,
+  remoteSaveGame,
+  remoteSaveGames,
+  subscribeToGame,
+  Subscription,
+} from './storage';
+import GameSelect from './GameSelect';
+import useUpdateEffect from './hooks/useUpdateEffect';
+import Input from './Input';
+import Letters from './Letters';
+import MenuBar from './MenuBar';
+import Message from './Message';
+import Modal from './Modal';
+import Progress from './Progress';
+import { init, reducer } from './state';
+import { User } from './types';
+import wordlist from './wordlist';
+import Words from './Words';
 import {
   computeScore,
   findValidWords,
   isPangram,
-  permute,
   validateWord,
 } from './wordUtil';
-import wordlist from './wordlist';
-import Input from './Input';
-import GameSelect from './GameSelect';
-import MenuBar from './MenuBar';
-import Message from './Message';
-import Letters from './Letters';
-import Progress from './Progress';
-import Words from './Words';
-import Modal from './Modal';
-import useError from './hooks/useError';
-import useUser from './hooks/useUser';
-import useCurrentGame from './hooks/useCurrentGame';
-import './App.css';
 
 const messageTimeout = 1000;
 const inputShakeTimeout = 300;
@@ -34,26 +44,25 @@ const renderLimit = 20;
 let renderCount = 0;
 
 function App() {
-  const [user] = useUser();
-  const [error] = useError();
+  const [state, dispatch] = useReducer(reducer, undefined, init);
   const [starting, setStarting] = useState(true);
-  const [currentGame, setCurrentGame] = useCurrentGame();
-  const [message, setMessage] = useState<string>();
   const [messageVisible, setMessageVisible] = useState<boolean>(false);
   const [messageGood, setMessageGood] = useState<boolean>(false);
-  const [input, setInput] = useState<string[]>([]);
   const [inputDisabled, setInputDisabled] = useState(false);
 
+  const { error, message, input, user } = state;
+  const currentGame = state.games[state.currentGame];
   const center = currentGame.id[0];
-  const { letters, words } = currentGame;
+  const { letters, score, words } = currentGame;
 
   renderCount++;
   if (renderCount > renderLimit) {
-    throw new Error(
-      `Too many renders (${renderCount} in ${renderWindow} ms)`
-    );
+    throw new Error(`Too many renders (${renderCount} in ${renderWindow} ms)`);
   }
 
+  // Start an interval to reset the render count periodically. This will let us
+  // see if there are an excessive number of renders happening over a
+  // particular time frame.
   useEffect(() => {
     const renderTimer = setInterval(() => {
       renderCount = 0;
@@ -63,79 +72,96 @@ function App() {
     };
   }, []);
 
-  // Check the login state of the application
+  // Check for a logged in user
   useEffect(() => {
-    let startTimer: ReturnType<typeof setTimeout> | undefined;
-    if (user || user === null) {
-      startTimer = setTimeout(() => setStarting(false), 1000);
-    }
+    let startTimer: ReturnType<typeof setTimeout>;
+
+    (async () => {
+      const user = await getCurrentUser();
+      dispatch({ type: 'setUser', payload: user });
+
+      if (user || user === null) {
+        startTimer = setTimeout(() => setStarting(false), 1000);
+      }
+    })();
 
     return () => {
-      if (startTimer) {
-        clearTimeout(startTimer);
-      }
+      clearTimeout(startTimer);
     };
-  }, [user]);
+  }, []);
 
   // Emit an error if the input word is too long
   useEffect(() => {
     if (input.length > 19) {
-      setMessage('Word too long');
+      dispatch({ type: 'setMessage', payload: 'Word too long' });
+    }
+  }, [input.length, dispatch]);
+
+  // If we have a message, display it
+  useEffect(() => {
+    if (message) {
       setMessageVisible(true);
       setInputDisabled(true);
-    }
-  }, [input, setMessage, setMessageVisible]);
 
+      // After a while, hide the message and clear the input
+      const timers = [
+        setTimeout(() => {
+          setMessageVisible(false);
+        }, messageTimeout),
+
+        setTimeout(() => {
+          dispatch({ type: 'clearInput' });
+          setInputDisabled(false);
+          setMessageGood(false);
+        }, inputShakeTimeout),
+      ];
+
+      return () => timers.forEach((timer) => clearTimeout(timer));
+    }
+  }, [dispatch, message, setMessageVisible, setInputDisabled]);
+
+  // Determine the total set of valid words and the maximum possible score
   const validWords = useMemo(() => {
     return findValidWords({
       allWords: wordlist,
       pangram: currentGame.id,
       center,
     });
-  }, [currentGame, center]);
+  }, [center, currentGame.id]);
   const maxScore = useMemo(() => computeScore(validWords), [validWords]);
 
   // Handle a letter activation
   const handleLetterPress = useCallback(
-    (letter) => {
-      // Ignore keystrokes while a message is visible
-      if (inputDisabled) {
-        return;
+    (letter: string) => {
+      if (!inputDisabled) {
+        dispatch({ type: 'addInput', payload: letter });
       }
-
-      setInput([...input, letter]);
     },
-    [input, inputDisabled, setInput]
+    [inputDisabled, dispatch]
   );
 
   // Delete the last input character
   const deleteLastInput = useCallback(() => {
-    // Ignore keystrokes while a message is visible
-    if (inputDisabled) {
-      return;
+    if (!inputDisabled) {
+      dispatch({ type: 'deleteInput' });
     }
-
-    setInput(input.slice(0, input.length - 1));
-  }, [inputDisabled, setInput, input]);
+  }, [inputDisabled, dispatch]);
 
   // Permute the letters
   const mixLetters = useCallback(() => {
-    // Ignore keystrokes while a message is visible
-    if (inputDisabled) {
-      return;
+    if (!inputDisabled) {
+      dispatch({ type: 'mixLetters' });
     }
-
-    setCurrentGame({ ...currentGame, letters: permute(letters) });
-  }, [inputDisabled, setCurrentGame, currentGame, letters]);
+  }, [inputDisabled, dispatch]);
 
   // Handle a word submission
   const submitWord = useCallback(() => {
-    // Ignore keystrokes while a message is visible
     if (inputDisabled) {
       return;
     }
 
     const word = input.join('');
+    console.log('validating', word);
     const message = validateWord({
       words,
       validWords,
@@ -145,31 +171,30 @@ function App() {
     });
 
     if (message) {
-      setMessage(message);
+      dispatch({ type: 'setMessage', payload: message });
       setMessageGood(false);
       setMessageVisible(true);
       setInputDisabled(true);
     } else {
-      const newWords = [...words, word];
-      setCurrentGame({ ...currentGame, words: newWords });
+      dispatch({ type: 'addWord', payload: word });
       if (isPangram(word)) {
-        setMessage('Pangram!');
+        dispatch({ type: 'setMessage', payload: 'Pangram!' });
         setMessageGood(false);
         setMessageVisible(true);
       } else {
-        setMessage('Great!');
+        dispatch({ type: 'setMessage', payload: 'Great!' });
         setMessageGood(true);
         setMessageVisible(true);
       }
-      setInput([]);
+      dispatch({ type: 'clearInput' });
     }
   }, [
     center,
-    currentGame,
+    currentGame.id,
+    dispatch,
     input,
     inputDisabled,
-    setCurrentGame,
-    currentGame,
+    setInputDisabled,
     validWords,
     words,
   ]);
@@ -177,7 +202,6 @@ function App() {
   // Handle a general keypress event
   const handleKeyPress = useCallback(
     (event) => {
-      // Ignore keystrokes while a message is visible
       if (inputDisabled) {
         return;
       }
@@ -192,60 +216,116 @@ function App() {
       } else if (key === ' ') {
         mixLetters();
       } else if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')) {
-        setInput([...input, event.key]);
+        dispatch({ type: 'addInput', payload: event.key });
       }
     },
-    [deleteLastInput, submitWord, mixLetters, input, inputDisabled]
+    [deleteLastInput, inputDisabled, mixLetters, submitWord]
   );
 
   // Add event listeners
   useEffect(() => {
     window.addEventListener('keypress', handleKeyPress);
-    return () => window.removeEventListener('keypress', handleKeyPress);
+    return () => {
+      window.removeEventListener('keypress', handleKeyPress);
+    };
   }, [handleKeyPress]);
 
-  // Hide the message, clear and enable the input area
-  useEffect(() => {
-    const timers: number[] = [];
-    if (messageVisible) {
-      timers.push(
-        window.setTimeout(() => {
-          setMessageVisible(false);
-        }, messageTimeout)
-      );
-      timers.push(
-        window.setTimeout(() => {
-          setInput([]);
-          setInputDisabled(false);
-        }, inputShakeTimeout)
-      );
-    } else {
-      timers.push(
-        window.setTimeout(() => setMessageGood(false), inputShakeTimeout)
-      );
-    }
-    return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [messageVisible]);
-
-  const score = useMemo(() => computeScore(words), [words]);
-
-  useEffect(() => {
-    // Do a pre-check before calling setGameState since setGameState will cause
-    // this effect to run again.
-    if (
-      currentGame.maxScore !== maxScore ||
-      currentGame.totalWords !== validWords.length ||
-      currentGame.score !== score
-    ) {
-      setCurrentGame({
-        ...currentGame,
+  // Update the game state when certain game metadata (maxScore, totalWords,
+  // score) change
+  useUpdateEffect(() => {
+    dispatch({
+      type: 'updateGame',
+      payload: {
         maxScore,
         totalWords: validWords.length,
-        score,
-      });
-    }
-  }, [currentGame, maxScore, setCurrentGame, validWords, score]);
+      },
+    });
+  }, [dispatch, maxScore, validWords.length]);
 
+  // If the current game changes, save it
+  useUpdateEffect(() => {
+    console.log('Saving updated game');
+    (async () => {
+      localSaveGames(state.games);
+      if (user) {
+        await remoteSaveGame(user, currentGame);
+        console.log('Saved updated game to remote');
+      }
+    })();
+  }, [currentGame]);
+
+  // A subscription to a remote game state
+  const subscription = useRef<Subscription>();
+
+  // Watch for remote updates to the current game
+  useEffect(() => {
+    if (user) {
+      subscription.current = subscribeToGame(
+        user,
+        currentGame.id,
+        (remoteGame) => {
+          console.log(
+            `Saw game update: ${remoteGame?.lastUpdated} vs ${currentGame?.lastUpdated}`
+          );
+          if (
+            remoteGame &&
+            remoteGame.lastUpdated > currentGame.lastUpdated &&
+            remoteGame.words.length > 0
+          ) {
+            console.log('Using remote game');
+            dispatch({ type: 'setGame', payload: remoteGame });
+          }
+        }
+      );
+
+      return () => {
+        if (subscription.current) {
+          subscription.current.off();
+          subscription.current = undefined;
+        }
+      };
+    } else {
+      if (subscription.current) {
+        subscription.current.off();
+        subscription.current = undefined;
+      }
+    }
+  }, [user, currentGame.id]);
+
+  // Load the remote game state and merge it into the local state. Save the
+  // result back to the remote.
+  useEffect(() => {
+    (async () => {
+      if (user) {
+        let remoteGames = await remoteLoadGames(user);
+        console.log('Loaded remote games:', remoteGames);
+        if (remoteGames) {
+          let localGames = state.games;
+          for (const gameId of Object.keys(remoteGames)) {
+            const localGame = localGames[gameId];
+            const remoteGame = remoteGames[gameId];
+
+            if (
+              !localGame ||
+              (remoteGame.lastUpdated > localGame.lastUpdated &&
+                remoteGame.words.length > 0)
+            ) {
+              localGames = {
+                ...localGames,
+                [gameId]: remoteGame,
+              };
+            }
+          }
+
+          localSaveGames(localGames);
+          await remoteSaveGames(user, localGames);
+          console.log('Saved merged games', localGames);
+        }
+      }
+    })();
+  }, [user]);
+
+  // If there was an error, display an error message rather than the normal UI
   if (error) {
     console.error(error);
     const message =
@@ -267,7 +347,7 @@ function App() {
         <Modal />
       ) : (
         <Fragment>
-          <MenuBar />
+          <MenuBar user={user} dispatch={dispatch} />
           <div className="App-letters-wrapper">
             <div className="App-letters">
               <Message isVisible={messageVisible} isGood={messageGood}>
@@ -293,7 +373,11 @@ function App() {
             <div className="App-words">
               <Progress score={score} maxScore={maxScore} />
               <Words words={words} validWords={validWords} />
-              <GameSelect />
+              <GameSelect
+                currentGame={state.currentGame}
+                dispatch={dispatch}
+                games={state.games}
+              />
             </div>
           </div>
         </Fragment>
@@ -303,3 +387,11 @@ function App() {
 }
 
 export default App;
+
+function getLocalStoreKey() {
+  return 'spellingcee/games';
+}
+
+function getDbKey(user: User, gameId?: string) {
+  return `user/${user.userId}${gameId ? '/' + gameId : ''}`;
+}

@@ -1,15 +1,19 @@
-import React, { MouseEventHandler, useCallback, useState } from 'react';
-import { createGame } from './gameUtils';
-import useCurrentGame from './hooks/useCurrentGame';
-import useGames from './hooks/useGames';
+import React, { Dispatch, MouseEventHandler, useCallback, useState } from 'react';
+import { AppAction } from './state';
+import { Games } from './types';
 import Button from './Button';
 import Modal from './Modal';
 import './GameSelect.css';
 
-export default function GameSelect() {
-  const [games, setGames] = useGames();
-  const [currentGame, setCurrentGame] = useCurrentGame();
+export interface GameSelectProps {
+  games: Games;
+  currentGame: string;
+  dispatch: Dispatch<AppAction>;
+}
+
+export default function GameSelect(props: GameSelectProps) {
   const [selecting, setSelecting] = useState(false);
+  const { games, currentGame, dispatch } = props;
 
   const handleClick = useCallback(() => {
     setSelecting(true);
@@ -23,17 +27,13 @@ export default function GameSelect() {
     (event) => {
       const gameId = event.currentTarget.getAttribute('data-game-id')!;
       if (gameId) {
-        setCurrentGame(gameId);
+        dispatch({ type: 'setCurrentGame', payload: gameId });
       } else {
-        const newGame = createGame();
-        setGames({
-          ...games,
-          [newGame.id]: newGame
-        });
+        dispatch({ type: 'addGame' });
       }
       setSelecting(false);
     },
-    [games, setCurrentGame, setGames]
+    [dispatch]
   );
 
   const handleRemoveGame: MouseEventHandler = useCallback(
@@ -46,8 +46,7 @@ export default function GameSelect() {
       }
       const gameId = node?.getAttribute('data-game-id');
       if (gameId) {
-        const { [gameId]: _, ...rest } = games;
-        setGames(rest);
+        dispatch({ type: 'deleteGame', payload: gameId });
       }
 
       // Don't let events propogate -- they'd end up being handled by the
@@ -55,13 +54,13 @@ export default function GameSelect() {
       // game.
       event.stopPropagation();
     },
-    [games, setGames]
+    [dispatch]
   );
 
   return (
     <div className="GameSelect">
       <Button className="GameSelect-id" type="link" onClick={handleClick}>
-        {currentGame.id}
+        {currentGame}
       </Button>
       {selecting && (
         <Modal onHide={handleHideModal}>
