@@ -1,11 +1,13 @@
 import { Dispatch } from 'react';
 import { createGame, getDailyGameId } from './gameUtils';
-import { debug } from './logging';
+import { createLogger } from './logging';
 import { localLoadGames } from './storage';
 import { computeScore, permute } from './wordUtil';
 import { Game, User } from './types';
 
 export type AppDispatch = Dispatch<AppAction>;
+
+const logger = createLogger({ prefix: 'state' });
 
 export interface Games {
   [gameId: string]: Game;
@@ -126,7 +128,7 @@ export function init(): AppState {
 export function reducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'addGame': {
-      debug('Action: addGame');
+      logger.debug('Action: addGame');
       const game = createGame(action.payload);
       return {
         ...state,
@@ -138,7 +140,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'addInput': {
-      debug('Action: addInput');
+      logger.debug('Action: addInput');
       const { input } = state;
       return {
         ...state,
@@ -147,7 +149,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'addWord': {
-      debug('Action: addWord');
+      logger.debug('Action: addWord');
       const game = state.games[state.currentGame];
       const newWords = [...game.words, action.payload];
       return {
@@ -165,7 +167,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'clearInput': {
-      debug('Action: clearInput');
+      logger.debug('Action: clearInput');
       return {
         ...state,
         input: [],
@@ -173,7 +175,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'clearUser': {
-      debug('Action: clearUser');
+      logger.debug('Action: clearUser');
       return {
         ...state,
         user: null,
@@ -181,7 +183,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'deleteGame': {
-      debug('Action: deleteGame');
+      logger.debug('Action: deleteGame');
       const gameId =
         typeof action.payload === 'string' ? action.payload : action.payload.id;
       const { [gameId]: _, ...rest } = state.games;
@@ -192,7 +194,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'deleteInput': {
-      debug('Action: deleteInput');
+      logger.debug('Action: deleteInput');
       const { input } = state;
       return {
         ...state,
@@ -201,7 +203,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'mixLetters': {
-      debug('Action: mixLetters');
+      logger.debug('Action: mixLetters');
       const game = state.games[state.currentGame];
       return {
         ...state,
@@ -217,7 +219,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'setCurrentGame': {
-      debug('Action: setCurrentGame');
+      logger.debug('Action: setCurrentGame');
       return {
         ...state,
         currentGame: action.payload
@@ -225,7 +227,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'setGame': {
-      debug('Action: setGame');
+      logger.debug('Action: setGame');
       const game = action.payload;
       return {
         ...state,
@@ -237,7 +239,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'setMessage': {
-      debug('Action: setMessage');
+      logger.debug('Action: setMessage');
       return {
         ...state,
         message: action.payload,
@@ -245,7 +247,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'setUser': {
-      debug('Action: setUser');
+      logger.debug('Action: setUser');
       return {
         ...state,
         user: action.payload,
@@ -253,7 +255,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'updateGame': {
-      debug('Action: updateGame:', action.payload);
+      logger.debug('Action: updateGame:', action.payload);
       return {
         ...state,
         games: {

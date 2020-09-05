@@ -1,36 +1,76 @@
 const DEBUG = (import.meta as any).env.SNOWPACK_PUBLIC_DEBUG;
-let level = Number(DEBUG) || 1;
+let rootLevel = Number(DEBUG) || 1;
+
+export function createLogger(
+  options: { prefix?: string; level?: number } = {}
+) {
+  let level: number | undefined = options.level;
+  const prefix = options.prefix ? `[${options.prefix}]` : '';
+
+  return {
+    setLevel(lvl: number | undefined) {
+      level = lvl;
+    },
+
+    error(...args: any) {
+      if (level ?? rootLevel >= 1) {
+        let processedArgs = args.map((arg: unknown) => {
+          if (isError(arg)) {
+            return formatError(arg);
+          }
+          return arg;
+        });
+        console.error(prefix, ...processedArgs);
+      }
+    },
+
+    warn(...args: any) {
+      if (level ?? rootLevel >= 2) {
+        console.warn(prefix, ...args);
+      }
+    },
+
+    log(...args: any) {
+      if (level ?? rootLevel >= 3) {
+        console.log(prefix, ...args);
+      }
+    },
+
+    debug(...args: any) {
+      if (level ?? rootLevel >= 4) {
+        console.debug(prefix, ...args);
+      }
+    },
+
+    trace(...args: any) {
+      if (level ?? rootLevel >= 5) {
+        console.trace(prefix, ...args);
+      }
+    },
+  };
+}
 
 export function setLevel(lvl: number) {
-  level = lvl;
+  rootLevel = lvl;
 }
 
-export function error(...args: any) {
-  if (level >= 1) {
-    console.error(...args);
+const defaultLogger = createLogger();
+
+export default defaultLogger;
+
+function formatError(error: Error): string {
+  const { message } = error;
+  if (/PERMISSION_DENIED/.test(message)) {
+    return "You don't have permission to access the database";
   }
+  return message;
 }
 
-export function warn(...args: any) {
-  if (level >= 2) {
-    console.warn(...args);
-  }
-}
-
-export function log(...args: any) {
-  if (level >= 3) {
-    console.log(...args);
-  }
-}
-
-export function debug(...args: any) {
-  if (level >= 4) {
-    console.debug(...args);
-  }
-}
-
-export function trace(...args: any) {
-  if (level >= 5) {
-    console.trace(...args);
-  }
+function isError(value: any): value is Error {
+  return (
+    value &&
+    typeof value === 'object' &&
+    value.name != null &&
+    value.message != null
+  );
 }

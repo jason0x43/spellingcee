@@ -22,7 +22,7 @@ import GameSelect from './GameSelect';
 import useUpdateEffect from './hooks/useUpdateEffect';
 import Input from './Input';
 import Letters from './Letters';
-import { debug, error as logError, log } from './logging';
+import { createLogger } from './logging';
 import MenuBar from './MenuBar';
 import Message from './Message';
 import Modal from './Modal';
@@ -42,6 +42,7 @@ const messageTimeout = 1000;
 const inputShakeTimeout = 300;
 const renderWindow = 500;
 const renderLimit = 20;
+const logger = createLogger({prefix: 'App'});
 let renderCount = 0;
 
 function App() {
@@ -81,7 +82,7 @@ function App() {
       const user = await getCurrentUser();
       dispatch({ type: 'setUser', payload: user });
       if (user) {
-        log('User is logged in');
+        logger.log('User is logged in');
       }
 
       if (user || user === null) {
@@ -165,7 +166,7 @@ function App() {
     }
 
     const word = input.join('');
-    log('validating', word);
+    logger.log('validating', word);
     const message = validateWord({
       words,
       validWords,
@@ -248,12 +249,12 @@ function App() {
 
   // If the current game changes, save it
   useUpdateEffect(() => {
-    log('Saving updated game');
+    logger.log('Saving updated game');
     (async () => {
       localSaveGames(state.games);
       if (user) {
         await remoteSaveGame(user, currentGame);
-        log('Saved updated game to remote');
+          logger.log('Saved updated game to remote');
       }
     })();
   }, [currentGame]);
@@ -279,8 +280,8 @@ function App() {
             remoteGame.lastUpdated > currentGame.lastUpdated &&
             remoteGame.words.length > 0
           ) {
-            log('Using remote game');
             dispatch({ type: 'setGame', payload: remoteGame });
+              logger.log('Using remote game');
           }
         }
       );
@@ -326,14 +327,14 @@ function App() {
           localSaveGames(localGames);
           await remoteSaveGames(user, localGames);
         }
-        log('Loaded and merged remote games');
+        logger.log('Loaded and merged remote games');
       }
     })();
   }, [user]);
 
   // If there was an error, display an error message rather than the normal UI
   if (error) {
-    logError(error);
+    logger.error(error);
     const message =
       typeof error === 'string'
         ? error
