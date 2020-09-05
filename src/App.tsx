@@ -122,7 +122,7 @@ function App() {
 
       return () => timers.forEach((timer) => clearTimeout(timer));
     }
-  }, [dispatch, message, setMessageVisible, setInputDisabled]);
+  }, [message]);
 
   // Determine the total set of valid words and the maximum possible score
   const validWords = useMemo(() => {
@@ -244,7 +244,7 @@ function App() {
         totalWords: validWords.length,
       },
     });
-  }, [dispatch, maxScore, validWords.length]);
+  }, [maxScore, validWords.length]);
 
   // If the current game changes, save it
   useUpdateEffect(() => {
