@@ -35,6 +35,9 @@ export default function Modal(props: ModalProps) {
     [node, onHide]
   );
 
+  const showTimer = useRef<number>();
+  const removeTimer = useRef<number>();
+
   useEffect(() => {
     node.className = 'Modal-background';
     node.tabIndex = -1;
@@ -50,18 +53,25 @@ export default function Modal(props: ModalProps) {
     document.body.appendChild(node);
     node.focus();
 
-    const showTimer = setTimeout(() => {
+    if (showTimer.current) {
+      clearTimeout(showTimer.current);
+    }
+    if (removeTimer.current) {
+      clearTimeout(removeTimer.current);
+    }
+
+    showTimer.current = window.setTimeout(() => {
       node.classList.add('Modal-background-active');
     });
 
     return () => {
-      clearTimeout(showTimer);
+      clearTimeout(showTimer.current);
       node.classList.remove('Modal-background-active');
       if (!loadingMode) {
         node.removeEventListener('keypress', handleKeyPress);
         node.removeEventListener('click', handleClick);
       }
-      setTimeout(() => {
+      removeTimer.current = window.setTimeout(() => {
         node.remove();
       }, 1000);
     };
