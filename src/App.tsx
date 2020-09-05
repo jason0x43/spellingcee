@@ -162,17 +162,24 @@ function App() {
       // After a while, hide the message and clear the input
       const timers = [
         setTimeout(() => {
+          logger.log('Hiding message');
           setMessageVisible(false);
         }, messageTimeout),
 
         setTimeout(() => {
+          dispatch({ type: 'clearMessage' });
+          setMessageGood(false);
+        }, messageTimeout + 100),
+
+        setTimeout(() => {
           dispatch({ type: 'clearInput' });
           setInputDisabled(false);
-          setMessageGood(false);
         }, inputShakeTimeout),
       ];
 
-      return () => timers.forEach((timer) => clearTimeout(timer));
+      return () => {
+        timers.forEach((timer) => clearTimeout(timer));
+      }
     }
   }, [message]);
 
@@ -227,19 +234,19 @@ function App() {
     });
 
     if (message) {
-      dispatch({ type: 'setMessage', payload: message });
       setMessageGood(false);
+      dispatch({ type: 'setMessage', payload: message });
       setMessageVisible(true);
       setInputDisabled(true);
     } else {
       dispatch({ type: 'addWord', payload: word });
       if (isPangram(word)) {
-        dispatch({ type: 'setMessage', payload: 'Pangram!' });
         setMessageGood(false);
+        dispatch({ type: 'setMessage', payload: 'Pangram!' });
         setMessageVisible(true);
       } else {
-        dispatch({ type: 'setMessage', payload: 'Great!' });
         setMessageGood(true);
+        dispatch({ type: 'setMessage', payload: 'Great!' });
         setMessageVisible(true);
       }
       dispatch({ type: 'clearInput' });

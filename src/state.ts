@@ -32,6 +32,10 @@ export interface ClearInputAction {
   type: 'clearInput';
 }
 
+export interface ClearMessageAction {
+  type: 'clearMessage';
+}
+
 export interface ClearUserAction {
   type: 'clearUser';
 }
@@ -84,6 +88,7 @@ export type AppAction =
   | AddInputAction
   | AddWordAction
   | ClearInputAction
+  | ClearMessageAction
   | ClearUserAction
   | DeleteGameAction
   | DeleteInputAction
@@ -176,6 +181,14 @@ export function reducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         input: [],
+      };
+    }
+
+    case 'clearMessage': {
+      logger.debug('Action: clearMessage');
+      return {
+        ...state,
+        message: undefined,
       };
     }
 
