@@ -1,7 +1,7 @@
 import { newRng } from './random';
 import { getDateString } from './util';
 import wordlist, { blocks } from './wordlist';
-import { computeScore, getLetters, findPangram, permute } from './wordUtil';
+import { getLetters, findPangram, permute } from './wordUtil';
 import { Game, Games } from './types';
 
 /**
@@ -113,8 +113,4 @@ export function normalizeGames(state: Games): Games {
   }
 
   return games;
-}
-
-function arraysAreEqual(arr1: string[], arr2: string[]) {
-  return arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
 }
