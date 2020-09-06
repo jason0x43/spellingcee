@@ -20,10 +20,10 @@ export interface Subscription {
  * Load games from local storage
  */
 export function loadLocalGames(
-  user?: Profile | string | null
+  userId?: string | null
 ): Games | undefined {
-  const games = storage.getItem(getLocalGamesKey(user));
-  logger.log('Loaded local games for', user);
+  const games = storage.getItem(getLocalGamesKey(userId));
+  logger.log('Loaded local games for', userId);
   if (games == null) {
     return;
   }
@@ -45,9 +45,9 @@ export function loadUsers() {
  * Load games from the database
  */
 export async function loadRemoteGames(
-  user: Profile
+  userId: string
 ): Promise<Games | undefined> {
-  const ref = getRef(getGamesKey(user));
+  const ref = getRef(getGamesKey(userId));
   const snapshot = await ref.once('value');
   const games = snapshot.val();
   if (games == null) {
@@ -59,8 +59,8 @@ export async function loadRemoteGames(
 /**
  * Save games to local storage
  */
-export function saveLocalGames(games: Games, user?: Profile | null) {
-  storage.setItem(getLocalGamesKey(user), JSON.stringify(games));
+export function saveLocalGames(games: Games, userId?: string | null) {
+  storage.setItem(getLocalGamesKey(userId), JSON.stringify(games));
 }
 
 /**
@@ -71,35 +71,35 @@ export async function saveProfile(user: Profile): Promise<void> {
     userId: user.userId,
     name: user.name,
   };
-  await getRef(getProfileKey(user)).set(profileData);
+  await getRef(getProfileKey(user.userId)).set(profileData);
 }
 
 /**
  * Save a game to the database
  */
-export async function saveRemoteGame(user: Profile, game: Game): Promise<void> {
-  await getRef(getGamesKey(user, game.id)).set(game);
+export async function saveRemoteGame(userId: string, game: Game): Promise<void> {
+  await getRef(getGamesKey(userId, game.id)).set(game);
 }
 
 /**
  * Save games to the database
  */
 export async function saveRemoteGames(
-  user: Profile,
+  userId: string,
   games: Games
 ): Promise<void> {
-  await getRef(getGamesKey(user)).set(games);
+  await getRef(getGamesKey(userId)).set(games);
 }
 
 /**
  * Load a value from the database
  */
 export function subscribeToGame(
-  user: Profile | string,
+  userId: string,
   gameId: string,
   callback: (value: Game | undefined) => void
 ): Subscription {
-  const key = getGamesKey(user, gameId);
+  const key = getGamesKey(userId, gameId);
   const ref = firebase.database().ref(key);
   ref.on('value', (snapshot) => {
     const value = snapshot.val();
@@ -121,22 +121,16 @@ export function subscribeToGame(
   };
 }
 
-function getLocalGamesKey(user: Profile | string | undefined | null) {
-  let userId = 'local';
-  if (user != null) {
-    userId = typeof user === 'string' ? user : user.userId;
-  }
-  return `spellingcee/${userId}/games`;
+function getLocalGamesKey(userId: string | undefined | null) {
+  return `spellingcee/${userId || 'local'}/games`;
 }
 
-function getGamesKey(user: Profile | string, gameId?: string) {
-  const userId = typeof user === 'string' ? user : user.userId;
+function getGamesKey(userId: string, gameId?: string) {
   const gameIdPath = gameId ? `/${gameId}` : '';
   return `user_games/${userId}${gameIdPath}`;
 }
 
-function getProfileKey(user: Profile | string) {
-  const userId = typeof user === 'string' ? user : user.userId;
+function getProfileKey(userId: string) {
   return `users/${userId}`;
 }
 

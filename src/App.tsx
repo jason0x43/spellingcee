@@ -99,7 +99,7 @@ function App() {
   // result back to the remote.
   useEffect(() => {
     (async () => {
-      const localGames = loadLocalGames(user);
+      const localGames = loadLocalGames(user?.userId);
       if (localGames) {
         dispatch({ type: 'setGames', payload: localGames });
       }
@@ -113,7 +113,7 @@ function App() {
         loadUsers();
 
         try {
-          remoteGames = await loadRemoteGames(user);
+          remoteGames = await loadRemoteGames(user.userId);
         } catch (error) {
           logger.error('Error loading remote games:', error);
         }
@@ -136,9 +136,9 @@ function App() {
             }
           }
 
-          saveLocalGames(localGames, user);
+          saveLocalGames(localGames, user.userId);
           try {
-            await saveRemoteGames(user, localGames);
+            await saveRemoteGames(user.userId, localGames);
           } catch (error) {
             logger.error('Error saving games to database:', error);
           }
@@ -311,10 +311,10 @@ function App() {
   useUpdateEffect(() => {
     logger.log('Saving updated game');
     (async () => {
-      saveLocalGames(state.games, user);
+      saveLocalGames(state.games, user?.userId);
       if (user) {
         try {
-          await saveRemoteGame(user, currentGame);
+          await saveRemoteGame(user.userId, currentGame);
           logger.log('Saved updated game to remote');
         } catch (error) {
           logger.error('Error saving game:', error);
@@ -331,7 +331,7 @@ function App() {
     if (user) {
       try {
         subscription.current = subscribeToGame(
-          user,
+          user.userId,
           currentGame.id,
           (remoteGame) => {
             logger.debug(
