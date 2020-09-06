@@ -1,7 +1,7 @@
 import { Dispatch } from 'react';
 import { createGame, getDailyGameId, getNewestGame } from './gameUtils';
 import { createLogger } from './logging';
-import { localLoadGames } from './storage';
+import { loadLocalGames } from './storage';
 import { computeScore, permute } from './wordUtil';
 import { Game, Profile } from './types';
 
@@ -110,7 +110,7 @@ export interface AppState {
 }
 
 export function init(): AppState {
-  let games = localLoadGames();
+  let games = loadLocalGames();
   let currentGame: string | undefined;
 
   if (games) {

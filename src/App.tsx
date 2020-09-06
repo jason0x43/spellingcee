@@ -11,12 +11,13 @@ import './App.css';
 import AppError from './AppError';
 import { getCurrentUser } from './auth';
 import {
-  localLoadGames,
-  localSaveGames,
-  remoteLoadGames,
-  remoteSaveGame,
-  remoteSaveGames,
-  remoteSaveProfile,
+  loadLocalGames,
+  loadUsers,
+  loadRemoteGames,
+  saveLocalGames,
+  saveProfile,
+  saveRemoteGame,
+  saveRemoteGames,
   subscribeToGame,
   Subscription,
 } from './storage';
@@ -83,10 +84,6 @@ function App() {
     (async () => {
       const user = await getCurrentUser();
       dispatch({ type: 'setUser', payload: user });
-      if (user) {
-        logger.log('User is logged in');
-        remoteSaveProfile(user);
-      }
 
       if (user || user === null) {
         startTimer = setTimeout(() => setStarting(false), 1000);
@@ -102,16 +99,21 @@ function App() {
   // result back to the remote.
   useEffect(() => {
     (async () => {
-      const localGames = localLoadGames(user);
+      const localGames = loadLocalGames(user);
       if (localGames) {
         dispatch({ type: 'setGames', payload: localGames });
       }
 
       if (user) {
+        logger.log('User is logged in');
+        saveProfile(user);
+
         let remoteGames: Games | undefined;
 
+        loadUsers();
+
         try {
-          remoteGames = await remoteLoadGames(user);
+          remoteGames = await loadRemoteGames(user);
         } catch (error) {
           logger.error('Error loading remote games:', error);
         }
@@ -134,9 +136,9 @@ function App() {
             }
           }
 
-          localSaveGames(localGames, user);
+          saveLocalGames(localGames, user);
           try {
-            await remoteSaveGames(user, localGames);
+            await saveRemoteGames(user, localGames);
           } catch (error) {
             logger.error('Error saving games to database:', error);
           }
@@ -309,10 +311,10 @@ function App() {
   useUpdateEffect(() => {
     logger.log('Saving updated game');
     (async () => {
-      localSaveGames(state.games, user);
+      saveLocalGames(state.games, user);
       if (user) {
         try {
-          await remoteSaveGame(user, currentGame);
+          await saveRemoteGame(user, currentGame);
           logger.log('Saved updated game to remote');
         } catch (error) {
           logger.error('Error saving game:', error);

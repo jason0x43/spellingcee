@@ -8,39 +8,18 @@ import { createLogger } from './logging';
 const logger = createLogger({ prefix: 'storage' });
 const storage = window.localStorage;
 
-function getLocalGamesKey(user: Profile | string | undefined | null) {
-  let userId = 'local';
-  if (user != null) {
-    userId = typeof user === 'string' ? user : user.userId;
-  }
-  return `spellingcee/${userId}/games`;
-}
-
-function getUserKey(user: Profile | string) {
-  const userId = typeof user === 'string' ? user : user.userId;
-  return `users/${userId}`;
-}
-
-function getGamesKey(user: Profile | string, gameId?: string) {
-  const gameIdPath = gameId ? `/${gameId}` : '';
-  return `${getUserKey(user)}/games${gameIdPath}`;
-}
-
-function getProfileKey(user: Profile | string) {
-  return `${getUserKey(user)}/profile`;
-}
-
 /**
- * Return a handle to the database
+ * A handle to an database subscription
  */
-function getRef(key: string) {
-  return firebase.database().ref(key);
+export interface Subscription {
+  key: string;
+  off(): void;
 }
 
 /**
  * Load games from local storage
  */
-export function localLoadGames(
+export function loadLocalGames(
   user?: Profile | string | null
 ): Games | undefined {
   const games = storage.getItem(getLocalGamesKey(user));
@@ -52,16 +31,20 @@ export function localLoadGames(
 }
 
 /**
- * Save games to local storage
+ * Load user profiles from the database
  */
-export function localSaveGames(games: Games, user?: Profile | null) {
-  storage.setItem(getLocalGamesKey(user), JSON.stringify(games));
+export function loadUsers() {
+  logger.debug('loading remote users');
+  const ref = getRef('users');
+  ref.orderByKey().on('child_added', (snapshot) => {
+    logger.debug('got user:', snapshot.val());
+  });
 }
 
 /**
  * Load games from the database
  */
-export async function remoteLoadGames(
+export async function loadRemoteGames(
   user: Profile
 ): Promise<Games | undefined> {
   const ref = getRef(getGamesKey(user));
@@ -74,39 +57,38 @@ export async function remoteLoadGames(
 }
 
 /**
+ * Save games to local storage
+ */
+export function saveLocalGames(games: Games, user?: Profile | null) {
+  storage.setItem(getLocalGamesKey(user), JSON.stringify(games));
+}
+
+/**
+ * Save the current user profile to the database
+ */
+export async function saveProfile(user: Profile): Promise<void> {
+  const profileData = {
+    userId: user.userId,
+    name: user.name,
+  };
+  await getRef(getProfileKey(user)).set(profileData);
+}
+
+/**
  * Save a game to the database
  */
-export async function remoteSaveGame(user: Profile, game: Game): Promise<void> {
+export async function saveRemoteGame(user: Profile, game: Game): Promise<void> {
   await getRef(getGamesKey(user, game.id)).set(game);
 }
 
 /**
  * Save games to the database
  */
-export async function remoteSaveGames(
+export async function saveRemoteGames(
   user: Profile,
   games: Games
 ): Promise<void> {
   await getRef(getGamesKey(user)).set(games);
-}
-
-/**
- * Save the current user profile to the database
- */
-export async function remoteSaveProfile(user: Profile): Promise<void> {
-  const profileData = {
-    userId: user.userId,
-    name: user.name
-  }
-  await getRef(getProfileKey(user)).set(profileData);
-}
-
-/**
- * A handle to an database subscription
- */
-export interface Subscription {
-  key: string;
-  off(): void;
 }
 
 /**
@@ -137,4 +119,30 @@ export function subscribeToGame(
       ref.off();
     },
   };
+}
+
+function getLocalGamesKey(user: Profile | string | undefined | null) {
+  let userId = 'local';
+  if (user != null) {
+    userId = typeof user === 'string' ? user : user.userId;
+  }
+  return `spellingcee/${userId}/games`;
+}
+
+function getGamesKey(user: Profile | string, gameId?: string) {
+  const userId = typeof user === 'string' ? user : user.userId;
+  const gameIdPath = gameId ? `/${gameId}` : '';
+  return `user_games/${userId}${gameIdPath}`;
+}
+
+function getProfileKey(user: Profile | string) {
+  const userId = typeof user === 'string' ? user : user.userId;
+  return `users/${userId}`;
+}
+
+/**
+ * Return a handle to the database
+ */
+function getRef(key: string) {
+  return firebase.database().ref(key);
 }
