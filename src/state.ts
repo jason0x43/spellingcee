@@ -1,17 +1,13 @@
 import { Dispatch } from 'react';
-import { createGame, getDailyGameId, getNewestGame } from './gameUtils';
+import { createGame, getDailyGameKey, getNewestGame } from './gameUtils';
 import { createLogger } from './logging';
 import { loadLocalGames } from './storage';
 import { computeScore, permute } from './wordUtil';
-import { Game, Profile } from './types';
+import { Games, Game, Profile } from './types';
 
 export type AppDispatch = Dispatch<AppAction>;
 
 const logger = createLogger({ prefix: 'state' });
-
-export interface Games {
-  [gameId: string]: Game;
-}
 
 export interface AddGameAction {
   type: 'addGame';
@@ -116,12 +112,12 @@ export function init(): AppState {
   if (games) {
     let newestGame = getNewestGame(games);
     if (newestGame) {
-      currentGame = newestGame.id;
+      currentGame = newestGame.key;
     }
   }
 
   if (!currentGame) {
-    currentGame = getDailyGameId();
+    currentGame = getDailyGameKey();
     games = {
       [currentGame]: createGame(currentGame),
     };
@@ -144,7 +140,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
         ...state,
         games: {
           ...state.games,
-          [game.id]: game,
+          [game.key]: game,
         },
       };
     }
@@ -166,7 +162,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
         ...state,
         games: {
           ...state.games,
-          [game.id]: {
+          [game.key]: {
             ...game,
             words: newWords,
             score: computeScore(newWords),
@@ -202,9 +198,9 @@ export function reducer(state: AppState, action: AppAction): AppState {
 
     case 'deleteGame': {
       logger.debug('Action: deleteGame');
-      const gameId =
-        typeof action.payload === 'string' ? action.payload : action.payload.id;
-      const { [gameId]: _, ...rest } = state.games;
+      const id =
+        typeof action.payload === 'string' ? action.payload : action.payload.key;
+      const { [id]: _, ...rest } = state.games;
       return {
         ...state,
         games: rest,
@@ -227,7 +223,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
         ...state,
         games: {
           ...state.games,
-          [game.id]: {
+          [game.key]: {
             ...game,
             letters: permute(game.letters),
             lastUpdated: Date.now()
@@ -251,7 +247,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
         ...state,
         games: {
           ...state.games,
-          [game.id]: game
+          [game.key]: game
         }
       };
     }
@@ -263,7 +259,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         games: action.payload,
-        currentGame: currentGame.id
+        currentGame: currentGame.key
       };
     }
 

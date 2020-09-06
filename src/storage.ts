@@ -78,7 +78,7 @@ export async function saveProfile(user: Profile): Promise<void> {
  * Save a game to the database
  */
 export async function saveRemoteGame(userId: string, game: Game): Promise<void> {
-  await getRef(getGamesKey(userId, game.id)).set(game);
+  await getRef(getGamesKey(userId, game.key)).set(game);
 }
 
 /**

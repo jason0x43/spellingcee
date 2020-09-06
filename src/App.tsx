@@ -57,7 +57,7 @@ function App() {
 
   const { error, message, input, user } = state;
   const currentGame = state.games[state.currentGame];
-  const center = currentGame.id[0];
+  const center = currentGame.key[0];
   const { letters, score, words } = currentGame;
 
   renderCount++;
@@ -120,9 +120,9 @@ function App() {
 
         if (remoteGames) {
           let localGames = state.games;
-          for (const gameId of Object.keys(remoteGames)) {
-            const localGame = localGames[gameId];
-            const remoteGame = remoteGames[gameId];
+          for (const id of Object.keys(remoteGames)) {
+            const localGame = localGames[id];
+            const remoteGame = remoteGames[id];
 
             if (
               !localGame ||
@@ -131,7 +131,7 @@ function App() {
             ) {
               localGames = {
                 ...localGames,
-                [gameId]: remoteGame,
+                [id]: remoteGame,
               };
             }
           }
@@ -189,10 +189,10 @@ function App() {
   const validWords = useMemo(() => {
     return findValidWords({
       allWords: wordlist,
-      pangram: currentGame.id,
+      pangram: currentGame.key,
       center,
     });
-  }, [center, currentGame.id]);
+  }, [center, currentGame.key]);
   const maxScore = useMemo(() => computeScore(validWords), [validWords]);
 
   // Handle a letter activation
@@ -231,7 +231,7 @@ function App() {
       words,
       validWords,
       word,
-      pangram: currentGame.id,
+      pangram: currentGame.key,
       center,
     });
 
@@ -255,7 +255,7 @@ function App() {
     }
   }, [
     center,
-    currentGame.id,
+    currentGame.key,
     dispatch,
     input,
     inputDisabled,
@@ -332,7 +332,7 @@ function App() {
       try {
         subscription.current = subscribeToGame(
           user.userId,
-          currentGame.id,
+          currentGame.key,
           (remoteGame) => {
             logger.debug(
               'Saw game update:',
@@ -366,7 +366,7 @@ function App() {
         subscription.current = undefined;
       }
     }
-  }, [user, currentGame.id]);
+  }, [user, currentGame.key]);
 
   // If there was an error, display an error message rather than the normal UI
   if (error) {
@@ -398,7 +398,7 @@ function App() {
               </Message>
               <Input
                 input={input}
-                pangram={currentGame.id}
+                pangram={currentGame.key}
                 isInvalid={messageVisible && !messageGood}
               />
               <Letters

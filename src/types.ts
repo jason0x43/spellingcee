@@ -1,5 +1,5 @@
 export interface Game {
-  id: string;
+  key: string;
   letters: string[];
   words: string[];
   totalWords: number;

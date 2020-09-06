@@ -7,14 +7,14 @@ import { Game, Games } from './types';
 /**
  * Return a new empty game
  */
-export function createGame(gameId?: string): Game {
-  if (!gameId) {
-    gameId = getNewGameId();
+export function createGame(key?: string): Game {
+  if (!key) {
+    key = getNewGameKey();
   }
 
   return {
-    id: gameId,
-    letters: permute(gameId.split('')),
+    key: key,
+    letters: permute(key.split('')),
     words: [],
     totalWords: 0,
     maxScore: 0,
@@ -27,25 +27,25 @@ export function createGame(gameId?: string): Game {
 /**
  * Return the first game ID for a day
  */
-export function getDailyGameId(): string {
-  return getNewGameId(getDateString());
+export function getDailyGameKey(): string {
+  return getNewGameKey(getDateString());
 }
 
 /**
  * Return the newest game from a set of games
  */
 export function getNewestGame(games: Games): Game {
-  const gameIds = Object.keys(games);
-  if (gameIds.length === 0) {
+  const ids = Object.keys(games);
+  if (ids.length === 0) {
     throw new Error('Must be at least one game');
   }
 
-  let newestGameId = gameIds[0];
+  let newestGameId = ids[0];
   let lastUpdated = 0;
-  for (const gameId of gameIds) {
-    if (games[gameId].lastUpdated > lastUpdated) {
-      lastUpdated = games[gameId].lastUpdated;
-      newestGameId = gameId;
+  for (const id of ids) {
+    if (games[id].lastUpdated > lastUpdated) {
+      lastUpdated = games[id].lastUpdated;
+      newestGameId = id;
     }
   }
 
@@ -55,7 +55,7 @@ export function getNewestGame(games: Games): Game {
 /**
  * Create a new random game ID
  */
-export function getNewGameId(rngSeed?: string): string {
+export function getNewGameKey(rngSeed?: string): string {
   const rng = newRng(rngSeed);
   const maxIndex = blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4];
   const start = rng(maxIndex);
@@ -95,18 +95,18 @@ export function normalizeGame(game: Game): Game {
 export function normalizeGames(state: Games): Games {
   let games: Games = state || {};
 
-  for (const gameId in games) {
+  for (const id in games) {
     games = {
       ...games,
-      [gameId]: normalizeGame(games[gameId]),
+      [id]: normalizeGame(games[id]),
     };
 
-    if (!games[gameId].id) {
+    if (!games[id].key) {
       games = {
         ...games,
-        [gameId]: {
-          ...games[gameId],
-          id: gameId,
+        [id]: {
+          ...games[id],
+          key: id,
         },
       };
     }
