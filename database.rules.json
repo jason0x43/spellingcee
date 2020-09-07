@@ -1,9 +1,42 @@
 {
   "rules": {
     "users": {
-      "$uid": {
-        ".read": "auth.uid == $uid",
-        ".write": "auth.uid == $uid"
+      // Any user can read the list of users
+      ".read": "auth != null",
+      "$user_id": {
+        // A user's profile can only be updated by that user
+        ".write": "auth.uid == $user_id"
+      }
+    },
+    "user_games": {
+      "$user_id": {
+        // User games can only be read by that user
+        ".read": "auth.uid === $user_id",
+        "games": {
+          // User games can only be updated by that user
+          ".write": "auth.uid === $user_id"
+        },
+        "shared_games": {
+          "$game_id": {
+            // Allow other users to create new shared games in a user's shared games list
+            ".write": "auth != null && !data.exists() && root.child('shared_games_meta').child($game_id).child('users').child(auth.uid).exists()"
+          }
+        }
+      }
+    },
+    "shared_games": {
+      "$game_id": {
+        // Only the users belonging to a shared game can read or write it
+        ".read": "root.child('shared_games_meta').child($game_id).child('users').child(auth.uid).exists()",
+        ".write": "root.child('shared_games_meta').child($game_id).child('users').child(auth.uid).exists()"
+      }
+    },
+    "shared_games_meta": {
+      "$game_id": {
+        // Only the users belong to a meta record can read it
+        ".read": "data.exists() && data.child('users').child(auth.uid).exists()",
+        // Users can create, but not update, new shared game meta data
+        ".write": "auth != null && !data.exists() && newData.child('users').child(auth.uid).exists()"
       }
     }
   }

@@ -13,7 +13,8 @@
   },
   "scripts": {
     "start": "snowpack dev",
-    "build": "snowpack build"
+    "build": "snowpack build",
+    "deploy:db": "firebase deploy --only database"
   },
   "devDependencies": {
     "@babel/core": "~7.11.5",
