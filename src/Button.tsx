@@ -6,6 +6,7 @@ export interface ButtonProps {
   className?: string;
   size?: 'large' | 'normal' | 'small';
   type?: 'link' | 'text' | 'normal';
+  tooltip?: string;
   children: ReactNode;
   onClick?(event: MouseEvent): void;
   onClickCapture?(event: MouseEvent): void;
@@ -18,6 +19,7 @@ export default function Button(props: ButtonProps) {
     onClick,
     onClickCapture,
     size,
+    tooltip,
     type,
   } = props;
   let className = classNames({
@@ -34,6 +36,7 @@ export default function Button(props: ButtonProps) {
   return (
     <button
       className={className}
+      title={tooltip}
       onClick={onClick}
       onClickCapture={onClickCapture}
     >

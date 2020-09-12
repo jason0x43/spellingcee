@@ -1,24 +1,42 @@
+export interface Word {
+  addedAt: number;
+  addedBy: string;
+}
+
+export interface Words {
+  [word: string]: Word;
+}
+
 export interface Game {
   key: string;
-  letters: string[];
-  words: string[];
   totalWords: number;
+  wordsFound: number;
   score: number;
   maxScore: number;
   difficulty: number;
-  lastUpdated: number;
-  lastPlayed?: number;
+  isShared: boolean;
+  addedAt: number;
+  addedBy: string;
 }
 
 export interface Games {
-  [id: string]: Game;
+  [key: string]: Game;
 }
 
-export interface Profile {
+export interface User {
   userId: string;
-  name: string;
+  name?: string;
 }
 
-export interface User extends Profile {
-  email: string;
+export interface Users {
+  [userId: string]: User;
+}
+
+/**
+ * A handle to a store subscription
+ */
+export interface Subscription {
+  key: string | undefined;
+  off(): void;
+  initialValue: Promise<unknown>;
 }

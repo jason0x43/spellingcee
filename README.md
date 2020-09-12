@@ -32,3 +32,51 @@ This file should **not** be committed to the repository.
 To get an API key, visit the Merriam-Webster [Developer Center](https://dictionaryapi.com/register/index) and create a new developer account. Request a key for the Collegiate Dictionary. Only one key is needed. The application info (name, URL, description, launch date) is required but is not important.
 
 Once you have created the `.env.local` file, stop and restart the development server.
+
+## Database schema
+
+```js
+{
+	// User profiles, readable by everyone
+	"users": {
+		[userId]: {
+			"name": string,
+			"userId": string
+		}
+	},
+
+	"user_games": {
+		// User games, readable by the owning user. New games may be added by
+		// any user.
+		[userId]: {
+			[gameId]: [creating user ID]
+		}
+	},
+
+	"game_meta": {
+		// Readable by associated users. May only be created, not updated.
+		[gameId]: {
+			key: string;
+		}
+	},
+
+	"game_users": {
+		// Readable and writable by associated users. Records may only be
+		// created, not updated.
+		[gameId]: {
+			[userId]: 'creator' | 'other'
+		}
+	},
+
+	"game_words": {
+		// Readable and writable by associated users. Records may only be
+		// created, not updated.
+		[gameId]: {
+			[word]: {
+				addedAt: number;
+				addedBy: string;
+			}
+		}
+	}
+}
+```

@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
+import { createLogger } from './logging';
 import Button from './Button';
 import './Letters.css';
 
@@ -14,6 +15,7 @@ interface LettersProps {
 }
 
 const tileSize = 100;
+const logger = createLogger({ prefix: 'Letters' });
 
 // Vertexes of hexagonal tiles
 const points = (function () {
@@ -34,6 +36,8 @@ type Indices = { [letter: string]: number | 'center' };
 export default function Letters(props: LettersProps) {
   const { letters, center, onLetter, onDelete, onScramble, onEnter } = props;
   const [activeLetter, setActiveLetter] = useState<string>();
+
+  logger.debug('Rendering letters', letters);
 
   const centerIndex = letters.indexOf(center);
   const otherLetters = [

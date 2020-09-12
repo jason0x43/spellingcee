@@ -1,17 +1,31 @@
 import { Dispatch } from 'react';
-import { createGame, getDailyGameKey, getNewestGame } from './gameUtils';
+import { createGame, createGameId, getDailyGameKey } from './gameUtils';
 import { createLogger } from './logging';
-import { loadLocalGames } from './storage';
-import { computeScore, permute } from './wordUtil';
-import { Games, Game, Profile } from './types';
+import { permute } from './wordUtil';
+import { Game, Games, User, Users, Words } from './types';
 
 export type AppDispatch = Dispatch<AppAction>;
+export const localUser = 'local';
+export const loadingId = 'loading';
 
 const logger = createLogger({ prefix: 'state' });
 
+export interface AppState {
+  gameId: string;
+  game: Game;
+  user: User;
+  input: string[];
+  letters: string[];
+  words: Words;
+  users?: Users;
+  games?: Games;
+  error?: Error | string;
+  message?: string;
+}
+
 export interface AddGameAction {
   type: 'addGame';
-  payload?: string;
+  payload: { gameId: string; game: Game };
 }
 
 export interface AddInputAction {
@@ -32,13 +46,9 @@ export interface ClearMessageAction {
   type: 'clearMessage';
 }
 
-export interface ClearUserAction {
-  type: 'clearUser';
-}
-
 export interface DeleteGameAction {
   type: 'deleteGame';
-  payload: string | Game;
+  payload: string;
 }
 
 export interface DeleteInputAction {
@@ -49,19 +59,14 @@ export interface MixLettersAction {
   type: 'mixLetters';
 }
 
-export interface SetCurrentGameAction {
-  type: 'setCurrentGame';
-  payload: string;
-}
-
 export interface SetGameAction {
   type: 'setGame';
-  payload: Game;
+  payload: { gameId: string; game?: Game };
 }
 
 export interface SetGamesAction {
   type: 'setGames';
-  payload: Games;
+  payload: Games | undefined;
 }
 
 export interface SetMessageAction {
@@ -69,14 +74,19 @@ export interface SetMessageAction {
   payload: string | undefined;
 }
 
-export interface SetUserAction {
-  type: 'setUser';
-  payload: Profile | null;
+export interface SetStateAction {
+  type: 'setState';
+  payload: AppState;
 }
 
-export interface UpdateGameAction {
-  type: 'updateGame';
-  payload: Partial<Game>;
+export interface SetUsersAction {
+  type: 'setUsers';
+  payload: Users | undefined;
+}
+
+export interface SetWordsAction {
+  type: 'setWords';
+  payload: Words;
 }
 
 export type AppAction =
@@ -85,62 +95,109 @@ export type AppAction =
   | AddWordAction
   | ClearInputAction
   | ClearMessageAction
-  | ClearUserAction
   | DeleteGameAction
   | DeleteInputAction
   | MixLettersAction
-  | SetCurrentGameAction
   | SetGameAction
   | SetGamesAction
   | SetMessageAction
-  | SetUserAction
-  | UpdateGameAction;
-
-export interface AppState {
-  currentGame: string;
-  user: Profile | undefined | null;
-  error?: Error | string;
-  message?: string;
-  input: string[];
-  games: Games;
-}
+  | SetStateAction
+  | SetUsersAction
+  | SetWordsAction;
 
 export function init(): AppState {
-  let games = loadLocalGames();
-  let currentGame: string | undefined;
-
-  if (games) {
-    let newestGame = getNewestGame(games);
-    if (newestGame) {
-      currentGame = newestGame.key;
-    }
-  }
-
-  if (!currentGame) {
-    currentGame = getDailyGameKey();
-    games = {
-      [currentGame]: createGame(currentGame),
-    };
-  }
+  logger.debug('Initialized empty state');
+  const gameId = createGameId();
+  const gameKey = getDailyGameKey();
+  const game = createGame({ userId: localUser, key: gameKey });
 
   return {
-    games: games!,
-    currentGame: currentGame!,
-    user: undefined,
+    user: { userId: localUser },
+    gameId,
+    game,
     input: [],
+    letters: gameKey.split(''),
+    words: {},
   };
+}
+
+export function isLoggedIn(state: AppState) {
+  return state.user.userId !== localUser;
+}
+
+export function isLoading(state: AppState) {
+  return state.gameId === '';
+}
+
+export function getCenter(state: AppState) {
+  const game = getGame(state);
+  return game.key[0];
+}
+
+export function getError(state: AppState) {
+  return state.error;
+}
+
+export function getGame(state: AppState) {
+  return state.game;
+}
+
+export function getGameId(state: AppState) {
+  return state.gameId;
+}
+
+export function getGames(state: AppState) {
+  return state.games;
+}
+
+export function getInput(state: AppState) {
+  return state.input;
+}
+
+export function getLetters(state: AppState) {
+  return state.letters;
+}
+
+export function getMaxScore(state: AppState) {
+  return state.game.maxScore;
+}
+
+export function getMessage(state: AppState) {
+  return state.message;
+}
+
+export function getScore(state: AppState) {
+  return state.game.score;
+}
+
+export function getUser(state: AppState) {
+  return state.user;
+}
+
+export function getUserId(state: AppState) {
+  return state.user.userId;
+}
+
+export function getUsers(state: AppState) {
+  return state.users;
+}
+
+export function getWords(state: AppState) {
+  return state.words;
 }
 
 export function reducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'addGame': {
       logger.debug('Action: addGame');
-      const game = createGame(action.payload);
+      const { game, gameId } = action.payload;
       return {
         ...state,
+        gameId,
+        game,
         games: {
           ...state.games,
-          [game.key]: game,
+          [gameId]: game,
         },
       };
     }
@@ -156,17 +213,13 @@ export function reducer(state: AppState, action: AppAction): AppState {
 
     case 'addWord': {
       logger.debug('Action: addWord');
-      const game = state.games[state.currentGame];
-      const newWords = [...game.words, action.payload];
       return {
         ...state,
-        games: {
-          ...state.games,
-          [game.key]: {
-            ...game,
-            words: newWords,
-            score: computeScore(newWords),
-            lastUpdated: Date.now()
+        words: {
+          ...state.words,
+          [action.payload]: {
+            addedBy: state.user.userId,
+            addedAt: Date.now(),
           },
         },
       };
@@ -188,23 +241,17 @@ export function reducer(state: AppState, action: AppAction): AppState {
       };
     }
 
-    case 'clearUser': {
-      logger.debug('Action: clearUser');
-      return {
-        ...state,
-        user: null,
-      };
-    }
-
     case 'deleteGame': {
       logger.debug('Action: deleteGame');
-      const id =
-        typeof action.payload === 'string' ? action.payload : action.payload.key;
-      const { [id]: _, ...rest } = state.games;
-      return {
-        ...state,
-        games: rest,
-      };
+      const id = action.payload;
+      if (state.games) {
+        const { [id]: _, ...rest } = state.games;
+        return {
+          ...state,
+          games: rest,
+        };
+      }
+      return state;
     }
 
     case 'deleteInput': {
@@ -218,48 +265,35 @@ export function reducer(state: AppState, action: AppAction): AppState {
 
     case 'mixLetters': {
       logger.debug('Action: mixLetters');
-      const game = state.games[state.currentGame];
       return {
         ...state,
-        games: {
-          ...state.games,
-          [game.key]: {
-            ...game,
-            letters: permute(game.letters),
-            lastUpdated: Date.now()
-          },
-        },
-      };
-    }
-
-    case 'setCurrentGame': {
-      logger.debug('Action: setCurrentGame');
-      return {
-        ...state,
-        currentGame: action.payload
+        letters: permute(state.letters),
       };
     }
 
     case 'setGame': {
       logger.debug('Action: setGame');
-      const game = action.payload;
+      const { gameId } = action.payload;
+      let game = action.payload.game ?? state.games?.[gameId];
+      if (!game) {
+        throw new Error('No game provided and gameId not in games list');
+      }
+      const letters = game.key.split('');
       return {
         ...state,
-        games: {
-          ...state.games,
-          [game.key]: game
-        }
+        game,
+        gameId,
+        letters,
+        input: [],
       };
     }
 
     case 'setGames': {
       logger.debug('Action: setGames');
       const games = action.payload;
-      const currentGame = getNewestGame(games);
       return {
         ...state,
-        games: action.payload,
-        currentGame: currentGame.key
+        games,
       };
     }
 
@@ -271,26 +305,24 @@ export function reducer(state: AppState, action: AppAction): AppState {
       };
     }
 
-    case 'setUser': {
-      logger.debug('Action: setUser');
+    case 'setState': {
+      logger.debug('Action: setState');
+      return action.payload;
+    }
+
+    case 'setUsers': {
+      logger.debug('Action: setUsers');
       return {
         ...state,
-        user: action.payload,
+        users: action.payload,
       };
     }
 
-    case 'updateGame': {
-      logger.debug('Action: updateGame:', action.payload);
+    case 'setWords': {
+      logger.debug('Action: setWords');
       return {
         ...state,
-        games: {
-          ...state.games,
-          [state.currentGame]: {
-            ...state.games[state.currentGame],
-            ...action.payload,
-            lastUpdated: Date.now()
-          }
-        },
+        words: action.payload,
       };
     }
   }

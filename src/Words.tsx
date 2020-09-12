@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import classNames from 'classnames';
 import { canGetDefinitions, getDefinition } from './dictionary';
+import { Words } from './types';
 import { isPangram } from './wordUtil';
 import Button from './Button';
 import Modal from './Modal';
@@ -15,7 +16,7 @@ import Spinner from './Spinner';
 import './Words.css';
 
 interface WordsProps {
-  words: string[];
+  words: Words;
   validWords: string[];
 }
 
@@ -41,7 +42,7 @@ export default function Words(props: WordsProps) {
       if (modalTimer.current) {
         clearTimeout(modalTimer.current);
       }
-    }
+    };
   }, []);
 
   const handleWordClick: MouseEventHandler = useCallback(
@@ -75,7 +76,9 @@ export default function Words(props: WordsProps) {
     setShowWords(true);
   }, [setShowWords]);
 
-  const displayWords = alphabetical ? [...words].sort() : [...words].reverse();
+  const displayWords = alphabetical
+    ? Object.keys(words).sort()
+    : Object.keys(words).reverse();
   if (displayWords.length === 0) {
     displayWords.push('');
   }
@@ -86,7 +89,7 @@ export default function Words(props: WordsProps) {
     <Fragment>
       <div className="Words-controls">
         <span className="Words-metrics">
-          {words.length} / {validWords.length} words
+          {Object.keys(words).length} / {validWords.length} words
         </span>
         <Button size="small" onClick={handleSortClick}>
           {alphabetical ? 'Chronological' : 'Alphabetical'}
@@ -137,7 +140,7 @@ export default function Words(props: WordsProps) {
                 </ol>
               </div>
             ) : (
-                <Spinner />
+              <Spinner />
             )
           ) : (
             <div className="Words-modal">{wordsContent}</div>

@@ -1,8 +1,12 @@
 import firebase from 'firebase/app';
 import 'firebase/auth';
-import { Profile } from './types';
 
-export async function getCurrentUser(): Promise<Profile | null> {
+export interface AuthUser {
+  userId: string;
+  name: string;
+}
+
+export async function getCurrentUser(): Promise<AuthUser | undefined> {
   return await new Promise((resolve) => {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
@@ -11,13 +15,13 @@ export async function getCurrentUser(): Promise<Profile | null> {
           name: user.displayName!,
         });
       } else {
-        resolve(null);
+        resolve(undefined);
       }
     });
   });
 }
 
-export async function signIn(): Promise<Profile | null> {
+export async function signIn(): Promise<AuthUser | undefined> {
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({
     prompt: 'select_account'
@@ -31,8 +35,6 @@ export async function signIn(): Promise<Profile | null> {
       name: user.displayName!,
     };
   }
-
-  return null;
 }
 
 export async function signOut() {

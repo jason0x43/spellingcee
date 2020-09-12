@@ -4,6 +4,10 @@
   width: 100%;
   display: flex;
   justify-content: flex-end;
-  padding: var(--unit);
+  padding: var(--unit) calc(var(--unit) * 2);
   box-sizing: border-box;
+}
+
+.MenuBar > * {
+  margin-left: calc(var(--unit) * 2);
 }

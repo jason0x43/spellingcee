@@ -13,6 +13,16 @@ export default function random(max?: number): number {
   return rng(max);
 }
 
+const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcedefhijklmnopqrstuvwxyz0123456789';
+
+export function randomString(length: number): string {
+  const chars: string[] = [];
+  for (let i = 0; i < length; i++) {
+    chars.push(letters[random(letters.length)]);
+  }
+  return chars.join('');
+}
+
 export interface RandomNumberGenerator {
   (max?: number): number;
 }

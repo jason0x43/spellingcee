@@ -141,24 +141,6 @@ export function findValidWords({
   );
 }
 
-function computeWordScore(word: string): number {
-  if (word.length === 4) {
-    return 1;
-  }
-  if (new Set(word).size === 7) {
-    return 2 * word.length;
-  }
-  return word.length;
-}
-
-export function computeScore(words: string[]): number {
-  let sum = 0;
-  for (const word of words) {
-    sum += computeWordScore(word);
-  }
-  return sum;
-}
-
 const thresholds = [
   { label: 'beginner', threshold: 0.0 },
   { label: 'good start', threshold: 0.02 },

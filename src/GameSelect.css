@@ -1,19 +1,20 @@
 .GameSelect {
   color: var(--text-color-dim);
+  display: flex;
+  justify-content: center;
 }
 
 .GameSelect-id {
   cursor: pointer;
   border: none;
-  padding: 0;
   color: inherit;
   background: none;
   font-size: 18px;
-  text-align: center;
   letter-spacing: var(--unit);
+  width: 7em;
 }
 
-.GameSelect-games {
+.GameSelect-list {
   max-height: 75vh;
   list-style-type: none;
   margin: 0;
@@ -21,7 +22,7 @@
   font-size: 120%;
 }
 
-.GameSelect-game {
+.GameSelect-item {
   margin: calc(var(--big-space));
   cursor: pointer;
   border: solid 1px var(--border-color);
@@ -31,20 +32,27 @@
   position: relative;
 }
 
-.GameSelect-game:hover {
+.GameSelect-item .GameSelect-id {
+  margin-top: var(--unit);
+  letter-spacing: normal;
+  width: auto;
+}
+
+.GameSelect-users .GameSelect-item .GameSelect-id {
+  letter-spacing: normal;
+}
+
+.GameSelect-item:hover {
   background: var(--shaded-hover);
 }
 
-.GameSelect-game:active {
+.GameSelect-item:active {
   background: var(--shaded);
-}
-
-.GameSelect-new-game {
-  text-align: center;
 }
 
 .GameSelect-info {
   font-size: var(--font-size-small);
+  margin-top: var(--unit);
 }
 
 .GameSelect-info > div {
@@ -56,6 +64,10 @@
   color: var(--text-color-dim);
 }
 
+.GameSelect-users .GameSelect-info dt {
+  width: 4em;
+}
+
 .GameSelect-info dd {
   margin: 0;
 }
@@ -64,4 +76,12 @@
   position: absolute;
   top: 0;
   right: 2px;
+}
+
+.GameSelect-controls {
+  margin-left: var(--unit);
+}
+
+.GameSelect-controls > * {
+  margin-left: var(--unit);
 }

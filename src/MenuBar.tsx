@@ -1,32 +1,35 @@
-import React, {useCallback} from 'react';
-import {signIn, signOut} from './auth';
+import React, { useCallback } from 'react';
+import { signIn, signOut } from './auth';
 import Button from './Button';
-import {AppDispatch} from './state';
-import {Profile} from './types';
+import { User } from './types';
 import './MenuBar.css';
 
 export interface MenuBarProps {
-  user: Profile | undefined | null;
-  dispatch: AppDispatch;
+  user: User;
+  setUser(user: User | undefined): Promise<void>;
 }
 
 export default function MenuBar(props: MenuBarProps) {
-  const { dispatch, user } = props;
+  const { user, setUser } = props;
 
   const handleSignin = useCallback(async () => {
     const data = await signIn();
-    dispatch({ type: 'setUser', payload: data });
-  }, [dispatch]);
+    await setUser(data);
+  }, [setUser]);
 
   const handleSignout = useCallback(async () => {
     await signOut();
-    dispatch({ type: 'clearUser' });
-  }, [dispatch]);
+    await setUser(undefined);
+  }, [setUser]);
 
   return (
     <div className="MenuBar">
-      {user ? (
-        <Button type="link" onClick={handleSignout}>
+      {user.userId !== 'local' ? (
+        <Button
+          type="link"
+          onClick={handleSignout}
+          tooltip={`${user.name} (${user.userId})`}
+        >
           Sign out
         </Button>
       ) : (
