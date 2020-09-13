@@ -24,9 +24,9 @@ body {
   --font-size-large: 24px;
   --highlight: #bbddff;
   --highlight-active: #99ccff;
-  --shaded: #dddddd;
+  --shaded: #eeeeee;
   --shaded-active: #bbbbbb;
-  --shaded-hover: #eeeeee;
+  --shaded-hover: #dddddd;
   --border-color: #cccccc;
   --shadow-color: rgba(100, 100, 100, 0.07);
   --unit: 8px;

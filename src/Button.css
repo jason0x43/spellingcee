@@ -11,6 +11,10 @@
   touch-action: none;
 }
 
+.Button:hover {
+  background: var(--shaded-hover);
+}
+
 .Button:active {
   background: var(--shaded-active);
   color: var(--color);
@@ -32,6 +36,8 @@
 }
 
 .Button-link:hover {
+  background: none;
+  border-bottom: solid 1px var(--text-color-bright);
   color: var(--text-color-bright);
 }
 
