@@ -415,10 +415,9 @@ function App() {
               <Letters
                 letters={letters}
                 center={center}
-                onLetter={handleLetterPress}
-                onDelete={deleteLastInput}
-                onScramble={mixLetters}
-                onEnter={submitWord}
+                dispatch={dispatch}
+                disabled={inputDisabled}
+                onSubmit={submitWord}
               />
             </div>
           </div>

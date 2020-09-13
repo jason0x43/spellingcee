@@ -1,17 +1,17 @@
 import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import { createLogger } from './logging';
+import { AppDispatch } from './state';
 import Button from './Button';
 import './Letters.css';
 
 interface LettersProps {
   letters: string[];
   center: string;
+  dispatch: AppDispatch;
+  onSubmit(): void;
+  disabled?: boolean;
   updating?: boolean;
-  onLetter(letter: string): void;
-  onDelete(): void;
-  onScramble(): void;
-  onEnter(): void;
 }
 
 const tileSize = 100;
@@ -34,7 +34,13 @@ const points = (function () {
 type Indices = { [letter: string]: number | 'center' };
 
 export default function Letters(props: LettersProps) {
-  const { letters, center, onLetter, onDelete, onScramble, onEnter } = props;
+  const {
+    letters,
+    center,
+    disabled,
+    dispatch,
+    onSubmit
+  } = props;
   const [activeLetter, setActiveLetter] = useState<string>();
 
   const centerIndex = letters.indexOf(center);
@@ -52,23 +58,29 @@ export default function Letters(props: LettersProps) {
     (event) => {
       // Ignore clicks to the outer SVG; only pay attention to clicks of child
       // nodes
-      if (event.target === event.currentTarget) {
+      if (disabled || event.target === event.currentTarget) {
         return;
       }
       // Prevent both touch and click events from firing for a given action
       event.preventDefault();
       const letter = event.currentTarget.textContent as string;
-      onLetter(letter);
+      dispatch({ type: 'addInput', payload: letter });
       setActiveLetter(letter);
     },
-    [onLetter, setActiveLetter]
+    [disabled, dispatch, setActiveLetter]
   );
 
-  const handleMouseUp = useCallback((event) => {
-    // Prevent both touch and click events from firing for a given action
-    event.preventDefault();
-    setActiveLetter(undefined);
-  }, [setActiveLetter]);
+  const handleMouseUp = useCallback(
+    (event) => {
+      // Prevent both touch and click events from firing for a given action
+      if (disabled) {
+        return;
+      }
+      event.preventDefault();
+      setActiveLetter(undefined);
+    },
+    [disabled, setActiveLetter]
+  );
 
   const renderLetter = useCallback(
     (letter: string) => {
@@ -104,6 +116,18 @@ export default function Letters(props: LettersProps) {
     [activeLetter, handleMouseUp, handleMouseDown, indices]
   );
 
+  const handleDelete = useCallback(() => {
+    if (!disabled) {
+      dispatch({ type: 'deleteInput' });
+    }
+  }, [disabled, dispatch]);
+
+  const handleScramble = useCallback(() => {
+    if (!disabled) {
+      dispatch({ type: 'mixLetters' });
+    }
+  }, [disabled, dispatch]);
+
   return (
     <div className="Letters">
       <div className="Letters-letters">
@@ -111,9 +135,9 @@ export default function Letters(props: LettersProps) {
         {renderLetters.map(renderLetter)}
       </div>
       <div className="Letters-controls">
-        <Button onClick={onDelete}>Delete</Button>
-        <Button onClick={onScramble}>Mix</Button>
-        <Button onClick={onEnter}>Enter</Button>
+        <Button onClick={handleDelete}>Delete</Button>
+        <Button onClick={handleScramble}>Mix</Button>
+        <Button onClick={onSubmit}>Enter</Button>
       </div>
     </div>
   );
