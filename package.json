@@ -14,6 +14,8 @@
   "scripts": {
     "start": "snowpack dev",
     "build": "snowpack build",
+    "predeploy": "snowpack build",
+    "deploy": "firebase deploy",
     "deploy:db": "firebase deploy --only database"
   },
   "devDependencies": {
