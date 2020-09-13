@@ -4,16 +4,16 @@ let rootLevel = Number(DEBUG) || 1;
 export function createLogger(
   options: { prefix?: string; level?: number } = {}
 ) {
-  let level: number | undefined = options.level;
+  let level = options.level ?? rootLevel;
   const prefix = options.prefix ? `[${options.prefix}]` : '';
 
   return {
     setLevel(lvl: number | undefined) {
-      level = lvl;
+      level = lvl ?? rootLevel;
     },
 
     error(...args: any) {
-      if (level ?? rootLevel >= 1) {
+      if (level >= 1) {
         let processedArgs = args.map((arg: unknown) => {
           if (isError(arg)) {
             return formatError(arg);
@@ -25,25 +25,25 @@ export function createLogger(
     },
 
     warn(...args: any) {
-      if (level ?? rootLevel >= 2) {
+      if (level >= 2) {
         console.warn(prefix, ...args);
       }
     },
 
     log(...args: any) {
-      if (level ?? rootLevel >= 3) {
+      if (level >= 3) {
         console.log(prefix, ...args);
       }
     },
 
     debug(...args: any) {
-      if (level ?? rootLevel >= 4) {
+      if (level >= 4) {
         console.debug(prefix, ...args);
       }
     },
 
     trace(...args: any) {
-      if (level ?? rootLevel >= 5) {
+      if (level >= 5) {
         console.trace(prefix, ...args);
       }
     },
