@@ -37,8 +37,6 @@ export default function Letters(props: LettersProps) {
   const { letters, center, onLetter, onDelete, onScramble, onEnter } = props;
   const [activeLetter, setActiveLetter] = useState<string>();
 
-  logger.debug('Rendering letters', letters);
-
   const centerIndex = letters.indexOf(center);
   const otherLetters = [
     ...letters.slice(0, centerIndex),
@@ -110,7 +108,7 @@ export default function Letters(props: LettersProps) {
     <div className="Letters">
       <div className="Letters-letters">
         {renderLetter(center)}
-        {renderLetters.map((letter) => renderLetter(letter))}
+        {renderLetters.map(renderLetter)}
       </div>
       <div className="Letters-controls">
         <Button onClick={onDelete}>Delete</Button>
