@@ -16,7 +16,7 @@ import Letters from './Letters';
 import { getCurrentUser } from './auth';
 import { createGame } from './gameUtils';
 import { createLogger } from './logging';
-import { Subscription, User, Words as WordsType } from './types';
+import { Game, Subscription, User, Words as WordsType } from './types';
 import MenuBar from './MenuBar';
 import Message from './Message';
 import Modal from './Modal';
@@ -66,6 +66,9 @@ function App() {
   const error = getError(state);
   const game = getGame(state);
   const input = getInput(state);
+  const letters = getLetters(state);
+  const maxScore = getMaxScore(state);
+  const score = getScore(state);
   const user = getUser(state);
   const userId = getUserId(state);
   const users = getUsers(state);
@@ -86,11 +89,28 @@ function App() {
     storageRef.current = storage;
 
     const userMeta = await storage.loadUserMeta();
+    let gameId: string | undefined;
+    let game: Game | undefined;
 
     if (userMeta) {
       logger.debug('Loaded user metadata');
-      const gameId = userMeta.gameId;
-      const game = await storage.loadGame(gameId);
+      try {
+        gameId = userMeta.gameId;
+        game = await storage.loadGame(gameId);
+      } catch (error) {
+        logger.error('Error loading game:', error);
+      }
+    } else {
+      logger.debug('No user metadata, creating new game');
+      try {
+        game = createGame({ userId });
+        gameId = await storage.addGame(game);
+      } catch (error) {
+        logger.error('Error adding game:', error);
+      }
+    }
+
+    if (game && gameId) {
       dispatch({
         type: 'setState',
         payload: {
@@ -102,25 +122,6 @@ function App() {
           words: {},
         },
       });
-    } else {
-      logger.debug('No user metadata, creating new game');
-      try {
-        const newGame = createGame({ userId });
-        const newGameId = await storage.addGame(newGame);
-        dispatch({
-          type: 'setState',
-          payload: {
-            user,
-            gameId: newGameId,
-            game: newGame,
-            input: [],
-            letters: game.key.split(''),
-            words: {},
-          },
-        });
-      } catch (error) {
-        logger.error('Error adding game:', error);
-      }
     }
   }, []);
 
@@ -393,10 +394,6 @@ function App() {
       </div>
     );
   }
-
-  const letters = getLetters(state);
-  const score = getScore(state);
-  const maxScore = getMaxScore(state);
 
   return (
     <div className="App">
