@@ -6,7 +6,7 @@ import './index.css';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAWUPCDe-0s5G4KSuzQUJb6muv7pizbcNo',
-  authDomain: 'spellingcee-5a8a2.firebaseapp.com',
+  authDomain: 'spellingcee.hopku.net',
   databaseURL: 'https://spellingcee-5a8a2.firebaseio.com',
   projectId: 'spellingcee-5a8a2',
   storageBucket: 'spellingcee-5a8a2.appspot.com',
