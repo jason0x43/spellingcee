@@ -402,39 +402,41 @@ function App() {
       ) : (
         <Fragment>
           <MenuBar user={user} setUser={setUser} />
-          <div className="App-letters-wrapper">
-            <div className="App-letters">
-              <Message isVisible={messageVisible} isGood={messageGood}>
-                {message}
-              </Message>
-              <Input
-                input={input}
-                pangram={game.key}
-                isInvalid={messageVisible && !messageGood}
-              />
-              <Letters
-                letters={letters}
-                center={center}
-                dispatch={dispatch}
-                disabled={inputDisabled}
-                onSubmit={submitWord}
-              />
+          <div className="App-content">
+            <div className="App-letters-wrapper">
+              <div className="App-letters">
+                <Message isVisible={messageVisible} isGood={messageGood}>
+                  {message}
+                </Message>
+                <Input
+                  input={input}
+                  pangram={game.key}
+                  isInvalid={messageVisible && !messageGood}
+                />
+                <Letters
+                  letters={letters}
+                  center={center}
+                  dispatch={dispatch}
+                  disabled={inputDisabled}
+                  onSubmit={submitWord}
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="App-words-wrapper">
-            <div className="App-words">
-              <Progress score={score} maxScore={maxScore} />
-              <Words words={words} validWords={validWords} />
-              <GameSelect
-                dispatch={dispatch}
-                game={game}
-                gameId={gameId}
-                games={getGames(state)}
-                isLoggedIn={isLoggedIn(state)}
-                userId={userId}
-                users={users}
-              />
+            <div className="App-words-wrapper">
+              <div className="App-words">
+                <Progress score={score} maxScore={maxScore} />
+                <Words words={words} validWords={validWords} />
+                <GameSelect
+                  dispatch={dispatch}
+                  game={game}
+                  gameId={gameId}
+                  games={getGames(state)}
+                  isLoggedIn={isLoggedIn(state)}
+                  userId={userId}
+                  users={users}
+                />
+              </div>
             </div>
           </div>
         </Fragment>

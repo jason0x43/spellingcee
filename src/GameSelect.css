@@ -2,6 +2,7 @@
   color: var(--text-color-dim);
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .GameSelect-id {
@@ -80,6 +81,7 @@
 
 .GameSelect-controls {
   margin-left: var(--unit);
+  dispay: flex;
 }
 
 .GameSelect-controls > * {

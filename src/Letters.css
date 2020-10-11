@@ -1,6 +1,6 @@
 .Letters {
-  --letter-size: 84px;
-  --letter-pad: 8px;
+  --letter-size: calc(14 * var(--unit));
+  --letter-pad: var(--unit);
   margin: 0 auto;
   font-weight: var(--font-weight-bold);
   user-select: none;
@@ -16,7 +16,7 @@
 }
 
 .Letters-letter {
-  font-size: calc(var(--letter-size) / 2.8);
+  font-size: calc(var(--unit) * 6);
   text-transform: capitalize;
   position: absolute;
   top: calc(95% / 3);
@@ -52,15 +52,15 @@
 }
 
 .Letters-letter-0 {
-  transform: translate(-80%, -46%);
+  transform: translate(-84%, -48%);
 }
 
 .Letters-letter-1 {
-  transform: translate(0%, -92%);
+  transform: translate(0%, -96%);
 }
 
 .Letters-letter-2 {
-  transform: translate(80%, -46%);
+  transform: translate(84%, -48%);
 }
 
 .Letters-letter-center {
@@ -69,23 +69,29 @@
 }
 
 .Letters-letter-3 {
-  transform: translate(80%, 46%);
+  transform: translate(84%, 48%);
 }
 
 .Letters-letter-4 {
-  transform: translate(0%, 92%);
+  transform: translate(0%, 96%);
 }
 
 .Letters-letter-5 {
-  transform: translate(-80%, 46%);
+  transform: translate(-84%, 48%);
 }
 
 .Letters-controls {
   display: flex;
   justify-content: space-between;
-  margin-top: var(--big-space);
+  margin-top: calc(var(--unit) * 4);
 }
 
 .Letters-controls > * {
-  margin: 8px;
+  margin: var(--unit);
+}
+
+@media screen and (orientation: portrait) {
+  .Letters {
+    --letter-size: calc(12 * var(--unit));
+  }
 }

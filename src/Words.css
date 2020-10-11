@@ -2,8 +2,8 @@
   border: solid 1px var(--border-color);
   border-radius: var(--border-radius);
   font-weight: var(--font-weight-normal);
-  width: 100%;
   overflow: hidden;
+  width: 100%;
 }
 
 .Words-controls {
@@ -85,7 +85,7 @@
   margin-bottom: 0;
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (orientation: portrait) {
   .Words-modal {
     display: flex;
     flex-direction: column;
@@ -145,5 +145,11 @@
 
   .Words .Words-show-list:active {
     background: white;
+  }
+}
+
+@media screen and (orientation: landscape) and (max-width: 640px) {
+  .Words-grid {
+    grid-template-columns: repeat(2, calc(100% / 2));
   }
 }

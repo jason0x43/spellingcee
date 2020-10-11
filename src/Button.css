@@ -1,14 +1,15 @@
 .Button {
   --color: var(--text-color-bright);
   background: var(--shaded);
-  border-radius: 8px;
+  border-radius: var(--unit);
   border: none;
-  padding: 16px 24px;
-  font-size: var(--font-size);
+  padding: calc(2 * var(--unit)) calc(3 * var(--unit));
+  font-size: calc(3 * var(--unit));
   color: var(--color);
   transition: background 0.1s;
   cursor: pointer;
   touch-action: none;
+  box-sizing: border-box;
 }
 
 .Button:hover {

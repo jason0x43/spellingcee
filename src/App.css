@@ -2,18 +2,25 @@
   text-align: center;
   color: var(--text-color);
   display: flex;
+  flex-direction: column;
   justify-content: stretch;
   align-items: center;
   height: 100%;
   width: 100%;
 }
 
+.App-content {
+  display: flex;
+  width: 100%;
+  max-width: 960px;
+}
+
 .App-letters-wrapper {
   flex-grow: 1;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: calc(var(--big-space) * 2);
+  justify-content: center;
+  padding: 0 calc(var(--big-space) * 2);
 }
 
 .App-letters {
@@ -30,7 +37,7 @@
 }
 
 .App-letters .Input {
-  margin-bottom: var(--big-space); 
+  margin-bottom: calc(var(--unit) * 4);
 }
 
 .App-words-wrapper {
@@ -38,21 +45,21 @@
   display: flex;
   justify-content: flex-start;
   padding-left: calc(var(--big-space) * 2);
+  --vert-pad: calc(var(--unit) * 4);
+  padding-top: var(--vert-pad);
+  padding-bottom: var(--vert-pad);
 }
 
 .App-words {
   display: flex;
   flex-direction: column;
-  width: 400px;
+  padding-right: calc(var(--unit) * 10);
+  width: 100%;
 }
 
 .App-words .Progress,
 .App-words .Words {
-  margin-bottom: 8px;
-}
-
-.App-words .Progress {
-  margin-bottom: var(--big-space);
+  margin-bottom: calc(var(--unit) * 4);
 }
 
 .App-score {
@@ -69,26 +76,26 @@
   margin: 0 auto;
 }
 
-@media screen and (max-width: 800px) {
-  .App {
+@media screen and (orientation: portrait) {
+  .App-content {
     flex-direction: column;
   }
 
   .App-letters-wrapper {
     padding-right: 0;
-    margin-bottom: var(--big-space);
+    margin: calc(var(--unit) * 4) 0;
+    padding: 0;
     flex-direction: column;
   }
 
   .App-words-wrapper {
     padding-left: 0;
     flex-direction: column;
-    width: 90%;
     align-items: center;
+    padding: 0 calc(var(--unit)* 4);
   }
 
   .App-words {
-    width: 100%;
-    max-width: 500px;
+    padding: 0;
   }
 }
