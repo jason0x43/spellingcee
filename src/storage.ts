@@ -66,6 +66,7 @@ export type UserGames = DatabaseSchema['user_data'][string]['games'];
 export type UserMeta = DatabaseSchema['user_data'][string]['meta'];
 export type UserId = string;
 export type GameId = string;
+export type GameStats = DatabaseSchema['game_data'][string]['stats'];
 
 export interface WordsCallback {
   (value: Words): void;
@@ -289,6 +290,14 @@ export function createStorage(userId: string = localUser) {
     async unshareGame(gameId: string, otherUserId: string): Promise<void> {
       await getRef(getGameUserKey({ gameId, userId: otherUserId })).remove();
     },
+
+    /**
+     * Update the stats (score, word count) for a game
+     */
+    async updateGameStats(gameId: string, stats: GameStats): Promise<void> {
+      const statsKey = getGameStatsKey({ gameId });
+      await getRef(statsKey).set(stats);
+    }
   };
 
   return storage;
@@ -330,10 +339,17 @@ function getUserGamesKey({ userId }: { userId: string }) {
 }
 
 /**
- * A key metadata about a game
+ * A key to metadata about a game
  */
 function getGameMetaKey({ gameId }: { gameId: string }) {
   return ['game_data', gameId, 'meta'] as const;
+}
+
+/**
+ * A key to game stats
+ */
+function getGameStatsKey({ gameId }: { gameId: string }) {
+  return ['game_data', gameId, 'stats'] as const;
 }
 
 /**

@@ -89,6 +89,11 @@ export interface SetWordsAction {
   payload: Words;
 }
 
+export interface UpdateGameAction {
+  type: 'updateGame';
+  payload: Partial<Game>;
+}
+
 export type AppAction =
   | AddGameAction
   | AddInputAction
@@ -103,7 +108,8 @@ export type AppAction =
   | SetMessageAction
   | SetStateAction
   | SetUsersAction
-  | SetWordsAction;
+  | SetWordsAction
+  | UpdateGameAction;
 
 export function init(): AppState {
   logger.debug('Initialized empty state');
@@ -121,69 +127,12 @@ export function init(): AppState {
   };
 }
 
-export function isLoggedIn(state: AppState) {
+export function isLoggedIn(state: AppState): boolean {
   return state.user.userId !== localUser;
 }
 
-export function isLoading(state: AppState) {
+export function isLoading(state: AppState): boolean {
   return state.gameId === '';
-}
-
-export function getCenter(state: AppState) {
-  const game = getGame(state);
-  return game.key[0];
-}
-
-export function getError(state: AppState) {
-  return state.error;
-}
-
-export function getGame(state: AppState) {
-  return state.game;
-}
-
-export function getGameId(state: AppState) {
-  return state.gameId;
-}
-
-export function getGames(state: AppState) {
-  return state.games;
-}
-
-export function getInput(state: AppState) {
-  return state.input;
-}
-
-export function getLetters(state: AppState) {
-  return state.letters;
-}
-
-export function getMaxScore(state: AppState) {
-  return state.game.maxScore;
-}
-
-export function getMessage(state: AppState) {
-  return state.message;
-}
-
-export function getScore(state: AppState) {
-  return state.game.score;
-}
-
-export function getUser(state: AppState) {
-  return state.user;
-}
-
-export function getUserId(state: AppState) {
-  return state.user.userId;
-}
-
-export function getUsers(state: AppState) {
-  return state.users;
-}
-
-export function getWords(state: AppState) {
-  return state.words;
 }
 
 export function reducer(state: AppState, action: AppAction): AppState {
@@ -274,7 +223,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     case 'setGame': {
       logger.debug('Action: setGame');
       const { gameId } = action.payload;
-      let game = action.payload.game ?? state.games?.[gameId];
+      const game = action.payload.game ?? state.games?.[gameId];
       if (!game) {
         throw new Error('No game provided and gameId not in games list');
       }
@@ -323,6 +272,19 @@ export function reducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         words: action.payload,
+      };
+    }
+
+    case 'updateGame': {
+      logger.debug('Action: updateGame');
+      const game = action.payload;
+      return {
+        ...state,
+        game: {
+          ...state.game,
+          ...game
+        },
+        input: [],
       };
     }
   }
