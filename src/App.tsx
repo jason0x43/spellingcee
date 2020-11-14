@@ -1,5 +1,6 @@
 import React, {
   Fragment,
+  FunctionComponent,
   useCallback,
   useEffect,
   useMemo,
@@ -21,25 +22,7 @@ import MenuBar from './MenuBar';
 import Message from './Message';
 import Modal from './Modal';
 import Progress from './Progress';
-import {
-  getCenter,
-  getGame,
-  getGameId,
-  getError,
-  getGames,
-  getInput,
-  getLetters,
-  getMaxScore,
-  getMessage,
-  getScore,
-  getUser,
-  getUsers,
-  getUserId,
-  getWords,
-  init,
-  isLoggedIn,
-  reducer,
-} from './state';
+import { init, isLoggedIn, reducer } from './state';
 import wordlist from './wordlist';
 import Words from './Words';
 import { findValidWords, isPangram, validateWord } from './wordUtil';
@@ -53,7 +36,7 @@ let renderCount = 0;
 const defaultStorage = createStorage();
 const initialState = init();
 
-function App() {
+const App: FunctionComponent = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [starting, setStarting] = useState(true);
   const [messageVisible, setMessageVisible] = useState(false);
@@ -62,17 +45,21 @@ function App() {
   const storageRef = useRef(defaultStorage);
   const wordsSubscription = useRef<Subscription>();
 
-  const center = getCenter(state);
-  const error = getError(state);
-  const game = getGame(state);
-  const input = getInput(state);
-  const letters = getLetters(state);
-  const maxScore = getMaxScore(state);
-  const score = getScore(state);
-  const user = getUser(state);
-  const userId = getUserId(state);
-  const users = getUsers(state);
-  const words = getWords(state);
+  const {
+    error,
+    game,
+    gameId,
+    games,
+    input,
+    letters,
+    message,
+    user,
+    users,
+    words,
+  } = state;
+  const center = state.game.key[0];
+  const { maxScore, score } = game;
+  const { userId } = user;
 
   renderCount++;
   if (renderCount > renderLimit) {
@@ -80,50 +67,53 @@ function App() {
   }
 
   // Set the current user, which resets most of the state
-  const setUser = useCallback(async (user: User | undefined) => {
-    user ??= { userId: 'local' }
+  const setUser = useCallback(
+    async (user: User | undefined) => {
+      user ??= { userId: 'local' };
 
-    logger.debug('Setting user to', user);
+      logger.debug('Setting user to', user);
 
-    const storage = createStorage(user.userId);
-    storageRef.current = storage;
+      const storage = createStorage(user.userId);
+      storageRef.current = storage;
 
-    const userMeta = await storage.loadUserMeta();
-    let gameId: string | undefined;
-    let game: Game | undefined;
+      const userMeta = await storage.loadUserMeta();
+      let gameId: string | undefined;
+      let game: Game | undefined;
 
-    if (userMeta) {
-      logger.debug('Loaded user metadata');
-      try {
-        gameId = userMeta.gameId;
-        game = await storage.loadGame(gameId);
-      } catch (error) {
-        logger.error('Error loading game:', error);
+      if (userMeta) {
+        logger.debug('Loaded user metadata');
+        try {
+          gameId = userMeta.gameId;
+          game = await storage.loadGame(gameId);
+        } catch (error) {
+          logger.error('Error loading game:', error);
+        }
+      } else {
+        logger.debug('No user metadata, creating new game');
+        try {
+          game = createGame({ userId });
+          gameId = await storage.addGame(game);
+        } catch (error) {
+          logger.error('Error adding game:', error);
+        }
       }
-    } else {
-      logger.debug('No user metadata, creating new game');
-      try {
-        game = createGame({ userId });
-        gameId = await storage.addGame(game);
-      } catch (error) {
-        logger.error('Error adding game:', error);
-      }
-    }
 
-    if (game && gameId) {
-      dispatch({
-        type: 'setState',
-        payload: {
-          user,
-          gameId,
-          game,
-          input: [],
-          letters: game.key.split(''),
-          words: {},
-        },
-      });
-    }
-  }, []);
+      if (game && gameId) {
+        dispatch({
+          type: 'setState',
+          payload: {
+            user,
+            gameId,
+            game,
+            input: [],
+            letters: game.key.split(''),
+            words: {},
+          },
+        });
+      }
+    },
+    [userId]
+  );
 
   useEffect(() => {
     logger.debug('Rendering app for the first time');
@@ -149,7 +139,7 @@ function App() {
       clearInterval(renderTimer);
       clearTimeout(startTimer);
     };
-  }, []);
+  }, [setUser]);
 
   useEffect(() => {
     logger.debug('AppState set to', state);
@@ -157,8 +147,8 @@ function App() {
 
   // Save the state locally whenever relevant properties change
   useEffect(() => {
-    saveLocalState(getUserId(state), state);
-  }, [game, input, userId]);
+    saveLocalState(userId, state);
+  }, [game, input, state, userId]);
 
   // If we're logged in, load the game state
   useEffect(() => {
@@ -169,7 +159,7 @@ function App() {
     (async () => {
       storageRef.current = createStorage(userId);
     })();
-  }, [user]);
+  }, [user, userId]);
 
   // Emit an error if the input word is too long
   useEffect(() => {
@@ -177,8 +167,6 @@ function App() {
       dispatch({ type: 'setMessage', payload: 'Word too long' });
     }
   }, [input.length, dispatch]);
-
-  const message = getMessage(state);
 
   // If we have a message, display it
   useEffect(() => {
@@ -219,8 +207,6 @@ function App() {
     });
   }, [center, game.key]);
 
-  const gameId = getGameId(state);
-
   // Watch for remote updates to the word list when the game changes
   useEffect(() => {
     try {
@@ -246,11 +232,11 @@ function App() {
           }
         );
 
-        const value = await wordsSubscription.current!.initialValue ?? {};
+        const value = (await wordsSubscription.current.initialValue) ?? {};
         logger.debug('Got initial words:', value);
         dispatch({
           type: 'setWords',
-          payload: value as WordsType
+          payload: value as WordsType,
         });
       } catch (error) {
         logger.error('Error subscribing to game updates:', error);
@@ -266,14 +252,14 @@ function App() {
   }, [user, gameId]);
 
   // Handle a letter activation
-  const handleLetterPress = useCallback(
-    (letter: string) => {
-      if (!inputDisabled) {
-        dispatch({ type: 'addInput', payload: letter });
-      }
-    },
-    [inputDisabled, dispatch]
-  );
+  // const handleLetterPress = useCallback(
+  //   (letter: string) => {
+  //     if (!inputDisabled) {
+  //       dispatch({ type: 'addInput', payload: letter });
+  //     }
+  //   },
+  //   [inputDisabled, dispatch]
+  // );
 
   // Delete the last input character
   const deleteLastInput = useCallback(() => {
@@ -317,6 +303,18 @@ function App() {
           await storageRef.current.addWord(gameId, word);
           dispatch({ type: 'addWord', payload: word });
 
+          await storageRef.current.updateGameStats(gameId, {
+            wordsFound: 0,
+            score: 0,
+          });
+          dispatch({
+            type: 'updateGame',
+            payload: {
+              wordsFound: 0,
+              score: 0,
+            },
+          });
+
           if (isPangram(word)) {
             setMessageGood(false);
             dispatch({ type: 'setMessage', payload: 'Pangram!' });
@@ -334,6 +332,7 @@ function App() {
   }, [
     center,
     game.key,
+    gameId,
     dispatch,
     input,
     inputDisabled,
@@ -431,7 +430,7 @@ function App() {
                   dispatch={dispatch}
                   game={game}
                   gameId={gameId}
-                  games={getGames(state)}
+                  games={games}
                   isLoggedIn={isLoggedIn(state)}
                   userId={userId}
                   users={users}
@@ -443,6 +442,6 @@ function App() {
       )}
     </div>
   );
-}
+};
 
 export default App;
