@@ -1,4 +1,10 @@
-import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
+import React, {
+  FunctionComponent,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import { createPortal } from 'react-dom';
 import Spinner from './Spinner';
 import './Modal.css';
@@ -9,7 +15,7 @@ interface ModalProps {
   showCloseButton?: boolean;
 }
 
-export default function Modal(props: ModalProps) {
+const Modal: FunctionComponent<ModalProps> = (props) => {
   const { children, onHide, showCloseButton } = props;
   const nodeRef = useRef(document.createElement('div'));
   const loadingMode = children == null;
@@ -88,4 +94,6 @@ export default function Modal(props: ModalProps) {
     ),
     node
   );
-}
+};
+
+export default Modal;

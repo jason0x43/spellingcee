@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createLogger } from './logging';
+import { createLogger } from '../logging';
 import {
   AppDispatch,
   newGame as addNewGame,
@@ -20,7 +20,7 @@ import {
   selectUsers,
   loadUsers,
   loadGames,
-} from './store';
+} from '../store';
 import Button from './Button';
 import Modal from './Modal';
 import Spinner from './Spinner';

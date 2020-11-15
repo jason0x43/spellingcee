@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import {useSelector} from 'react-redux';
 import classNames from 'classnames';
-import { getProgressLabel, getProgressThresholds } from './wordUtil';
-import {AppState} from './store';
+import { getProgressLabel, getProgressThresholds } from '../wordUtil';
+import {AppState} from '../store';
 import './Progress.css';
 
 const Progress: FunctionComponent = () => {

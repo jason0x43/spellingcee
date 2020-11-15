@@ -8,15 +8,15 @@ import React, {
   useState,
 } from 'react';
 import classNames from 'classnames';
-import { canGetDefinitions, getDefinition } from './dictionary';
-import { Words } from './types';
-import { isPangram } from './wordUtil';
+import { canGetDefinitions, getDefinition } from '../dictionary';
+import { Words } from '../types';
+import { isPangram } from '../wordUtil';
 import Button from './Button';
 import Modal from './Modal';
 import Spinner from './Spinner';
 import './Words.css';
 import { useSelector } from 'react-redux';
-import { selectValidWords, selectWords } from './store';
+import { selectValidWords, selectWords } from '../store';
 
 type DefinedWord = {
   word: string;

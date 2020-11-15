@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { useSelector } from 'react-redux';
 import classNames from 'classnames';
-import { isMessageGood, isMessageVisible, selectMessage } from './store';
+import { isMessageGood, isMessageVisible, selectMessage } from '../store';
 import './Message.css';
 
 const Message: FunctionComponent = () => {

@@ -1,4 +1,4 @@
-import React, { ReactNode, MouseEvent } from 'react';
+import React, { ReactNode, MouseEvent, FunctionComponent } from 'react';
 import classNames from 'classnames';
 import './Button.css';
 
@@ -12,7 +12,7 @@ export interface ButtonProps {
   onClickCapture?(event: MouseEvent): void;
 }
 
-export default function Button(props: ButtonProps) {
+const Button: FunctionComponent<ButtonProps> = (props) => {
   const {
     className: propClass,
     children,
@@ -43,4 +43,6 @@ export default function Button(props: ButtonProps) {
       {children}
     </button>
   );
-}
+};
+
+export default Button;

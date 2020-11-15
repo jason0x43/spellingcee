@@ -20,9 +20,9 @@ import {
   selectMessage,
   isUserLoading,
   isInputDisabled,
-} from './store';
-import { createLogger } from './logging';
-import AppError from './AppError';
+} from '../store';
+import { createLogger } from '../logging';
+import AppError from '../AppError';
 import GameSelect from './GameSelect';
 import Input from './Input';
 import Letters from './Letters';

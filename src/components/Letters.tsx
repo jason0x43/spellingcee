@@ -14,7 +14,7 @@ import {
   selectLetters,
   submitWord,
   isInputDisabled
-} from './store';
+} from '../store';
 import Button from './Button';
 import './Letters.css';
 

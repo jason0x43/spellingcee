@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, AppState, signIn, signOut } from './store';
+import { AppDispatch, AppState, signIn, signOut } from '../store';
 import Button from './Button';
 import './MenuBar.css';
 

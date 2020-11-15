@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {FunctionComponent} from 'react';
 import './Spinner.css';
 
 export interface SpinnerProps {
@@ -22,7 +22,7 @@ const points = (function () {
 
 const hexagons = [0, 1, 2, 'center', 3, 4, 5];
 
-export default function Spinner(_props: SpinnerProps) {
+const Spinner: FunctionComponent = () => {
   return (
     <div className="Spinner">
       {hexagons.map((id) => (
@@ -32,4 +32,6 @@ export default function Spinner(_props: SpinnerProps) {
       ))}
     </div>
   );
-}
+};
+
+export default Spinner;
