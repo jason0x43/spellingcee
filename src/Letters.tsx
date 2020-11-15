@@ -1,21 +1,24 @@
-import React, { useCallback, useState } from 'react';
+import React, {
+  FunctionComponent,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import classNames from 'classnames';
-import { createLogger } from './logging';
-import { AppDispatch } from './state';
+import {
+  AppDispatch,
+  addInput,
+  deleteInput,
+  scrambleLetters,
+  selectLetters,
+  submitWord,
+  isInputDisabled
+} from './store';
 import Button from './Button';
 import './Letters.css';
 
-interface LettersProps {
-  letters: string[];
-  center: string;
-  dispatch: AppDispatch;
-  onSubmit(): void;
-  disabled?: boolean;
-  updating?: boolean;
-}
-
 const tileSize = 100;
-const logger = createLogger({ prefix: 'Letters' });
 
 // Vertexes of hexagonal tiles
 const points = (function () {
@@ -33,14 +36,11 @@ const points = (function () {
 
 type Indices = { [letter: string]: number | 'center' };
 
-export default function Letters(props: LettersProps) {
-  const {
-    letters,
-    center,
-    disabled,
-    dispatch,
-    onSubmit
-  } = props;
+const Letters: FunctionComponent = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const letters = useSelector(selectLetters);
+  const disabled = useSelector(isInputDisabled);
+  const center = letters[Math.floor(letters.length / 2)];
   const [activeLetter, setActiveLetter] = useState<string>();
 
   const centerIndex = letters.indexOf(center);
@@ -49,7 +49,8 @@ export default function Letters(props: LettersProps) {
     ...letters.slice(centerIndex + 1),
   ];
   const renderLetters = otherLetters.slice().sort();
-  const indices: Indices = { [center]: 'center' };
+
+  const indices: Indices = useMemo(() => ({ [center]: 'center' }), [center]);
   for (let i = 0; i < otherLetters.length; i++) {
     indices[otherLetters[i]] = i;
   }
@@ -64,7 +65,7 @@ export default function Letters(props: LettersProps) {
       // Prevent both touch and click events from firing for a given action
       event.preventDefault();
       const letter = event.currentTarget.textContent as string;
-      dispatch({ type: 'addInput', payload: letter });
+      dispatch(addInput(letter));
       setActiveLetter(letter);
     },
     [disabled, dispatch, setActiveLetter]
@@ -118,15 +119,19 @@ export default function Letters(props: LettersProps) {
 
   const handleDelete = useCallback(() => {
     if (!disabled) {
-      dispatch({ type: 'deleteInput' });
+      dispatch(deleteInput());
     }
   }, [disabled, dispatch]);
 
   const handleScramble = useCallback(() => {
     if (!disabled) {
-      dispatch({ type: 'mixLetters' });
+      dispatch(scrambleLetters());
     }
   }, [disabled, dispatch]);
+
+  const handleSubmit = useCallback(() => {
+    dispatch(submitWord());
+  }, [dispatch]);
 
   return (
     <div className="Letters">
@@ -137,8 +142,10 @@ export default function Letters(props: LettersProps) {
       <div className="Letters-controls">
         <Button onClick={handleDelete}>Delete</Button>
         <Button onClick={handleScramble}>Mix</Button>
-        <Button onClick={onSubmit}>Enter</Button>
+        <Button onClick={handleSubmit}>Enter</Button>
       </div>
     </div>
   );
-}
+};
+
+export default Letters;

@@ -1,26 +1,20 @@
-import React, { useCallback } from 'react';
-import { signIn, signOut } from './auth';
+import React, { FunctionComponent, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, AppState, signIn, signOut } from './store';
 import Button from './Button';
-import { User } from './types';
 import './MenuBar.css';
 
-export interface MenuBarProps {
-  user: User;
-  setUser(user: User | undefined): Promise<void>;
-}
-
-export default function MenuBar(props: MenuBarProps) {
-  const { user, setUser } = props;
+const MenuBar: FunctionComponent = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector((state: AppState) => state.user);
 
   const handleSignin = useCallback(async () => {
-    const data = await signIn();
-    await setUser(data);
-  }, [setUser]);
+    dispatch(signIn());
+  }, [dispatch]);
 
   const handleSignout = useCallback(async () => {
-    await signOut();
-    await setUser(undefined);
-  }, [setUser]);
+    dispatch(signOut());
+  }, [dispatch]);
 
   return (
     <div className="MenuBar">
@@ -40,3 +34,5 @@ export default function MenuBar(props: MenuBarProps) {
     </div>
   );
 }
+
+export default MenuBar;

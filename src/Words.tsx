@@ -1,5 +1,6 @@
 import React, {
   Fragment,
+  FunctionComponent,
   MouseEventHandler,
   useCallback,
   useEffect,
@@ -14,19 +15,17 @@ import Button from './Button';
 import Modal from './Modal';
 import Spinner from './Spinner';
 import './Words.css';
-
-interface WordsProps {
-  words: Words;
-  validWords: string[];
-}
+import { useSelector } from 'react-redux';
+import { selectValidWords, selectWords } from './store';
 
 type DefinedWord = {
   word: string;
   definition: string[] | undefined;
 };
 
-export default function Words(props: WordsProps) {
-  const { words, validWords } = props;
+const Words: FunctionComponent = () => {
+  const words = useSelector(selectWords);
+  const validWords = useSelector(selectValidWords);
   const [alphabetical, setAlphabetical] = useState(false);
   const [definition, setDefinition] = useState<DefinedWord>();
   const [showWords, setShowWords] = useState(false);
@@ -149,4 +148,6 @@ export default function Words(props: WordsProps) {
       )}
     </div>
   );
-}
+};
+
+export default Words;

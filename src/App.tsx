@@ -3,192 +3,68 @@ import React, {
   FunctionComponent,
   useCallback,
   useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
 } from 'react';
-import './App.css';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  AppDispatch,
+  addInput,
+  clearInput,
+  deleteInput,
+  scrambleLetters,
+  submitWord,
+  setInputDisabled,
+  setMessage,
+  setMessageGood,
+  setMessageVisible,
+  selectError,
+  selectMessage,
+  isUserLoading,
+  isInputDisabled,
+} from './store';
+import { createLogger } from './logging';
 import AppError from './AppError';
-import { createStorage, saveLocalState } from './storage';
 import GameSelect from './GameSelect';
 import Input from './Input';
 import Letters from './Letters';
-import { getCurrentUser } from './auth';
-import { createGame } from './gameUtils';
-import { createLogger } from './logging';
-import { Game, Subscription, User, Words as WordsType } from './types';
 import MenuBar from './MenuBar';
 import Message from './Message';
 import Modal from './Modal';
 import Progress from './Progress';
-import { init, isLoggedIn, reducer } from './state';
-import wordlist from './wordlist';
 import Words from './Words';
-import { findValidWords, isPangram, validateWord } from './wordUtil';
+import './App.css';
 
 const messageTimeout = 1000;
 const inputShakeTimeout = 300;
-const renderWindow = 500;
-const renderLimit = 20;
 const logger = createLogger({ prefix: 'App' });
-let renderCount = 0;
-const defaultStorage = createStorage();
-const initialState = init();
 
 const App: FunctionComponent = () => {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const [starting, setStarting] = useState(true);
-  const [messageVisible, setMessageVisible] = useState(false);
-  const [messageGood, setMessageGood] = useState(false);
-  const [inputDisabled, setInputDisabled] = useState(false);
-  const storageRef = useRef(defaultStorage);
-  const wordsSubscription = useRef<Subscription>();
-
-  const {
-    error,
-    game,
-    gameId,
-    games,
-    input,
-    letters,
-    message,
-    user,
-    users,
-    words,
-  } = state;
-  const center = state.game.key[0];
-  const { maxScore, score } = game;
-  const { userId } = user;
-
-  renderCount++;
-  if (renderCount > renderLimit) {
-    throw new Error(`Too many renders (${renderCount} in ${renderWindow} ms)`);
-  }
-
-  // Set the current user, which resets most of the state
-  const setUser = useCallback(
-    async (user: User | undefined) => {
-      user ??= { userId: 'local' };
-
-      logger.debug('Setting user to', user);
-
-      const storage = createStorage(user.userId);
-      storageRef.current = storage;
-
-      const userMeta = await storage.loadUserMeta();
-      let gameId: string | undefined;
-      let game: Game | undefined;
-
-      if (userMeta) {
-        logger.debug('Loaded user metadata');
-        try {
-          gameId = userMeta.gameId;
-          game = await storage.loadGame(gameId);
-        } catch (error) {
-          logger.error('Error loading game:', error);
-        }
-      } else {
-        logger.debug('No user metadata, creating new game');
-        try {
-          game = createGame({ userId });
-          gameId = await storage.addGame(game);
-        } catch (error) {
-          logger.error('Error adding game:', error);
-        }
-      }
-
-      if (game && gameId) {
-        dispatch({
-          type: 'setState',
-          payload: {
-            user,
-            gameId,
-            game,
-            input: [],
-            letters: game.key.split(''),
-            words: {},
-          },
-        });
-      }
-    },
-    [userId]
-  );
-
-  useEffect(() => {
-    logger.debug('Rendering app for the first time');
-
-    // Start an interval to reset the render count periodically. This will let us
-    // see if there are an excessive number of renders happening over a
-    // particular time frame.
-    const renderTimer = setInterval(() => {
-      renderCount = 0;
-    }, renderWindow);
-
-    // Initialize state
-    let startTimer: ReturnType<typeof setTimeout>;
-    const startTime = Date.now();
-    (async () => {
-      const user = await getCurrentUser();
-      await setUser(user);
-      const delay = Math.max(0, 1000 - (Date.now() - startTime));
-      startTimer = setTimeout(() => setStarting(false), delay);
-    })();
-
-    return () => {
-      clearInterval(renderTimer);
-      clearTimeout(startTimer);
-    };
-  }, [setUser]);
-
-  useEffect(() => {
-    logger.debug('AppState set to', state);
-  }, [state]);
-
-  // Save the state locally whenever relevant properties change
-  useEffect(() => {
-    saveLocalState(userId, state);
-  }, [game, input, state, userId]);
-
-  // If we're logged in, load the game state
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
-
-    (async () => {
-      storageRef.current = createStorage(userId);
-    })();
-  }, [user, userId]);
-
-  // Emit an error if the input word is too long
-  useEffect(() => {
-    if (input.length > 19) {
-      dispatch({ type: 'setMessage', payload: 'Word too long' });
-    }
-  }, [input.length, dispatch]);
+  const dispatch = useDispatch<AppDispatch>();
+  const inputDisabled = useSelector(isInputDisabled);
+  const userLoading = useSelector(isUserLoading);
+  const error = useSelector(selectError);
+  const message = useSelector(selectMessage);
 
   // If we have a message, display it
   useEffect(() => {
     if (message) {
-      setMessageVisible(true);
-      setInputDisabled(true);
+      dispatch(setMessageVisible(true));
+      dispatch(setInputDisabled(true));
 
       // After a while, hide the message and clear the input
       const timers = [
         setTimeout(() => {
           logger.log('Hiding message');
-          setMessageVisible(false);
+          dispatch(setMessageVisible(false));
         }, messageTimeout),
 
         setTimeout(() => {
-          dispatch({ type: 'clearMessage' });
-          setMessageGood(false);
+          dispatch(setMessage(undefined));
+          dispatch(setMessageGood(false));
         }, messageTimeout + 100),
 
         setTimeout(() => {
-          dispatch({ type: 'clearInput' });
-          setInputDisabled(false);
+          dispatch(clearInput());
+          dispatch(setInputDisabled(false));
         }, inputShakeTimeout),
       ];
 
@@ -196,150 +72,7 @@ const App: FunctionComponent = () => {
         timers.forEach((timer) => clearTimeout(timer));
       };
     }
-  }, [message]);
-
-  // Determine the total set of valid words and the maximum possible score
-  const validWords = useMemo(() => {
-    return findValidWords({
-      allWords: wordlist,
-      pangram: game.key,
-      center,
-    });
-  }, [center, game.key]);
-
-  // Watch for remote updates to the word list when the game changes
-  useEffect(() => {
-    try {
-      if (wordsSubscription.current) {
-        wordsSubscription.current.off();
-        wordsSubscription.current = undefined;
-      }
-    } catch (error) {
-      logger.error('Error unsubscribing from updates');
-    }
-
-    (async () => {
-      logger.debug('Adding subscription to words for', gameId);
-
-      try {
-        wordsSubscription.current = storageRef.current.subscribeToWords(
-          gameId,
-          (words) => {
-            logger.debug('Received words');
-            if (words) {
-              dispatch({ type: 'setWords', payload: words });
-            }
-          }
-        );
-
-        const value = (await wordsSubscription.current.initialValue) ?? {};
-        logger.debug('Got initial words:', value);
-        dispatch({
-          type: 'setWords',
-          payload: value as WordsType,
-        });
-      } catch (error) {
-        logger.error('Error subscribing to game updates:', error);
-      }
-    })();
-
-    return () => {
-      if (wordsSubscription.current) {
-        wordsSubscription.current.off();
-        wordsSubscription.current = undefined;
-      }
-    };
-  }, [user, gameId]);
-
-  // Handle a letter activation
-  // const handleLetterPress = useCallback(
-  //   (letter: string) => {
-  //     if (!inputDisabled) {
-  //       dispatch({ type: 'addInput', payload: letter });
-  //     }
-  //   },
-  //   [inputDisabled, dispatch]
-  // );
-
-  // Delete the last input character
-  const deleteLastInput = useCallback(() => {
-    if (!inputDisabled) {
-      dispatch({ type: 'deleteInput' });
-    }
-  }, [inputDisabled, dispatch]);
-
-  // Permute the letters
-  const mixLetters = useCallback(() => {
-    if (!inputDisabled) {
-      dispatch({ type: 'mixLetters' });
-    }
-  }, [inputDisabled, dispatch]);
-
-  // Handle a word submission
-  const submitWord = useCallback(() => {
-    if (inputDisabled) {
-      return;
-    }
-
-    const word = input.join('');
-    logger.log('validating', word);
-    const message = validateWord({
-      words: Object.keys(words),
-      validWords,
-      word,
-      pangram: game.key,
-      center,
-    });
-
-    if (message) {
-      setMessageGood(false);
-      dispatch({ type: 'setMessage', payload: message });
-      setMessageVisible(true);
-      setInputDisabled(true);
-    } else {
-      (async () => {
-        logger.debug('Adding word', word);
-        try {
-          await storageRef.current.addWord(gameId, word);
-          dispatch({ type: 'addWord', payload: word });
-
-          await storageRef.current.updateGameStats(gameId, {
-            wordsFound: 0,
-            score: 0,
-          });
-          dispatch({
-            type: 'updateGame',
-            payload: {
-              wordsFound: 0,
-              score: 0,
-            },
-          });
-
-          if (isPangram(word)) {
-            setMessageGood(false);
-            dispatch({ type: 'setMessage', payload: 'Pangram!' });
-            setMessageVisible(true);
-          } else {
-            setMessageGood(true);
-            dispatch({ type: 'setMessage', payload: 'Great!' });
-            setMessageVisible(true);
-          }
-        } catch (error) {
-          logger.error('Error saving word:', error);
-        }
-      })();
-    }
-  }, [
-    center,
-    game.key,
-    gameId,
-    dispatch,
-    input,
-    inputDisabled,
-    setInputDisabled,
-    validWords,
-    words,
-  ]);
+  }, [dispatch, message]);
 
   // Handle a general keypress event
   const handleKeyPress = useCallback(
@@ -357,17 +90,17 @@ const App: FunctionComponent = () => {
 
       if (key.length > 1) {
         if (key === 'Backspace' || key === 'Delete') {
-          deleteLastInput();
+          dispatch(deleteInput());
         } else if (key === 'Enter') {
-          submitWord();
+          dispatch(submitWord());
         }
       } else if (key === ' ') {
-        mixLetters();
+        dispatch(scrambleLetters());
       } else if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')) {
-        dispatch({ type: 'addInput', payload: event.key });
+        dispatch(addInput(event.key));
       }
     },
-    [deleteLastInput, inputDisabled, mixLetters, submitWord]
+    [dispatch, inputDisabled]
   );
 
   // Add event listeners
@@ -396,45 +129,25 @@ const App: FunctionComponent = () => {
 
   return (
     <div className="App">
-      {starting ? (
+      {userLoading ? (
         <Modal />
       ) : (
         <Fragment>
-          <MenuBar user={user} setUser={setUser} />
+          <MenuBar />
           <div className="App-content">
             <div className="App-letters-wrapper">
               <div className="App-letters">
-                <Message isVisible={messageVisible} isGood={messageGood}>
-                  {message}
-                </Message>
-                <Input
-                  input={input}
-                  pangram={game.key}
-                  isInvalid={messageVisible && !messageGood}
-                />
-                <Letters
-                  letters={letters}
-                  center={center}
-                  dispatch={dispatch}
-                  disabled={inputDisabled}
-                  onSubmit={submitWord}
-                />
+                <Message />
+                <Input />
+                <Letters />
               </div>
             </div>
 
             <div className="App-words-wrapper">
               <div className="App-words">
-                <Progress score={score} maxScore={maxScore} />
-                <Words words={words} validWords={validWords} />
-                <GameSelect
-                  dispatch={dispatch}
-                  game={game}
-                  gameId={gameId}
-                  games={games}
-                  isLoggedIn={isLoggedIn(state)}
-                  userId={userId}
-                  users={users}
-                />
+                <Progress />
+                <Words />
+                <GameSelect />
               </div>
             </div>
           </div>

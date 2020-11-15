@@ -2,9 +2,8 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database';
 import { getRef as getLocalRef, storage } from './localstore';
-import { Game, Games, Subscription, User, Users, Word, Words } from './types';
+import { Game, Games, User, Users, Word, Words } from './types';
 import { createLogger } from './logging';
-import { AppState } from './state';
 
 const logger = createLogger({ prefix: 'storage' });
 const localUser = 'local';
@@ -66,20 +65,54 @@ export type UserGames = DatabaseSchema['user_data'][string]['games'];
 export type UserMeta = DatabaseSchema['user_data'][string]['meta'];
 export type UserId = string;
 export type GameId = string;
+export type GameMeta = DatabaseSchema['game_data'][string]['meta'];
 export type GameStats = DatabaseSchema['game_data'][string]['stats'];
 
 export interface WordsCallback {
-  (value: Words): void;
+  (value: Words | undefined): void;
 }
 
-export function createStorage(userId: string = localUser) {
+export interface Subscription {
+  key: string | undefined;
+  off(): void;
+  initialValue: Promise<unknown>;
+}
+
+export interface Storage {
+  addGame(game: Game): Promise<Game>;
+  addWord(gameId: string, word: string, stats: GameStats): Promise<Word>;
+  loadGame(gameId: string): Promise<Game>;
+  loadGames(): Promise<Games | undefined>;
+  loadUserMeta(): Promise<UserMeta | undefined>;
+  loadUsers(): Promise<Users | undefined>;
+  loadWords(gameId: string): Promise<Words | undefined>;
+  removeGame(gameId: string): Promise<void>;
+  saveUserMeta(data: UserMeta): Promise<void>;
+  saveUserProfile(user: User): Promise<void>;
+  shareGame({
+    gameId,
+    otherUserId,
+  }: {
+    gameId: string;
+    otherUserId: string;
+  }): Promise<void>;
+  subscribeToWords(gameId: string, callback: WordsCallback): Subscription;
+  subscribeToKey<T>(
+    key: string | readonly string[],
+    callback: (value: T) => void
+  ): Subscription;
+  unshareGame(gameId: string, otherUserId: string): Promise<void>;
+  updateGameStats(gameId: string, stats: GameStats): Promise<void>;
+}
+
+export function createStorage(userId: string = localUser): Storage {
   const getRef = userId === 'local' ? getLocalRef : getFirebaseRef;
 
   const storage = {
     /**
      * Add a new game to the database
      */
-    async addGame(game: Game): Promise<string> {
+    async addGame(game: Game): Promise<Game> {
       const userGamesKey = getUserGamesKey({ userId });
       const ref = await getRef(userGamesKey).push();
       const gameId = ref.key;
@@ -87,6 +120,11 @@ export function createStorage(userId: string = localUser) {
       if (!gameId) {
         throw new Error('Unable to create new game ID');
       }
+
+      const addedGame = {
+        ...game,
+        gameId
+      };
 
       await getRef().update({
         // Make this user the creator of the game
@@ -96,24 +134,29 @@ export function createStorage(userId: string = localUser) {
         // Set the game ID as the user's active game
         ...getUpdater(getUserMetaKey({ userId }))({ gameId }),
         // Add the game to the games list
-        ...getUpdater(getGameMetaKey({ gameId }))(game),
+        ...getUpdater(getGameMetaKey({ gameId }))(addedGame),
       });
 
       logger.debug('Added game', gameId);
-      return gameId;
+      return addedGame;
     },
 
     /**
      * Add a new word to a game
      */
-    async addWord(gameId: string, word: string): Promise<void> {
+    async addWord(gameId: string, word: string, stats: GameStats): Promise<Word> {
       const wordKey = getGameWordKey({ gameId, word });
       const wordMeta: Word = {
         addedBy: userId,
         addedAt: Date.now(),
       };
-      logger.debug('Adding word', word, 'at', wordKey);
-      await getRef(wordKey).set(wordMeta);
+      const update = {
+        ...getUpdater(getGameWordKey({ gameId, word }))(wordMeta),
+        ...getUpdater(getGameStatsKey({ gameId }))(stats),
+      };
+      logger.debug('Adding word', word, 'at', wordKey, 'with', update);
+      await getRef().update(update);
+      return wordMeta;
     },
 
     /**
@@ -121,13 +164,25 @@ export function createStorage(userId: string = localUser) {
      */
     async loadGame(gameId: string): Promise<Game> {
       logger.debug('Loading game', gameId);
-      const ref = getRef(getGameMetaKey({ gameId }));
-      const snapshot = await ref.once('value');
-      const game = snapshot.val() as Game;
+
+      const metaRef = getRef(getGameMetaKey({ gameId }));
+      const metaSnapshot = await metaRef.once('value');
+      const game = metaSnapshot.val() as GameMeta;
+
       if (!game) {
         throw new Error(`Game ${gameId} does not exist`);
       }
-      return game;
+
+      const statsRef = getRef(getGameStatsKey({ gameId }));
+      const statsSnapshot = await statsRef.once('value');
+      const stats = statsSnapshot.val() as GameStats;
+
+      const usersRef = getRef(getGameUsersKey({ gameId }));
+      const usersSnapshot = await usersRef.once('value');
+      const users = usersSnapshot.val() as GameStats;
+      const isShared = Object.keys(users).length > 1;
+
+      return { gameId, ...game, ...stats, isShared };
     },
 
     /**
@@ -260,7 +315,7 @@ export function createStorage(userId: string = localUser) {
       const valuePromise = new Promise<T>((resolve) => {
         let resolver = (val: T) => {
           resolve(val);
-          resolver = () => {};
+          resolver = () => undefined;
         };
 
         ref.on('value', (snapshot) => {
@@ -297,7 +352,7 @@ export function createStorage(userId: string = localUser) {
     async updateGameStats(gameId: string, stats: GameStats): Promise<void> {
       const statsKey = getGameStatsKey({ gameId });
       await getRef(statsKey).set(stats);
-    }
+    },
   };
 
   return storage;
@@ -306,9 +361,9 @@ export function createStorage(userId: string = localUser) {
 /**
  * Load games from local storage
  */
-export function loadLocalState(
+export function loadLocalState<T>(
   userId: string = localUser
-): AppState | undefined {
+): T | undefined {
   const stateData = storage.getItem(getLocalStateKey(userId));
   logger.log('Loaded local state for', userId, '-', stateData);
   if (stateData == null) {
@@ -320,7 +375,7 @@ export function loadLocalState(
 /**
  * Save games to local storage
  */
-export function saveLocalState(userId: string, state: AppState) {
+export function saveLocalState(userId: string, state: unknown): void {
   storage.setItem(getLocalStateKey(userId), JSON.stringify(state));
 }
 
@@ -350,6 +405,13 @@ function getGameMetaKey({ gameId }: { gameId: string }) {
  */
 function getGameStatsKey({ gameId }: { gameId: string }) {
   return ['game_data', gameId, 'stats'] as const;
+}
+
+/**
+ * A key to a the list of game users
+ */
+function getGameUsersKey({ gameId }: { gameId: string }) {
+  return ['game_data', gameId, 'users'] as const;
 }
 
 /**

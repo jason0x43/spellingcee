@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import classNames from 'classnames';
+import { useSelector } from 'react-redux';
+import { isMessageGood, isMessageVisible, selectInput, selectPangram } from './store';
 import './Input.css';
 
-interface InputProps {
-  input: string[];
-  pangram: string;
-  isInvalid?: boolean;
-}
+const Input: FunctionComponent = () => {
+  const input = useSelector(selectInput);
+  const messageGood = useSelector(isMessageGood);
+  const messageVisible = useSelector(isMessageVisible);
+  const isInvalid = messageVisible && !messageGood;
+  const pangram = useSelector(selectPangram);
 
-export default function Input(props: InputProps) {
-  const { input, pangram, isInvalid } = props;
   const className = classNames({
     Input: true,
     [`Input-${input.length}`]: true,
@@ -32,4 +33,6 @@ export default function Input(props: InputProps) {
       <div className="Input-cursor" />
     </div>
   );
-}
+};
+
+export default Input;

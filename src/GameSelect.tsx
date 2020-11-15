@@ -1,16 +1,26 @@
 import React, {
-  Dispatch,
+  FunctionComponent,
   MouseEventHandler,
   useCallback,
   useEffect,
-  useRef,
   useState,
 } from 'react';
-import { createGame } from './gameUtils';
+import { useDispatch, useSelector } from 'react-redux';
 import { createLogger } from './logging';
-import { AppAction } from './state';
-import { createStorage } from './storage';
-import { Game, Games, Users } from './types';
+import {
+  AppDispatch,
+  newGame as addNewGame,
+  isLoggedIn,
+  selectGame,
+  selectGames,
+  selectUserId,
+  activateGame,
+  shareActiveGame,
+  removeGame,
+  selectUsers,
+  loadUsers,
+  loadGames,
+} from './store';
 import Button from './Button';
 import Modal from './Modal';
 import Spinner from './Spinner';
@@ -18,37 +28,16 @@ import './GameSelect.css';
 
 const logger = createLogger({ prefix: 'GameSelect' });
 
-export interface GameSelectProps {
-  gameId: string;
-  game: Game;
-  games: Games | undefined;
-  isLoggedIn: boolean;
-  userId: string;
-  users: Users | undefined;
-  dispatch: Dispatch<AppAction>;
-}
-
 type Mode = 'selecting' | 'sharing';
 
-export default function GameSelect(props: GameSelectProps) {
-  const { dispatch, gameId, game, games, isLoggedIn, userId, users } = props;
+const GameSelect: FunctionComponent = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const loggedIn = useSelector(isLoggedIn);
+  const game = useSelector(selectGame);
+  const games = useSelector(selectGames);
+  const users = useSelector(selectUsers);
+  const userId = useSelector(selectUserId);
   const [mode, setMode] = useState<Mode>();
-  const localGames = useRef(games);
-
-  logger.debug('Rendering with games:', games);
-
-  const newGame = useCallback(async () => {
-    const game = createGame({ userId });
-    const gameId = await createStorage(userId).addGame(game);
-    dispatch({ type: 'addGame', payload: { game, gameId } });
-    return gameId;
-  }, [dispatch, userId]);
-
-  useEffect(() => {
-    // This ref is necessary because the handleGameSelect callback isn't being
-    // updated when the value of games changes
-    localGames.current = games;
-  }, [games]);
 
   const handleShowGames = useCallback(() => {
     setMode('selecting');
@@ -61,22 +50,11 @@ export default function GameSelect(props: GameSelectProps) {
   const handleGameSelect: MouseEventHandler = useCallback(
     async (event) => {
       logger.debug('handling select with games', games);
-      const gameId = event.currentTarget.getAttribute('data-item-id')!;
-      if (gameId) {
-        try {
-          const game = localGames.current![gameId];
-          await createStorage(userId).saveUserMeta({ gameId });
-          dispatch({ type: 'setGame', payload: { gameId, game } });
-        } catch (error) {
-          logger.error(`Error setting game ${gameId}:`, error);
-        }
+      const gameId = event.currentTarget.getAttribute('data-item-id');
+      if (gameId && games) {
+        dispatch(activateGame(games[gameId]));
       } else {
-        try {
-          const gameId = await newGame();
-          dispatch({ type: 'setGame', payload: { gameId } });
-        } catch (error) {
-          logger.error('Error creating new game:', error);
-        }
+        dispatch(addNewGame());
       }
       setMode(undefined);
     },
@@ -85,10 +63,10 @@ export default function GameSelect(props: GameSelectProps) {
 
   const handleUserSelect: MouseEventHandler = useCallback(
     async (event) => {
-      const otherUserId = event.currentTarget.getAttribute('data-item-id')!;
+      const otherUserId = event.currentTarget.getAttribute('data-item-id');
       logger.debug('Sharing with', otherUserId);
-      if (userId) {
-        await createStorage(userId).shareGame({ otherUserId, gameId });
+      if (userId && otherUserId) {
+        dispatch(shareActiveGame(otherUserId));
       }
       setMode(undefined);
     },
@@ -110,16 +88,14 @@ export default function GameSelect(props: GameSelectProps) {
       }
       const gameId = node?.getAttribute('data-item-id');
       if (gameId) {
-        await createStorage(userId).removeGame(gameId);
-        dispatch({ type: 'deleteGame', payload: gameId });
+        dispatch(removeGame(gameId));
       }
     },
-    [dispatch, userId]
+    [dispatch]
   );
 
   const handleNewGame = useCallback(async () => {
-    const gameId = await newGame();
-    dispatch({ type: 'setGame', payload: { gameId } });
+    dispatch(addNewGame());
   }, [dispatch]);
 
   const handleShareGame = useCallback(async () => {
@@ -129,42 +105,20 @@ export default function GameSelect(props: GameSelectProps) {
   useEffect(() => {
     if (mode === 'sharing' && !users) {
       logger.debug('Loading users');
-      let timer: ReturnType<typeof setTimeout>;
-      const start = Date.now();
-      (async () => {
-        const users = await createStorage(userId).loadUsers();
-        logger.debug('Loaded users');
-        timer = setTimeout(() => {
-          dispatch({ type: 'setUsers', payload: users });
-        }, Math.max(0, 1000 - (Date.now() - start)));
-      })();
-
-      return () => {
-        logger.debug('Unmounting sharing effect');
-        clearTimeout(timer);
-      };
+      dispatch(loadUsers());
     } else if (mode === 'selecting' && !games) {
-      logger.debug('Loading users');
-      let timer: ReturnType<typeof setTimeout>;
-      const start = Date.now();
-      (async () => {
-        const games = await createStorage(userId).loadGames();
-        logger.debug('Loaded games');
-        timer = setTimeout(() => {
-          dispatch({ type: 'setGames', payload: games });
-        }, Math.max(0, 1000 - (Date.now() - start)));
-      })();
-
-      return () => {
-        logger.debug('Unmounting sharing effect');
-        clearTimeout(timer);
-      };
+      logger.debug('Loading games');
+      dispatch(loadGames());
     }
-  }, [mode]);
+  }, [dispatch, games, mode, users]);
 
   const renderGame = useCallback(
     (gameId: string) => {
-      const game = games![gameId];
+      const game = (games ?? {})[gameId];
+      if (!game) {
+        console.warn(`Unknown game ID ${gameId}`);
+        return;
+      }
 
       return (
         <li
@@ -209,28 +163,36 @@ export default function GameSelect(props: GameSelectProps) {
         </li>
       );
     },
-    [games]
+    [games, handleGameSelect, handleRemoveGame]
   );
 
-  const renderUser = useCallback((userId: string) => {
-    const user = users![userId];
-    return (
-      <li
-        className="GameSelect-item"
-        key={userId}
-        data-item-id={userId}
-        onClick={handleUserSelect}
-      >
-        <div className="GameSelect-id">{user.name}</div>
-        <dl className="GameSelect-info">
-          <div>
-            <dt>ID</dt>
-            <dd>{userId}</dd>
-          </div>
-        </dl>
-      </li>
-    );
-  }, [users]);
+  const renderUser = useCallback(
+    (userId: string) => {
+      const user = (users ?? {})[userId];
+      if (!user) {
+        console.warn(`Unknown user ${userId}`);
+        return;
+      }
+
+      return (
+        <li
+          className="GameSelect-item"
+          key={userId}
+          data-item-id={userId}
+          onClick={handleUserSelect}
+        >
+          <div className="GameSelect-id">{user.name}</div>
+          <dl className="GameSelect-info">
+            <div>
+              <dt>ID</dt>
+              <dd>{userId}</dd>
+            </div>
+          </dl>
+        </li>
+      );
+    },
+    [handleUserSelect, users]
+  );
 
   return (
     <div className="GameSelect">
@@ -246,7 +208,7 @@ export default function GameSelect(props: GameSelectProps) {
         >
           New
         </Button>
-        {isLoggedIn && (
+        {loggedIn && (
           <Button
             className="GameSelect-share"
             size="small"
@@ -284,4 +246,6 @@ export default function GameSelect(props: GameSelectProps) {
       )}
     </div>
   );
-}
+};
+
+export default GameSelect;

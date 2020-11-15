@@ -1,24 +1,20 @@
-import React, { ReactNode } from 'react';
+import React, { FunctionComponent } from 'react';
+import { useSelector } from 'react-redux';
 import classNames from 'classnames';
+import { isMessageGood, isMessageVisible, selectMessage } from './store';
 import './Message.css';
 
-interface MessageProps {
-  children: ReactNode;
-  isVisible: boolean;
-  isGood?: boolean;
-}
-
-export default function Message(props: MessageProps) {
-  const { children, isVisible, isGood = false } = props;
+const Message: FunctionComponent = () => {
+  const message = useSelector(selectMessage);
+  const isVisible = useSelector(isMessageVisible);
+  const isGood = useSelector(isMessageGood);
   const messageClass = classNames({
-    'Message': true,
+    Message: true,
     'Message-visible': isVisible,
     'Message-good': isGood,
   });
 
-  return (
-    <div className={messageClass}>
-      {children}
-    </div>
-  );
-}
+  return <div className={messageClass}>{message}</div>;
+};
+
+export default Message;

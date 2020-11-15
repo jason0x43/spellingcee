@@ -45,6 +45,7 @@ export function createGame({
   const maxScore = computeScore(validWords);
 
   return {
+    gameId: createGameId(),
     key: gameKey,
     totalWords: validWords.length,
     wordsFound: 0,

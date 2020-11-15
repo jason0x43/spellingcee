@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 import App from './App';
 import firebase from 'firebase/app';
+import store, {loadUser} from './store';
 import './index.css';
 
 const firebaseConfig = {
@@ -16,9 +18,13 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
+store.dispatch(loadUser());
+
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );

@@ -8,6 +8,7 @@ export interface Words {
 }
 
 export interface Game {
+  gameId: string;
   key: string;
   totalWords: number;
   wordsFound: number;
