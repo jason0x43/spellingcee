@@ -252,12 +252,23 @@ export const loadGame = createAsyncThunk<void, string, { state: AppState }>(
 
     const { userId } = getState().user;
     const storage = createStorage(userId);
-    logger.debug(`Loading game ${gameId}`);
     const game = await storage.loadGame(gameId);
-    logger.debug('Loaded game', game);
+
     const words = await storage.loadWords(gameId);
     wordsSubscription = storage.subscribeToWords(gameId, (words) => {
       dispatch(setWords(words ?? {}));
+
+      if (words) {
+        const game = selectGame(getState());
+        const rawWords = Object.keys(words);
+        const stats = {
+          wordsFound: rawWords.length,
+          score: computeScore(rawWords),
+        };
+        // Only need to update the local game stats since these words came from
+        // the store
+        dispatch(updateGame({ ...game, ...stats }));
+      }
     });
 
     dispatch(setGame(game));
@@ -475,6 +486,10 @@ export function selectMessage(
 
 export function selectPangram(state: AppState): string {
   return state.game.key;
+}
+
+export function selectScore(state: AppState): number {
+  return state.game.score;
 }
 
 export function selectUser(state: AppState): AppState['user'] {
