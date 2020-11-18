@@ -46,6 +46,11 @@
   color: var(--text-color-bright);
 }
 
+.Progress-thresholds .Progress-threshold-next {
+  --size: var(--font-size-large);
+  color: var(--text-color);
+}
+
 @media screen and (orientation: landscape) and (max-width: 730px) {
   .Progress-thresholds {
     flex-grow: 0;
@@ -70,6 +75,10 @@
   }
 
   .Progress-thresholds .Progress-threshold-current {
+    display: flex;
+  }
+
+  .Progress-thresholds .Progress-threshold-next {
     display: flex;
   }
 }
