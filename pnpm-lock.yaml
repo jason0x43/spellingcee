@@ -19,6 +19,7 @@ devDependencies:
   '@types/react-dom': 16.9.8
   '@types/react-redux': 7.1.11
   '@types/seedrandom': 2.4.28
+  '@types/snowpack-env': 2.3.2
   '@typescript-eslint/eslint-plugin': 4.5.0_149de9cc6f4cf85f8bae2cafdf0c2302
   '@typescript-eslint/parser': 4.5.0_eslint@7.12.0+typescript@4.0.3
   css-loader: 5.0.1
@@ -1579,6 +1580,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-SMA+fUwULwK7sd/ZJicUztiPs8F1yCPwF3O23Z9uQ32ME5Ha0NmDK9+QTsYE4O2tHXChzXomSWWeIhCnoN1LqA==
+  /@types/snowpack-env/2.3.2:
+    dev: true
+    resolution:
+      integrity: sha512-lBChKW/gK0bI5tC+00BqMgOVwJkr+da7+DJasCxgscKgzfJVm7aZgOl84UCDz6tE5bNgo6c8jqQyqW5uxT3KEw==
   /@typescript-eslint/eslint-plugin/4.5.0_149de9cc6f4cf85f8bae2cafdf0c2302:
     dependencies:
       '@typescript-eslint/experimental-utils': 4.5.0_eslint@7.12.0+typescript@4.0.3
@@ -8139,6 +8144,7 @@ specifiers:
   '@types/react-dom': ^16.9.8
   '@types/react-redux': ~7.1.11
   '@types/seedrandom': ^2.4.28
+  '@types/snowpack-env': ~2.3.2
   '@typescript-eslint/eslint-plugin': ^4.5.0
   '@typescript-eslint/parser': ^4.5.0
   classnames: ^2.2.6
