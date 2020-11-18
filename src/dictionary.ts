@@ -16,6 +16,6 @@ export async function getDefinition(word: string): Promise<string[]> {
   return data[0].shortdef;
 }
 
-export function canGetDefinitions() {
+export function canGetDefinitions(): boolean {
   return apiKey != null;
 }
