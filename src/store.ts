@@ -337,7 +337,18 @@ const appSlice = createSlice({
     },
 
     scrambleLetters(state) {
-      state.liveState.letters = permute(state.liveState.letters);
+      const { letters } = state.liveState;
+      const centerIndex = Math.floor(letters.length / 2);
+      const toPermute = [
+        ...letters.slice(0, centerIndex),
+        ...letters.slice(centerIndex + 1),
+      ];
+      const permuted = permute(toPermute);
+      state.liveState.letters = [
+        ...permuted.slice(0, centerIndex),
+        letters[centerIndex],
+        ...permuted.slice(centerIndex),
+      ];
     },
 
     setError(state, action: PayloadAction<AppState['liveState']['error']>) {
@@ -420,7 +431,7 @@ const appSlice = createSlice({
       state.liveState.userLoading = false;
       state.liveState.warning = error.message;
     });
-  }
+  },
 });
 
 export const {
@@ -521,7 +532,9 @@ export function selectValidWords(state: AppState): string[] {
   return state.liveState.validWords;
 }
 
-export function selectWarning(state: AppState): AppState['liveState']['warning'] {
+export function selectWarning(
+  state: AppState
+): AppState['liveState']['warning'] {
   return state.liveState.warning;
 }
 
@@ -531,9 +544,9 @@ export function selectWords(state: AppState): AppState['words'] {
 
 // Store creation //////////////////////////////////////////////////////
 
-const loggerMiddleware: Middleware<unknown, AppState> = () => (
-  next
-) => (action) => {
+const loggerMiddleware: Middleware<unknown, AppState> = () => (next) => (
+  action
+) => {
   if (action.type) {
     console.info('Dispatching', action);
   }
