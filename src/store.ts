@@ -2,7 +2,6 @@ import {
   configureStore,
   createAsyncThunk,
   createSlice,
-  getDefaultMiddleware,
   Middleware,
   PayloadAction,
   SerializedError,
@@ -78,38 +77,39 @@ export const activateGame = createAsyncThunk<
   { dispatch: AppDispatch; state: AppState }
 >('app/activateGame', async (game, { dispatch, getState }) => {
   const { userId } = getState().user;
-  await createStorage(userId).saveUserMeta({ gameId: game.gameId });
+  const { gameId } = game;
+  const storage = createStorage(userId);
+  await storage.saveUserMeta({ gameId });
   dispatch(setGame(game));
+
+  const words = await storage.loadWords(gameId);
+  dispatch(setWords(words ?? {}));
+
+  wordsSubscription?.off();
+  wordsSubscription = storage.subscribeToWords(game.gameId, (words) => {
+    dispatch(setWords(words ?? {}));
+
+    if (words) {
+      const game = selectGame(getState());
+      const rawWords = Object.keys(words);
+      const stats = {
+        wordsFound: rawWords.length,
+        score: computeScore(rawWords),
+      };
+      // Only need to update the local game stats since these words came from
+      // the store
+      dispatch(updateGame({ ...game, ...stats }));
+    }
+  });
 });
 
 export const loadGame = createAsyncThunk<void, string, { state: AppState }>(
   'app/loadGame',
   async (gameId, { dispatch, getState }) => {
-    wordsSubscription?.off();
-
     const { userId } = getState().user;
     const storage = createStorage(userId);
     const game = await storage.loadGame(gameId);
-
-    const words = await storage.loadWords(gameId);
-    wordsSubscription = storage.subscribeToWords(gameId, (words) => {
-      dispatch(setWords(words ?? {}));
-
-      if (words) {
-        const game = selectGame(getState());
-        const rawWords = Object.keys(words);
-        const stats = {
-          wordsFound: rawWords.length,
-          score: computeScore(rawWords),
-        };
-        // Only need to update the local game stats since these words came from
-        // the store
-        dispatch(updateGame({ ...game, ...stats }));
-      }
-    });
-
-    dispatch(setGame(game));
-    dispatch(setWords(words ?? {}));
+    await dispatch(activateGame(game));
   }
 );
 
@@ -143,7 +143,6 @@ export const loadUser = createAsyncThunk<
 
     const storage = createStorage(loadedUser.userId);
     const userMeta = await storage.loadUserMeta();
-    console.log('loaded userMeta:', userMeta);
     if (userMeta?.gameId) {
       // Load user's current game and word list
       await dispatch(loadGame(userMeta.gameId));
@@ -174,8 +173,7 @@ export const newGame = createAsyncThunk<
   const newGame = createGame({ userId });
   const savedGame = await createStorage(userId).addGame(newGame);
   dispatch(addGame(savedGame));
-  dispatch(setGame(savedGame));
-  dispatch(setWords({}));
+  await dispatch(activateGame(savedGame));
 });
 
 export const removeGame = createAsyncThunk<void, string, { state: AppState }>(
@@ -211,7 +209,7 @@ export const signIn = createAsyncThunk(
   async (_, { dispatch }) => {
     const user = await authSignIn();
     if (user) {
-      dispatch(loadUser(user));
+      await dispatch(loadUser(user));
     }
   }
 );
@@ -220,10 +218,10 @@ export const signOut = createAsyncThunk(
   'app/signOut',
   async (_, { dispatch }) => {
     await authSignOut();
-    dispatch(updateUser({ userId: 'local' }));
+    dispatch(updateUser({ userId: localUser }));
 
-    const persistedState = loadLocalState<PersistedAppState>(localUser);
-    dispatch(updateAppState(persistedState ?? initialState));
+    const storedGame = loadLocalState<Game>(localUser) ?? defaultGame;
+    store.dispatch(activateGame(storedGame));
   }
 );
 
@@ -544,7 +542,7 @@ export function selectWords(state: AppState): AppState['words'] {
 
 // Store creation //////////////////////////////////////////////////////
 
-const loggerMiddleware: Middleware<unknown, AppState> = () => (next) => (
+const loggerMiddleware: Middleware = () => (next) => (
   action
 ) => {
   if (action.type) {
@@ -554,22 +552,29 @@ const loggerMiddleware: Middleware<unknown, AppState> = () => (next) => (
   return result;
 };
 
-const persistedState = loadLocalState<PersistedAppState>(localUser);
+const localStorageMiddleware: Middleware = ({ getState }) => (next) => (action) => {
+  const result = next(action);
+  if (action.type === `${setGame}` && getState().user?.userId === localUser) {
+    saveLocalState(localUser, action.payload);
+  }
+  return result;
+};
+
 const store = configureStore({
-  middleware: [loggerMiddleware, ...getDefaultMiddleware()] as const,
-  preloadedState: {
-    ...(persistedState ?? initialState),
-    liveState: initialState.liveState,
-  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().prepend(loggerMiddleware, localStorageMiddleware),
+  preloadedState: initialState,
   reducer: appSlice.reducer,
 });
 
-store.subscribe(() => {
-  const state = store.getState();
-  const { userId } = state.user;
-  const { liveState, ...saveState } = state;
-  saveLocalState(userId, saveState);
-});
+// Check for a stored local game. If one is present, activate it. Otherwise,
+// save the current default game as the local game.
+const storedGame = loadLocalState<Game>(localUser);
+if (storedGame) {
+  store.dispatch(activateGame(storedGame));
+} else {
+  saveLocalState(localUser, defaultGame);
+}
 
 export type AppDispatch = typeof store.dispatch;
 
