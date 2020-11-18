@@ -74,6 +74,10 @@
   background: #ffdddd;
   border-radius: 6px;
   margin: 0 auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 @media screen and (orientation: portrait) {
