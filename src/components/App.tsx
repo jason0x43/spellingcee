@@ -18,6 +18,8 @@ import {
   setMessageVisible,
   selectError,
   selectMessage,
+  selectWarning,
+  setWarning,
   isUserLoading,
   isInputDisabled,
 } from '../store';
@@ -42,6 +44,7 @@ const App: FunctionComponent = () => {
   const inputDisabled = useSelector(isInputDisabled);
   const userLoading = useSelector(isUserLoading);
   const error = useSelector(selectError);
+  const warning = useSelector(selectWarning);
   const message = useSelector(selectMessage);
 
   // If we have a message, display it
@@ -152,6 +155,10 @@ const App: FunctionComponent = () => {
             </div>
           </div>
         </Fragment>
+      )}
+
+      {warning && (
+        <Modal type="warning" onHide={() => dispatch(setWarning(undefined))}>{warning}</Modal>
       )}
     </div>
   );

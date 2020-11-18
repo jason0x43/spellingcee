@@ -42,8 +42,12 @@
 }
 
 .Modal-content {
-  padding: var(--unit);
+  padding: calc(var(--unit) * 2);
   overflow: auto;
+}
+
+.Modal-warning {
+  border-color: var(--color-warn);
 }
 
 @media screen and (max-width: 800px) {

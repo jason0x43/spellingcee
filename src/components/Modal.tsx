@@ -6,6 +6,7 @@ import React, {
   useRef,
 } from 'react';
 import { createPortal } from 'react-dom';
+import classNames from 'classnames';
 import Spinner from './Spinner';
 import './Modal.css';
 
@@ -13,10 +14,11 @@ interface ModalProps {
   children?: ReactNode;
   onHide?(): void;
   showCloseButton?: boolean;
+  type?: 'normal' | 'warning';
 }
 
 const Modal: FunctionComponent<ModalProps> = (props) => {
-  const { children, onHide, showCloseButton } = props;
+  const { children, onHide, showCloseButton, type } = props;
   const nodeRef = useRef(document.createElement('div'));
   const loadingMode = children == null;
   const node = nodeRef.current;
@@ -83,9 +85,14 @@ const Modal: FunctionComponent<ModalProps> = (props) => {
     };
   }, [node, handleClick, handleKeyPress, loadingMode]);
 
+  const modalClass = classNames({
+    Modal: true,
+    'Modal-warning': type === 'warning',
+  });
+
   return createPortal(
     children ? (
-      <div className="Modal">
+      <div className={modalClass}>
         {showCloseButton && <div className="Modal-close">X</div>}
         <div className="Modal-content">{children}</div>
       </div>

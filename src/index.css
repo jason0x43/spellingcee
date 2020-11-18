@@ -32,6 +32,7 @@ body {
   --unit: min(1vh, 6px);
   --big-space: calc(var(--unit) * 2);
   --border-radius: 6px;
+  --color-warn: orange;
 
   background: var(--background);
   font-size: var(--font-size);
