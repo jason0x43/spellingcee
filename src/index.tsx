@@ -3,11 +3,13 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import App from './components/App';
 import firebase from 'firebase/app';
-import store, {loadUser} from './store';
+import store, { loadUser } from './store';
 import './index.css';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyAWUPCDe-0s5G4KSuzQUJb6muv7pizbcNo',
+  apiKey:
+    import.meta.env.SNOWPACK_PUBLIC_FIREBASE_API_KEY ??
+    'AIzaSyAWUPCDe-0s5G4KSuzQUJb6muv7pizbcNo',
   authDomain: 'spellingcee.hopku.net',
   databaseURL: 'https://spellingcee-5a8a2.firebaseio.com',
   projectId: 'spellingcee-5a8a2',
