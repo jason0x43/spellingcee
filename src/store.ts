@@ -231,6 +231,10 @@ export const submitWord = createAsyncThunk<
   { dispatch: AppDispatch; state: AppState }
 >('app/submitWord', async (_, { dispatch, getState }) => {
   const word = selectInput(getState()).join('');
+  if (!word) {
+    return;
+  }
+
   const { key } = selectGame(getState());
   const validWords = selectValidWords(getState());
   const pangram = key;
@@ -542,9 +546,7 @@ export function selectWords(state: AppState): AppState['words'] {
 
 // Store creation //////////////////////////////////////////////////////
 
-const loggerMiddleware: Middleware = () => (next) => (
-  action
-) => {
+const loggerMiddleware: Middleware = () => (next) => (action) => {
   if (action.type) {
     console.info('Dispatching', action);
   }
@@ -552,7 +554,9 @@ const loggerMiddleware: Middleware = () => (next) => (
   return result;
 };
 
-const localStorageMiddleware: Middleware = ({ getState }) => (next) => (action) => {
+const localStorageMiddleware: Middleware = ({ getState }) => (next) => (
+  action
+) => {
   const result = next(action);
   if (action.type === `${setGame}` && getState().user?.userId === localUser) {
     saveLocalState(localUser, action.payload);
