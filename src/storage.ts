@@ -123,7 +123,7 @@ export function createStorage(userId: string = localUser): Storage {
 
       const addedGame = {
         ...game,
-        gameId
+        gameId,
       };
 
       await getRef().update({
@@ -144,7 +144,11 @@ export function createStorage(userId: string = localUser): Storage {
     /**
      * Add a new word to a game
      */
-    async addWord(gameId: string, word: string, stats: GameStats): Promise<Word> {
+    async addWord(
+      gameId: string,
+      word: string,
+      stats: GameStats
+    ): Promise<Word> {
       const wordKey = getGameWordKey({ gameId, word });
       const wordMeta: Word = {
         addedBy: userId,
@@ -236,7 +240,7 @@ export function createStorage(userId: string = localUser): Storage {
     },
 
     /**
-     * Save a shared game to the database
+     * Remove a game from the database
      */
     async removeGame(gameId: string): Promise<void> {
       const ref = getRef();
@@ -361,9 +365,7 @@ export function createStorage(userId: string = localUser): Storage {
 /**
  * Load games from local storage
  */
-export function loadLocalState<T>(
-  userId: string = localUser
-): T | undefined {
+export function loadLocalState<T>(userId: string = localUser): T | undefined {
   const stateData = storage.getItem(getLocalStateKey(userId));
   logger.log('Loaded local state for', userId, '-', stateData);
   if (stateData == null) {

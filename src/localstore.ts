@@ -95,8 +95,13 @@ export function getRef(keyObj?: string | readonly string[]): LocalRef {
     },
 
     async update(updates) {
+      logger.debug('Applying updates:', updates);
       for (const key in updates) {
-        await ref.ref(key).set(updates[key]);
+        if (updates[key] === null) {
+          ref.ref(key).remove();
+        } else {
+          await ref.ref(key).set(updates[key]);
+        }
       }
     },
 
@@ -134,8 +139,10 @@ function deepGet<T = unknown>(
   return obj[k] as T;
 }
 
-function deepSet(obj: Record<string, unknown>, key: string[], value: any) {
+function deepSet(obj: Record<string, unknown>, key: string[], value: unknown) {
   const k = key[0];
+
+  logger.debug('Setting', key, 'to', value);
 
   if (key.length > 1) {
     if (obj[k] == null || typeof obj[k] !== 'object') {

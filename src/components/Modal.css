@@ -42,7 +42,6 @@
 }
 
 .Modal-content {
-  padding: calc(var(--unit) * 2);
   overflow: auto;
 }
 

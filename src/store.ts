@@ -177,7 +177,7 @@ export const newGame = createAsyncThunk<
 });
 
 export const removeGame = createAsyncThunk<void, string, { state: AppState }>(
-  'app/shareGame',
+  'app/removeGame',
   async (gameId, { dispatch, getState }) => {
     const { userId } = getState().user;
     await createStorage(userId).removeGame(gameId);
