@@ -1,0 +1,22 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Install firebase
+        run: npm install -g firebase-cli
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        uses: pnpm install
+      - name: Deploy
+        uses: pnpm deploy --token "$FIREBASE_TOKEN"
