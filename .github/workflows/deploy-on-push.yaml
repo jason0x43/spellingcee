@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install pnpm
-        run: npm install -g pnpm
-      - name: Install firebase
-        run: npm install -g firebase-cli
+        uses: pnpm/action-set@v1
+        with:
+          version: 5.13.1
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Install dependencies
