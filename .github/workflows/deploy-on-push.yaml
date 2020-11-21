@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install pnpm
-        uses: pnpm/action-set@v1
+        uses: pnpm/action-set@v1.2.1
         with:
           version: 5.13.1
       - name: Checkout repo
