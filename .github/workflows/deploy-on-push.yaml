@@ -11,12 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install pnpm
-        uses: pnpm/action-setup@v1
+        uses: pnpm/action-setup@v1.2.1
         with:
           version: 5.13.1
+          run_install: |
+            - args: [--global, firebase-tools]
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Install dependencies
         run: pnpm install
       - name: Deploy
-        run: pnpm deploy --token "$FIREBASE_TOKEN"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_PROJECT: spellingcee-5a8a2
+        run: pnpm deploy -- --token "$FIREBASE_TOKEN" --project "$FIREBASE_PROJECT"
