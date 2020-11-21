@@ -17,6 +17,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Install dependencies
-        uses: pnpm install
+        run: pnpm install
       - name: Deploy
-        uses: pnpm deploy --token "$FIREBASE_TOKEN"
+        run: pnpm deploy --token "$FIREBASE_TOKEN"
