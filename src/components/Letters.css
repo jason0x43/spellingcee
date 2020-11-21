@@ -90,7 +90,7 @@
   margin: var(--unit);
 }
 
-@media screen and (orientation: portrait) {
+@media screen and (max-width: 640px) {
   .Letters {
     --letter-size: calc(12 * var(--unit));
   }

@@ -12,7 +12,9 @@
 .App-content {
   display: flex;
   width: 100%;
+  flex: 1;
   max-width: 960px;
+  position: relative;
 }
 
 .App-letters-wrapper {
@@ -80,14 +82,15 @@
   transform: translate(-50%, -50%);
 }
 
-@media screen and (orientation: portrait) {
+@media screen and (max-width: 640px) {
   .App-content {
     flex-direction: column;
+    padding-bottom: 40px;
   }
 
   .App-letters-wrapper {
     padding-right: 0;
-    margin: calc(var(--unit) * 4) 0;
+    margin-top: calc(var(--unit) * 4);
     padding: 0;
     flex-direction: column;
   }

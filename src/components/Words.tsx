@@ -1,5 +1,4 @@
 import React, {
-  Fragment,
   FunctionComponent,
   MouseEventHandler,
   useCallback,
@@ -68,12 +67,11 @@ const Words: FunctionComponent = () => {
 
   const handleHideModal = useCallback(() => {
     setDefinition(undefined);
-    setShowWords(false);
   }, [setDefinition]);
 
   const handleShowWords = useCallback(() => {
-    setShowWords(true);
-  }, [setShowWords]);
+    setShowWords(!showWords);
+  }, [setShowWords, showWords]);
 
   const displayWords = alphabetical
     ? Object.keys(words).sort()
@@ -85,7 +83,7 @@ const Words: FunctionComponent = () => {
   const clickable = canGetDefinitions();
 
   const wordsContent = (
-    <Fragment>
+    <>
       <div className="Words-controls">
         <span className="Words-metrics">
           {Object.keys(words).length} / {validWords.length} words
@@ -94,8 +92,8 @@ const Words: FunctionComponent = () => {
           {alphabetical ? 'Chronological' : 'Alphabetical'}
         </Button>
       </div>
-      <div className="Words-grid-wrapper">
-        <div className="Words-grid">
+      <div className="Words-list-wrapper">
+        <ul className="Words-list">
           {displayWords.map((word, i) => {
             const className = classNames({
               'Words-word': true,
@@ -103,28 +101,33 @@ const Words: FunctionComponent = () => {
               'Words-word-clickable': clickable,
             });
             return (
-              <div key={i} className={className} onClick={handleWordClick}>
+              <li key={i} className={className} onClick={handleWordClick}>
                 {word}
-              </div>
+              </li>
             );
           })}
-        </div>
-        <Button
-          className="Words-show-list"
-          size="small"
-          onClick={handleShowWords}
-        >
-          ▲
-        </Button>
+        </ul>
       </div>
-    </Fragment>
+      <Button
+        className="Words-show-list"
+        size="small"
+        onClick={handleShowWords}
+      >
+        ▲
+      </Button>
+    </>
   );
 
   return (
-    <div className="Words">
+    <div
+      className={classNames({
+        Words: true,
+        'Words-collapsed': !showWords,
+      })}
+    >
       {wordsContent}
 
-      {(definition || showWords) && (
+      {definition && (
         <Modal onHide={handleHideModal}>
           {definition ? (
             definition.definition ? (
