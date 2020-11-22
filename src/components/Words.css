@@ -108,10 +108,13 @@
     right: calc(var(--unit) * 4);
     position: absolute;
     bottom: 0;
+    height: 38px;
+    transition: height 0.25s;
   }
 
   .Words:not(.Words-collapsed) {
-    top: calc(var(--unit) * 4);
+    /* top: calc(var(--unit) * 4); */
+    height: calc(100% - 40px);
   }
 
   .Words-list-wrapper {
@@ -120,6 +123,11 @@
   }
 
   .Words-collapsed .Words-controls {
+    display: none;
+  }
+
+  /* Hide the words list as it transitions */
+  .Words:not(.Words-expanded):not(.Words-collapsed) .Words-list {
     display: none;
   }
 
@@ -155,5 +163,10 @@
     background: var(--background);
     border: none;
     box-shadow: -8px 0 8px var(--background);
+    transition: transform 0.25s;
+  }
+
+  .Words:not(.Words-collapsed) .Words-show-list {
+    transform: rotate(-180deg);
   }
 }

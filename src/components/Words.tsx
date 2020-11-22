@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React, {
   FunctionComponent,
   MouseEventHandler,
@@ -6,16 +7,16 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import classNames from 'classnames';
+import { useSelector } from 'react-redux';
 import { canGetDefinitions, getDefinition } from '../dictionary';
+import { selectValidWords, selectWords } from '../store';
 import { Words } from '../types';
+import useMediaQuery from '../useMediaQuery';
 import { isPangram } from '../wordUtil';
 import Button from './Button';
 import Modal from './Modal';
 import Spinner from './Spinner';
 import './Words.css';
-import { useSelector } from 'react-redux';
-import { selectValidWords, selectWords } from '../store';
 
 type DefinedWord = {
   word: string;
@@ -28,6 +29,8 @@ const Words: FunctionComponent = () => {
   const [alphabetical, setAlphabetical] = useState(false);
   const [definition, setDefinition] = useState<DefinedWord>();
   const [showWords, setShowWords] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const isVertical = useMediaQuery('(max-width: 640px)');
 
   const handleSortClick = useCallback(() => {
     setAlphabetical(!alphabetical);
@@ -73,9 +76,24 @@ const Words: FunctionComponent = () => {
     setShowWords(!showWords);
   }, [setShowWords, showWords]);
 
-  const displayWords = alphabetical
-    ? Object.keys(words).sort()
-    : Object.keys(words).reverse();
+  useEffect(() => {
+    let timer: number;
+    if (showWords) {
+      timer = window.setTimeout(() => {
+        setExpanded(true);
+      }, 300);
+    } else {
+      setExpanded(false);
+    }
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [showWords]);
+
+  const displayWords =
+    alphabetical && (!isVertical || showWords)
+      ? Object.keys(words).sort()
+      : Object.keys(words).reverse();
   if (displayWords.length === 0) {
     displayWords.push('');
   }
@@ -123,6 +141,7 @@ const Words: FunctionComponent = () => {
       className={classNames({
         Words: true,
         'Words-collapsed': !showWords,
+        'Words-expanded': expanded,
       })}
     >
       {wordsContent}
