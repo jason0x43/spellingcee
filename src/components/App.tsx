@@ -113,6 +113,10 @@ const App: FunctionComponent = () => {
     };
   }, [handleKeyPress]);
 
+  const handleHideWarning = useCallback(() => {
+    () => dispatch(setWarning(undefined));
+  }, [dispatch]);
+
   // If there was an error, display an error message rather than the normal UI
   if (error) {
     logger.error(error);
@@ -156,7 +160,7 @@ const App: FunctionComponent = () => {
       )}
 
       {warning && (
-        <Modal type="warning" onHide={() => dispatch(setWarning(undefined))}>{warning}</Modal>
+        <Modal type="warning" onHide={handleHideWarning}>{warning}</Modal>
       )}
     </div>
   );
