@@ -51,7 +51,7 @@
   color: var(--text-color);
 }
 
-@media screen and (orientation: landscape) and (max-width: 730px) {
+@media screen and (max-width: 480px) {
   .Progress-thresholds {
     flex-grow: 0;
   }
@@ -63,9 +63,13 @@
   .Progress-thresholds .Progress-threshold-current {
     display: flex;
   }
+
+  .Progress-thresholds .Progress-threshold-next {
+    display: flex;
+  }
 }
 
-@media screen and (orientation: portrait) and (max-width: 480px) {
+@media screen and (min-width: 641px) and (max-width: 800px) {
   .Progress-thresholds {
     flex-grow: 0;
   }
