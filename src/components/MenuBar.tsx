@@ -41,7 +41,6 @@ const MenuBar: FunctionComponent = () => {
   const users = useSelector(selectUsers);
   const userId = useSelector(selectUserId);
   const { gameId: activeGameId } = useSelector(selectGame);
-  console.log('activeGameId: ' + activeGameId);
 
   const handleSelectGame: MouseEventHandler = useCallback(
     async (event) => {
