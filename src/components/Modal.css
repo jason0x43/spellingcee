@@ -47,11 +47,12 @@
 
 .Modal-warning {
   border-color: var(--color-warn);
+  padding: var(--unit);
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 640px) {
   .Modal {
-    max-width: 90%;
+    max-width: 80%;
     max-height: 80%;
   }
 }
