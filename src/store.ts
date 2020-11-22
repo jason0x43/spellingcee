@@ -255,7 +255,6 @@ export const submitWord = createAsyncThunk<
     const { userId } = state.user;
     const { game, words } = state;
     const { gameId, score } = game;
-    logger.debug(`Adding word to game ${gameId}`);
 
     const storage = createStorage(userId);
     const stats = {
@@ -432,6 +431,12 @@ const appSlice = createSlice({
     builder.addCase(loadUser.rejected, (state, { error }) => {
       state.liveState.userLoading = false;
       state.liveState.warning = error.message;
+      logger.warn('Error loadng user:', error);
+    });
+
+    builder.addCase(activateGame.rejected, (state, { error }) => {
+      state.liveState.warning = error.message;
+      logger.warn('Error activating game:', error);
     });
   },
 });
@@ -548,7 +553,7 @@ export function selectWords(state: AppState): AppState['words'] {
 
 const loggerMiddleware: Middleware = () => (next) => (action) => {
   if (action.type) {
-    console.info('Dispatching', action);
+    logger.debug('Dispatching', action);
   }
   const result = next(action);
   return result;
@@ -574,7 +579,7 @@ const store = configureStore({
 // Check for a stored local game. If one is present, activate it. Otherwise,
 // save the current default game as the local game.
 const storedGame = loadLocalState<Game>(localUser);
-if (storedGame) {
+if (isValidState(storedGame)) {
   store.dispatch(activateGame(storedGame));
 } else {
   saveLocalState(localUser, defaultGame);
@@ -583,3 +588,10 @@ if (storedGame) {
 export type AppDispatch = typeof store.dispatch;
 
 export default store;
+
+function isValidState(value: Game | undefined): value is Game {
+  if (value == null || typeof value !== 'object') {
+    return false;
+  }
+  return 'gameId' in value && 'key' in value;
+}

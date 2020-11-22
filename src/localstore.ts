@@ -142,8 +142,6 @@ function deepGet<T = unknown>(
 function deepSet(obj: Record<string, unknown>, key: string[], value: unknown) {
   const k = key[0];
 
-  logger.debug('Setting', key, 'to', value);
-
   if (key.length > 1) {
     if (obj[k] == null || typeof obj[k] !== 'object') {
       obj[k] = {};
