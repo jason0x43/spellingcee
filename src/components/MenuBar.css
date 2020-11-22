@@ -1,10 +1,18 @@
 .MenuBar {
+  --menu-height: calc(var(--unit) * 6);
   width: 100%;
-  display: flex;
-  padding: var(--unit) calc(var(--unit) * 2);
-  box-sizing: border-box;
-  border-bottom: solid 1px var(--border-color);
   flex-shrink: 0;
+}
+
+.MenuBar-bar {
+  display: flex;
+  flex: 1;
+  position: relative;
+  z-index: 11;
+  background: white;
+  box-sizing: border-box;
+  height: var(--menu-height);
+  border-bottom: solid 1px var(--border-color);
 }
 
 .MenuBar-left,
@@ -27,6 +35,16 @@
 
 .MenuBar-right > * {
   margin-left: calc(var(--unit) * 2);
+}
+
+.MenuBar-item {
+  cursor: pointer;
+  padding: var(--unit) calc(var(--unit) * 2);
+}
+
+.MenuBar-item:hover,
+.MenuBar-item-active {
+  background: var(--shaded);
 }
 
 .MenuBar-select-list {
@@ -58,7 +76,7 @@
 }
 
 .MenuBar-select-item:hover {
-  background: var(--shaded-hover);
+  background: var(--shaded);
 }
 
 .MenuBar-select-item:active {
@@ -104,4 +122,41 @@
 .MenuBar-select-remove .Button {
   background: var(--background);
   border: solid 1px var(--border-color);
+}
+
+.MenuBar-menu {
+  position: absolute;
+  right: var(--unit);
+  top: calc(var(--menu-height) + var(--unit));
+  z-index: 10;
+  background: white;
+  text-align: left;
+  border: solid 1px var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+.MenuBar-menu-item:not(:last-child) {
+  padding-bottom: 0;
+}
+
+.MenuBar-menu-item {
+  padding: calc(var(--unit) * 2);
+}
+
+.MenuBar-menu-item-pressable {
+  cursor: pointer;
+}
+
+.MenuBar-menu-item-pressable:hover {
+  background: var(--shaded);
+}
+
+.MenuBar-menu-section {
+  border-bottom: solid 1px var(--border-color);
+}
+
+.MenuBar-menu-section:last-child {
+  border-bottom: none;
 }

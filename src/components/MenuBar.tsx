@@ -2,9 +2,12 @@ import React, {
   FunctionComponent,
   MouseEventHandler,
   useCallback,
+  useEffect,
+  useRef,
   useState,
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import classNames from 'classnames';
 import { createLogger } from '../logging';
 import {
   activateGame,
@@ -40,7 +43,13 @@ const MenuBar: FunctionComponent = () => {
   const user = useSelector(selectUser);
   const users = useSelector(selectUsers);
   const userId = useSelector(selectUserId);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
   const { gameId: activeGameId } = useSelector(selectGame);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const handleAccount = useCallback(async () => {
+    setShowAccountMenu(!showAccountMenu);
+  }, [showAccountMenu]);
 
   const handleSelectGame: MouseEventHandler = useCallback(
     async (event) => {
@@ -101,6 +110,7 @@ const MenuBar: FunctionComponent = () => {
 
   const handleSignout = useCallback(async () => {
     dispatch(signOut());
+    setShowAccountMenu(false);
   }, [dispatch]);
 
   const handleUserSelect: MouseEventHandler = useCallback(
@@ -114,6 +124,20 @@ const MenuBar: FunctionComponent = () => {
     },
     [dispatch, userId]
   );
+
+  useEffect(() => {
+    const listener = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (showAccountMenu && !menuRef.current?.contains(target)) {
+        setShowAccountMenu(false);
+      }
+    };
+    window.addEventListener('click', listener);
+
+    return () => {
+      window.removeEventListener('click', listener);
+    };
+  }, [showAccountMenu]);
 
   const renderGame = useCallback(
     (gameId: string) => {
@@ -205,60 +229,85 @@ const MenuBar: FunctionComponent = () => {
 
   return (
     <div className="MenuBar">
-      <div className="MenuBar-left">
-        <Button type="text" onClick={handleShowGames}>
-          Game
-        </Button>
-        <Button type="text" onClick={handleNewGame}>
-          New
-        </Button>
-        {loggedIn && (
-          <Button type="text" onClick={handleShareGame}>
-            Share
-          </Button>
+      <div className="MenuBar-bar">
+        <div className="MenuBar-left">
+          <div className="MenuBar-item" onClick={handleShowGames}>
+            Game
+          </div>
+          <div className="MenuBar-item" onClick={handleNewGame}>
+            New
+          </div>
+          {loggedIn && (
+            <div className="MenuBar-item" onClick={handleShareGame}>
+              Share
+            </div>
+          )}
+        </div>
+
+        <div className="MenuBar-right">
+          {loggedIn ? (
+            <div
+              className={classNames({
+                'MenuBar-item': true,
+                'MenuBar-item-active': showAccountMenu,
+              })}
+              onClick={handleAccount}
+            >
+              Account
+            </div>
+          ) : (
+            <div className="MenuBar-item" onClick={handleSignin}>
+              Sign in
+            </div>
+          )}
+        </div>
+
+        {mode === 'selecting' && (
+          <Modal onHide={handleHideModal}>
+            {games ? (
+              <ul className="MenuBar-select-list">
+                {Object.keys(games).map(renderGame)}
+              </ul>
+            ) : (
+              <Spinner />
+            )}
+          </Modal>
+        )}
+
+        {mode === 'sharing' && (
+          <Modal onHide={handleHideModal}>
+            {users ? (
+              <ul className="MenuBar-select-list MenuBar-select-users">
+                {Object.keys(users)
+                  .filter((uid) => uid !== userId)
+                  .map(renderUser)}
+              </ul>
+            ) : (
+              <Spinner />
+            )}
+          </Modal>
         )}
       </div>
 
-      <div className="MenuBar-right">
-        {loggedIn ? (
-          <Button
-            type="text"
-            onClick={handleSignout}
-            tooltip={`${user.name} (${user.userId})`}
-          >
-            Sign out
-          </Button>
-        ) : (
-          <Button type="text" onClick={handleSignin}>
-            Sign in
-          </Button>
-        )}
-      </div>
-
-      {mode === 'selecting' && (
-        <Modal onHide={handleHideModal}>
-          {games ? (
-            <ul className="MenuBar-select-list">
-              {Object.keys(games).map(renderGame)}
-            </ul>
-          ) : (
-            <Spinner />
-          )}
-        </Modal>
-      )}
-
-      {mode === 'sharing' && (
-        <Modal onHide={handleHideModal}>
-          {users ? (
-            <ul className="MenuBar-select-list MenuBar-select-users">
-              {Object.keys(users)
-                .filter((uid) => uid !== userId)
-                .map(renderUser)}
-            </ul>
-          ) : (
-            <Spinner />
-          )}
-        </Modal>
+      {showAccountMenu && (
+        <div ref={menuRef} className="MenuBar-menu">
+          <div className="MenuBar-menu-section">
+            <div className="MenuBar-menu-item">
+              <strong>Name:</strong> {user.name}
+            </div>
+            <div className="MenuBar-menu-item">
+              <strong>ID:</strong> {user.userId}
+            </div>
+          </div>
+          <div className="MenuBar-menu-section">
+            <div
+              className="MenuBar-menu-item MenuBar-menu-item-pressable"
+              onClick={handleSignout}
+            >
+              Sign out
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
