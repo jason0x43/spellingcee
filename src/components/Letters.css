@@ -18,7 +18,7 @@
 }
 
 .Letters-letter {
-  font-size: calc(var(--unit) * 6);
+  font-size: calc(var(--letter-size) * 0.5);
   text-transform: capitalize;
   position: absolute;
   top: calc(95% / 3);

@@ -1,6 +1,7 @@
 :root {
   height: 100%;
 
+  --unit: min(1vh, 6px);
   --background: #ffffff;
   --background-glass: rgba(225, 225, 225, 0.8);
   --text-color: #222;
@@ -8,9 +9,9 @@
   --text-color-bright: #111;
   --font-weight-normal: 400;
   --font-weight-bold: 800;
-  --font-size: 16px;
-  --font-size-small: 14px;
-  --font-size-large: 24px;
+  --font-size: calc(var(--unit) * 2.8);
+  --font-size-small: calc(var(--font-size) * 0.875);
+  --font-size-large: calc(var(--font-size) * 1.5);
   --highlight: #bbddff;
   --highlight-active: #99ccff;
   --shaded: #eeeeee;
@@ -18,7 +19,6 @@
   --shaded-hover: #dddddd;
   --border-color: #cccccc;
   --shadow-color: rgba(100, 100, 100, 0.07);
-  --unit: min(1vh, 6px);
   --big-space: calc(var(--unit) * 2);
   --border-radius: 6px;
   --color-warn: orange;

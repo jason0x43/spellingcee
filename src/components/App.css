@@ -66,6 +66,10 @@
 }
 
 @media screen and (min-width: 641px) {
+  .App-content {
+    margin: calc(var(--unit) * 10);
+  }
+
   .App-words {
     padding-left: calc(var(--big-space) * 8);
   }
