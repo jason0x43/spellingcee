@@ -12,6 +12,7 @@ import { canGetDefinitions, getDefinition } from '../dictionary';
 import {
   AppDispatch,
   isWordListExpanded,
+  selectUserId,
   selectValidWords,
   selectWords,
   setWordListExpanded,
@@ -38,8 +39,8 @@ const Words: FunctionComponent = () => {
   const [showWords, setShowWords] = useState(false);
   const isVertical = useMediaQuery(verticalQuery);
   const listRef = useRef<HTMLDivElement>(null);
-  /* const [expanded, setIsExpanded] = useState(false); */
   const expanded = useSelector(isWordListExpanded);
+  const userId = useSelector(selectUserId);
 
   const handleSortClick = useCallback(() => {
     setAlphabetical(!alphabetical);
@@ -86,25 +87,25 @@ const Words: FunctionComponent = () => {
   }, [setShowWords, showWords]);
 
   const renderWordsContent = useCallback(() => {
-    const clickable = canGetDefinitions();
-
     const displayWords =
       alphabetical && (!isVertical || showWords)
         ? Object.keys(words).sort()
         : Object.keys(words).reverse();
-    if (displayWords.length === 0) {
-      displayWords.push('');
-    }
 
     return (
       <>
         <div className="Words-list-wrapper">
-          <ul className="Words-list">
+          <ul
+            className={classNames({
+              'Words-list': true,
+              'Words-list-clickable': canGetDefinitions(),
+            })}
+          >
             {displayWords.map((word, i) => {
               const className = classNames({
                 'Words-word': true,
                 'Words-word-pangram': isPangram(word),
-                'Words-word-clickable': clickable,
+                'Words-word-own': words[word].addedBy === userId,
               });
               return (
                 <li key={i} className={className} onClick={handleWordClick}>
@@ -138,6 +139,7 @@ const Words: FunctionComponent = () => {
     handleWordClick,
     isVertical,
     showWords,
+    userId,
     validWords,
     words,
   ]);
