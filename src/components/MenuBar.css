@@ -9,7 +9,7 @@
   flex: 1;
   position: relative;
   z-index: 11;
-  background: white;
+  background: var(--background);
   box-sizing: border-box;
   height: var(--menu-height);
   border-bottom: solid 1px var(--border-color);
@@ -19,6 +19,7 @@
 .MenuBar-right {
   flex-grow: 1;
   display: flex;
+  align-items: stretch;
 }
 
 .MenuBar-left {
@@ -39,7 +40,9 @@
 
 .MenuBar-item {
   cursor: pointer;
-  padding: var(--unit) calc(var(--unit) * 2);
+  display: flex;
+  align-items: center;
+  padding: 0 calc(var(--unit) * 2);
 }
 
 .MenuBar-item:hover,
@@ -129,7 +132,7 @@
   right: var(--unit);
   top: calc(var(--menu-height) + var(--unit));
   z-index: 10;
-  background: white;
+  background: var(--background);
   text-align: left;
   border: solid 1px var(--border-color);
   border-radius: var(--border-radius);

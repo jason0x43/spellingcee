@@ -6,6 +6,10 @@
   user-select: none;
 }
 
+.Progress-label {
+  white-space: nowrap;
+}
+
 .Progress-thresholds {
   display: flex;
   list-style-type: none;

@@ -4,7 +4,7 @@
   border-radius: var(--unit);
   border: none;
   padding: calc(2 * var(--unit)) calc(3 * var(--unit));
-  font-size: calc(3 * var(--unit));
+  font-size: var(--font-size);
   color: var(--color);
   transition: background 0.1s;
   cursor: pointer;

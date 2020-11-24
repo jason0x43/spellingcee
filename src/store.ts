@@ -52,6 +52,7 @@ export interface AppState extends PersistedAppState {
     warning?: string;
     users?: { [userId: string]: User };
     games?: { [key: string]: Game };
+    wordListExpanded?: boolean;
   };
 }
 
@@ -400,6 +401,13 @@ const appSlice = createSlice({
       state.liveState.warning = action.payload;
     },
 
+    setWordListExpanded(
+      state,
+      action: PayloadAction<AppState['liveState']['wordListExpanded']>
+    ) {
+      state.liveState.wordListExpanded = action.payload;
+    },
+
     setWords(state, action: PayloadAction<AppState['words']>) {
       state.words = action.payload;
     },
@@ -457,6 +465,7 @@ export const {
   setUserLoading,
   setUsers,
   setWarning,
+  setWordListExpanded,
   setWords,
   updateAppState,
   updateGame,
@@ -485,6 +494,10 @@ export function isMessageGood(state: AppState): boolean {
 
 export function isUserLoading(state: AppState): boolean {
   return state.liveState.userLoading ?? false;
+}
+
+export function isWordListExpanded(state: AppState): boolean {
+  return state.liveState.wordListExpanded ?? false;
 }
 
 export function selectError(state: AppState): AppState['liveState']['error'] {

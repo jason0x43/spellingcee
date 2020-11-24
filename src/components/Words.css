@@ -4,7 +4,9 @@
   font-weight: var(--font-weight-normal);
   overflow: hidden;
   flex: 1;
+  width: 100%;
   background: var(--background);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
@@ -104,17 +106,16 @@
 
 @media screen and (max-width: 640px) {
   .Words {
-    left: calc(var(--unit) * 4);
-    right: calc(var(--unit) * 4);
-    position: absolute;
+    position: relative;
     bottom: 0;
-    height: 38px;
-    transition: height 0.25s;
+    min-height: 38px;
+    flex: 0;
+    transition: all 0.25s;
   }
 
   .Words:not(.Words-collapsed) {
-    /* top: calc(var(--unit) * 4); */
     height: calc(100% - 40px);
+    flex: 1;
   }
 
   .Words-list-wrapper {
@@ -122,7 +123,7 @@
     overflow-y: auto;
   }
 
-  .Words-collapsed .Words-controls {
+  .Words:not(.Words-expanded) .Words-controls {
     display: none;
   }
 
@@ -136,7 +137,6 @@
     flex-wrap: nowrap;
     align-items: center;
     padding-bottom: 0;
-    min-height: 2.3em;
     overflow-x: hidden;
   }
 
@@ -157,16 +157,11 @@
     display: block;
     position: absolute;
     right: 0;
-    bottom: 0;
+    top: 0;
     margin: 0;
-    height: calc(var(--unit) * 7);
+    height: calc(var(--unit) * 6);
     background: var(--background);
     border: none;
     box-shadow: -8px 0 8px var(--background);
-    transition: transform 0.25s;
-  }
-
-  .Words:not(.Words-collapsed) .Words-show-list {
-    transform: rotate(-180deg);
   }
 }

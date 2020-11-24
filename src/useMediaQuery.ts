@@ -8,6 +8,7 @@ export default function useMediaQuery(query: string): boolean {
     const listener = (event: MediaQueryListEvent) => {
       setMatches(event.matches);
     };
+    setMatches(matcher.matches);
     matcher.addEventListener('change', listener);
 
     return () => {
@@ -17,3 +18,5 @@ export default function useMediaQuery(query: string): boolean {
 
   return matches;
 }
+
+export const verticalQuery = '(max-width: 640px)';

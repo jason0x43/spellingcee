@@ -1,9 +1,5 @@
-import React, {
-  Fragment,
-  FunctionComponent,
-  useCallback,
-  useEffect,
-} from 'react';
+import classNames from 'classnames';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   AppDispatch,
@@ -22,6 +18,7 @@ import {
   setWarning,
   isUserLoading,
   isInputDisabled,
+  isWordListExpanded,
 } from '../store';
 import { createLogger } from '../logging';
 import AppError from '../AppError';
@@ -33,6 +30,7 @@ import Modal from './Modal';
 import Progress from './Progress';
 import Words from './Words';
 import './App.css';
+import useMediaQuery, { verticalQuery } from '../useMediaQuery';
 
 const messageTimeout = 1000;
 const inputShakeTimeout = 300;
@@ -45,6 +43,8 @@ const App: FunctionComponent = () => {
   const error = useSelector(selectError);
   const warning = useSelector(selectWarning);
   const message = useSelector(selectMessage);
+  const wordListExpanded = useSelector(isWordListExpanded);
+  const isVertical = useMediaQuery(verticalQuery);
 
   // If we have a message, display it
   useEffect(() => {
@@ -117,6 +117,15 @@ const App: FunctionComponent = () => {
     () => dispatch(setWarning(undefined));
   }, [dispatch]);
 
+  const renderWords = useCallback(() => {
+    return (
+      <div className="App-words">
+        <Progress />
+        <Words />
+      </div>
+    );
+  }, []);
+
   // If there was an error, display an error message rather than the normal UI
   if (error) {
     logger.error(error);
@@ -138,29 +147,33 @@ const App: FunctionComponent = () => {
       {userLoading ? (
         <Modal />
       ) : (
-        <Fragment>
+        <>
           <MenuBar />
-          <div className="App-content">
-            <div className="App-letters-wrapper">
+          <div className="App-content-wrapper">
+            <div
+              className={classNames({
+                'App-content': true,
+                'App-words-expanded': wordListExpanded,
+              })}
+            >
+              {isVertical && renderWords()}
+
               <div className="App-letters">
                 <Message />
                 <Input />
                 <Letters />
               </div>
-            </div>
 
-            <div className="App-words-wrapper">
-              <div className="App-words">
-                <Progress />
-                <Words />
-              </div>
+              {!isVertical && renderWords()}
             </div>
           </div>
-        </Fragment>
+        </>
       )}
 
       {warning && (
-        <Modal type="warning" onHide={handleHideWarning}>{warning}</Modal>
+        <Modal type="warning" onHide={handleHideWarning}>
+          {warning}
+        </Modal>
       )}
     </div>
   );

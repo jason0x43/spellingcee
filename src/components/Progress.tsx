@@ -14,7 +14,7 @@ const Progress: FunctionComponent = () => {
 
   return (
     <div className="Progress">
-      <span>{label}</span>
+      <span className="Progress-label">{label}</span>
       <ul className="Progress-thresholds">
         {thresholds.map((entry, i) => {
           const className = classNames({
