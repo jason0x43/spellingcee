@@ -211,6 +211,7 @@ export const signIn = createAsyncThunk(
     const user = await authSignIn();
     if (user) {
       await dispatch(loadUser(user));
+      await createStorage(user.userId).saveUserProfile(user);
     }
   }
 );
