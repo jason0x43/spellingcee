@@ -57,6 +57,7 @@
   margin: 0;
   padding: calc(var(--unit) * 4);
   font-size: 120%;
+  overflow-y: auto;
 }
 
 .MenuBar-select-item {
@@ -64,9 +65,12 @@
   cursor: pointer;
   border: solid 1px var(--border-color);
   border-radius: var(--border-radius);
-  padding: var(--unit) calc(var(--unit) * 2);
   background: var(--shaded);
-  position: relative;
+  display: flex;
+}
+
+.MenuBar-select-item:last-child {
+  margin-bottom: 0;
 }
 
 .MenuBar-select-item .MenuBar-select-id {
@@ -89,15 +93,27 @@
 
 .MenuBar-select-info {
   font-size: var(--font-size-small);
+  padding: var(--unit) calc(var(--unit) * 2);
+  margin: 0;
 }
 
 .MenuBar-select-info > div {
   display: flex;
+  margin-bottom: var(--unit);
+}
+
+.MenuBar-select-info > div:last-child {
+  margin-bottom: 0;
 }
 
 .MenuBar-select-info dt {
-  width: 7em;
+  width: 9ex;
   color: var(--text-color-dim);
+  display: inline-block;
+}
+
+.MenuBar-select-info dd {
+  display: inline-block;
 }
 
 .MenuBar-select-users .MenuBar-select-info dt {
@@ -120,7 +136,6 @@
 .MenuBar-select-remove {
   display: flex;
   justify-content: center;
-  margin-top: var(--unit);
 }
 
 .MenuBar-select-remove .Button {

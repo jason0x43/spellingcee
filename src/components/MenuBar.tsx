@@ -39,6 +39,7 @@ const MenuBar: FunctionComponent = () => {
   const [mode, setMode] = useState<Mode>();
   const dispatch = useDispatch<AppDispatch>();
   const games = useSelector(selectGames);
+
   const loggedIn = useSelector(isLoggedIn);
   const user = useSelector(selectUser);
   const users = useSelector(selectUsers);
@@ -86,9 +87,12 @@ const MenuBar: FunctionComponent = () => {
       while (node && !node.getAttribute('data-item-id')) {
         node = node.parentElement;
       }
+
       const gameId = node?.getAttribute('data-item-id');
       if (gameId) {
-        dispatch(removeGame(gameId));
+        if (window.confirm('Are you sure you want to delete this game?')) {
+          dispatch(removeGame(gameId));
+        }
       }
     },
     [dispatch]
@@ -170,26 +174,16 @@ const MenuBar: FunctionComponent = () => {
               <dd>{new Date(game.addedAt).toLocaleDateString()}</dd>
             </div>
             <div>
-              <dt>Difficulty</dt>
-              <dd>{game.difficulty}</dd>
-            </div>
-            <div>
               <dt>Words</dt>
               <dd>
                 {game.wordsFound} / {game.totalWords}
-              </dd>
-            </div>
-            <div>
-              <dt>Score</dt>
-              <dd>
-                {game.score} / {game.maxScore}
               </dd>
             </div>
           </dl>
           {gameId !== activeGameId && (
             <div className="MenuBar-select-remove">
               <Button size="small" onClickCapture={handleRemoveGame}>
-                Delete
+                ×
               </Button>
             </div>
           )}
@@ -266,7 +260,15 @@ const MenuBar: FunctionComponent = () => {
           <Modal onHide={handleHideModal}>
             {games ? (
               <ul className="MenuBar-select-list">
-                {Object.keys(games).map(renderGame)}
+                {renderGame(activeGameId)}
+                {Object.keys(games)
+                  .filter((gameId) => gameId !== activeGameId)
+                  .sort((a, b) => {
+                    const gameA = games[a];
+                    const gameB = games[b];
+                    return gameB.addedAt - gameA.addedAt;
+                  })
+                  .map(renderGame)}
               </ul>
             ) : (
               <Spinner />
