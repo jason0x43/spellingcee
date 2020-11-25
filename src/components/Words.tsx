@@ -90,7 +90,9 @@ const Words: FunctionComponent = () => {
     const displayWords =
       alphabetical && (!isVertical || showWords)
         ? Object.keys(words).sort()
-        : Object.keys(words).reverse();
+        : Object.keys(words).sort(
+            (a, b) => words[b].addedAt - words[a].addedAt
+          );
 
     return (
       <>

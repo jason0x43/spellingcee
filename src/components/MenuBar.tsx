@@ -8,6 +8,10 @@ import React, {
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import classNames from 'classnames';
+import { GrFormClose as CloseIcon } from 'react-icons/gr';
+import { GoPrimitiveDot as NotifyIcon } from 'react-icons/go';
+import { BsPeopleCircle as ShareIcon } from 'react-icons/bs';
+import { AiFillStar as NewGameIcon } from 'react-icons/ai';
 import { createLogger } from '../logging';
 import {
   activateGame,
@@ -19,24 +23,25 @@ import {
   removeGame,
   selectGame,
   selectGames,
+  selectNewGameIds,
   selectUser,
   selectUserId,
   selectUsers,
+  setNewGameIds,
   shareActiveGame,
   signIn,
   signOut,
 } from '../store';
-import Button from './Button';
 import Modal from './Modal';
 import Spinner from './Spinner';
 import './MenuBar.css';
 
-type Mode = 'selecting' | 'sharing';
-
 const logger = createLogger({ prefix: 'MenuBar' });
+type SelectionState = 'loading' | 'selecting';
 
 const MenuBar: FunctionComponent = () => {
-  const [mode, setMode] = useState<Mode>();
+  const [selectingGame, setSelectingGame] = useState<SelectionState>();
+  const [selectingUser, setSelectingUser] = useState<SelectionState>();
   const dispatch = useDispatch<AppDispatch>();
   const games = useSelector(selectGames);
 
@@ -47,6 +52,7 @@ const MenuBar: FunctionComponent = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const { gameId: activeGameId } = useSelector(selectGame);
   const menuRef = useRef<HTMLDivElement>(null);
+  const newGameIds = useSelector(selectNewGameIds);
 
   const handleAccount = useCallback(async () => {
     setShowAccountMenu(!showAccountMenu);
@@ -61,14 +67,15 @@ const MenuBar: FunctionComponent = () => {
       } else {
         dispatch(newGame());
       }
-      setMode(undefined);
+      setSelectingGame(undefined);
     },
     [dispatch, games]
   );
 
   const handleHideModal = useCallback(() => {
-    setMode(undefined);
-  }, [setMode]);
+    setSelectingGame(undefined);
+    setSelectingUser(undefined);
+  }, []);
 
   const handleNewGame = useCallback(async () => {
     dispatch(newGame());
@@ -99,13 +106,16 @@ const MenuBar: FunctionComponent = () => {
   );
 
   const handleShareGame = useCallback(async () => {
-    dispatch(loadUsers());
-    setMode('sharing');
+    setSelectingUser('loading');
+    await dispatch(loadUsers());
+    setSelectingUser('selecting');
   }, [dispatch]);
 
-  const handleShowGames = useCallback(() => {
-    dispatch(loadGames());
-    setMode('selecting');
+  const handleShowGames = useCallback(async () => {
+    setSelectingGame('loading');
+    await dispatch(loadUsers());
+    await dispatch(loadGames());
+    setSelectingGame('selecting');
   }, [dispatch]);
 
   const handleSignin = useCallback(async () => {
@@ -124,10 +134,16 @@ const MenuBar: FunctionComponent = () => {
       if (userId && otherUserId) {
         dispatch(shareActiveGame(otherUserId));
       }
-      setMode(undefined);
+      setSelectingUser(undefined);
     },
     [dispatch, userId]
   );
+
+  useEffect(() => {
+    if (!selectingGame) {
+      dispatch(setNewGameIds(undefined));
+    }
+  }, [dispatch, selectingGame]);
 
   useEffect(() => {
     const listener = (event: MouseEvent) => {
@@ -155,13 +171,13 @@ const MenuBar: FunctionComponent = () => {
         <li
           className={classNames({
             'MenuBar-select-item': true,
-            'MenuBar-select-item-highlight': game.isShared,
+            'MenuBar-select-item-noselect': gameId === activeGameId,
           })}
           key={gameId}
           data-item-id={gameId}
-          onClick={handleSelectGame}
+          onClick={gameId !== activeGameId ? handleSelectGame : undefined}
         >
-          <dl className="MenuBar-select-info">
+          <dl className="MenuBar-select-info" title={gameId}>
             <div>
               <dt>Letters</dt>
               <dd className="MenuBar-select-letters">
@@ -182,18 +198,37 @@ const MenuBar: FunctionComponent = () => {
                 {game.wordsFound} / {game.totalWords}
               </dd>
             </div>
+            {game.isShared && users?.[game.addedBy] && (
+              <div>
+                <dt>Creator</dt>
+                <dd>{users[game.addedBy].name}</dd>
+              </div>
+            )}
           </dl>
-          {gameId !== activeGameId && (
-            <div className="MenuBar-select-remove">
-              <Button size="small" onClickCapture={handleRemoveGame}>
-                ×
-              </Button>
-            </div>
-          )}
+          <div className="MenuBar-select-controls">
+            {gameId !== activeGameId && (
+              <div
+                className="MenuBar-select-control MenuBar-pressable"
+                onClickCapture={handleRemoveGame}
+              >
+                <CloseIcon className="MenuBar-select-control-icon" />
+              </div>
+            )}
+            {game.isShared && (
+              <div className="MenuBar-select-control">
+                <ShareIcon className="MenuBar-select-control-icon" />
+              </div>
+            )}
+            {newGameIds?.[game.gameId] && (
+              <div className="MenuBar-select-control">
+                <NewGameIcon className="MenuBar-select-control-icon MenuBar-notify" />
+              </div>
+            )}
+          </div>
         </li>
       );
     },
-    [activeGameId, games, handleSelectGame, handleRemoveGame]
+    [activeGameId, games, handleSelectGame, handleRemoveGame, newGameIds, users]
   );
 
   const renderUser = useCallback(
@@ -229,7 +264,8 @@ const MenuBar: FunctionComponent = () => {
       <div className="MenuBar-bar">
         <div className="MenuBar-left">
           <div className="MenuBar-item" onClick={handleShowGames}>
-            Game
+            Games
+            {newGameIds != null && <NotifyIcon className="MenuBar-notify" />}
           </div>
           <div className="MenuBar-item" onClick={handleNewGame}>
             New
@@ -259,9 +295,9 @@ const MenuBar: FunctionComponent = () => {
           )}
         </div>
 
-        {mode === 'selecting' && (
+        {selectingGame && (
           <Modal onHide={handleHideModal}>
-            {games ? (
+            {selectingGame === 'selecting' && games ? (
               <ul className="MenuBar-select-list">
                 {renderGame(activeGameId)}
                 {Object.keys(games)
@@ -279,9 +315,9 @@ const MenuBar: FunctionComponent = () => {
           </Modal>
         )}
 
-        {mode === 'sharing' && (
+        {selectingUser && (
           <Modal onHide={handleHideModal}>
-            {users ? (
+            {selectingUser === 'selecting' && users ? (
               <ul className="MenuBar-select-list MenuBar-select-users">
                 {Object.keys(users)
                   .filter((uid) => uid !== userId)

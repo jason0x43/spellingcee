@@ -68,6 +68,10 @@ export type GameId = string;
 export type GameMeta = DatabaseSchema['game_data'][string]['meta'];
 export type GameStats = DatabaseSchema['game_data'][string]['stats'];
 
+export interface NewGameCallback {
+  (value: { [gameId: string]: string } | undefined): void;
+}
+
 export interface WordsCallback {
   (value: Words | undefined): void;
 }
@@ -75,7 +79,6 @@ export interface WordsCallback {
 export interface Subscription {
   key: string | undefined;
   off(): void;
-  initialValue: Promise<unknown>;
 }
 
 export interface Storage {
@@ -96,11 +99,18 @@ export interface Storage {
     gameId: string;
     otherUserId: string;
   }): Promise<void>;
-  subscribeToWords(gameId: string, callback: WordsCallback): Subscription;
+  subscribeToNewGames(
+    userId: string,
+    callback: NewGameCallback
+  ): Promise<Subscription>;
+  subscribeToWords(
+    gameId: string,
+    callback: WordsCallback
+  ): Promise<Subscription>;
   subscribeToKey<T>(
     key: string | readonly string[],
     callback: (value: T) => void
-  ): Subscription;
+  ): Promise<Subscription>;
   unshareGame(gameId: string, otherUserId: string): Promise<void>;
   updateGameStats(gameId: string, stats: GameStats): Promise<void>;
 }
@@ -291,9 +301,26 @@ export function createStorage(userId: string = localUser): Storage {
     },
 
     /**
+     * Subscribe to updates to a user's games list
+     */
+    async subscribeToNewGames(
+      userId: string,
+      callback: NewGameCallback
+    ): Promise<Subscription> {
+      logger.debug('Subscribing to games for', userId);
+      const key = getUserGamesKey({ userId });
+      return storage.subscribeToChildAdds<UserGames[string]>(key, (gameKey) => {
+        callback(gameKey);
+      });
+    },
+
+    /**
      * Subscribe to updates to a game's words list
      */
-    subscribeToWords(gameId: string, callback: WordsCallback): Subscription {
+    async subscribeToWords(
+      gameId: string,
+      callback: WordsCallback
+    ): Promise<Subscription> {
       logger.debug('Subscribing to words for', gameId);
       const key = getGameWordsKey({ gameId });
       return storage.subscribeToKey<Words>(key, (words) => {
@@ -306,29 +333,29 @@ export function createStorage(userId: string = localUser): Storage {
      *
      * The subscription
      */
-    subscribeToKey<T>(
+    async subscribeToKey<T>(
       key: string | readonly string[],
-      callback: (value: T) => void
-    ): Subscription {
+      callback: (value: T) => void,
+      event = 'value'
+    ): Promise<Subscription> {
       const keyStr: string = Array.isArray(key)
         ? key.join('/')
         : (key as string);
       const ref = getRef(keyStr);
-      logger.debug('Subscribing to key', keyStr);
+      logger.debug(`Subscribing to ${event} for key`, keyStr);
 
-      const valuePromise = new Promise<T>((resolve) => {
-        let resolver = (val: T) => {
-          resolve(val);
-          resolver = () => undefined;
-        };
+      let initialized = false;
 
-        ref.on('value', (snapshot) => {
+      ref.on('value', (snapshot) => {
+        if (initialized) {
           logger.debug('Got value for', key);
           const value = snapshot.val() as T;
           callback(value);
-          resolver(value);
-        });
+        }
       });
+
+      await ref.once('value');
+      initialized = true;
 
       return {
         get key() {
@@ -338,8 +365,49 @@ export function createStorage(userId: string = localUser): Storage {
         off() {
           ref.off();
         },
+      };
+    },
 
-        initialValue: valuePromise,
+    /**
+     * Subscribe to child_add events at a particular key
+     *
+     * The subscription
+     */
+    subscribeToChildAdds<T>(
+      key: string | readonly string[],
+      callback: (value: { [key: string]: T }) => void
+    ): Subscription {
+      const keyStr: string = Array.isArray(key)
+        ? key.join('/')
+        : (key as string);
+      const ref = getRef(keyStr);
+      logger.debug('Subscribing to child adds for key', keyStr);
+
+      let initialDataLoaded = false;
+
+      ref.on('child_added', (snapshot) => {
+        if (initialDataLoaded) {
+          const value = snapshot.val() as T;
+          const key = snapshot.key as NonNullable<string>;
+          callback({ [key]: value });
+        }
+      });
+
+      ref
+        .once('value')
+        .then(() => (initialDataLoaded = true))
+        .catch((error) => {
+          logger.warn(`Error subscribing to adds for ${key}:`, error);
+        });
+
+      return {
+        get key() {
+          return keyStr;
+        },
+
+        off() {
+          ref.off();
+        },
       };
     },
 

@@ -27,28 +27,26 @@
   justify-content: flex-start;
 }
 
-.MenuBar-left > * {
-  margin-right: calc(var(--unit) * 2);
-}
-
 .MenuBar-right {
   justify-content: flex-end;
-}
-
-.MenuBar-right > * {
-  margin-left: calc(var(--unit) * 2);
 }
 
 .MenuBar-item {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 0 calc(var(--unit) * 2);
+  padding: 0 calc(var(--unit) * 3);
+  position: relative;
 }
 
 .MenuBar-item:hover,
 .MenuBar-item-active {
   background: var(--shaded);
+}
+
+.MenuBar-item .MenuBar-notify {
+  position: absolute;
+  right: 0;
 }
 
 .MenuBar-select-list {
@@ -69,6 +67,12 @@
   display: flex;
 }
 
+.MenuBar-select-item-noselect {
+  background: none;
+  border: none;
+  cursor: default;
+}
+
 .MenuBar-select-item-highlight {
   background: var(--highlight);
 }
@@ -83,6 +87,29 @@
   width: auto;
 }
 
+.MenuBar-select-controls {
+  display: flex;
+  flex-direction: column;
+}
+
+.MenuBar-select-control {
+  display: flex;
+  cursor: default;
+  align-items: center;
+  justify-content: center;
+  margin: calc(var(--unit) / 2) calc(var(--unit));
+}
+
+.MenuBar-select-control.MenuBar-pressable:hover {
+  background: var(--shaded-hover);
+  border-radius: var(--border-radius);
+}
+
+.MenuBar-select-control-icon {
+  color: var(--text-color);
+  width: calc(var(--unit) * 3);
+}
+
 .MenuBar-select-users .MenuBar-select-item .MenuBar-select-id {
   letter-spacing: normal;
 }
@@ -91,7 +118,7 @@
   opacity: 0.8;
 }
 
-.MenuBar-select-item:active {
+.MenuBar-select-item:not(.MenuBar-select-item-noselect):active {
   background: var(--shaded);
 }
 
@@ -99,6 +126,7 @@
   font-size: var(--font-size-small);
   padding: var(--unit) calc(var(--unit) * 2);
   margin: 0;
+  flex: 1;
 }
 
 .MenuBar-select-info > div {
@@ -112,6 +140,7 @@
 
 .MenuBar-select-info dt {
   width: 9ex;
+  min-width: 9ex;
   color: var(--text-color-dim);
   display: inline-block;
 }
@@ -137,16 +166,6 @@
   font-weight: bold;
 }
 
-.MenuBar-select-remove {
-  display: flex;
-  justify-content: center;
-}
-
-.MenuBar-select-remove .Button {
-  background: var(--background);
-  border: solid 1px var(--border-color);
-}
-
 .MenuBar-menu {
   position: absolute;
   right: var(--unit);
@@ -168,7 +187,7 @@
   padding: calc(var(--unit) * 2);
 }
 
-.MenuBar-menu-item-pressable {
+.MenuBar-pressable {
   cursor: pointer;
 }
 
@@ -182,4 +201,8 @@
 
 .MenuBar-menu-section:last-child {
   border-bottom: none;
+}
+
+.MenuBar-notify {
+  color: red;
 }

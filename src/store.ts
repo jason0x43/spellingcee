@@ -48,6 +48,7 @@ export interface AppState extends PersistedAppState {
     messageGood?: boolean;
     messageVisible?: boolean;
     message?: string;
+    newGameIds?: { [gameId: string]: string };
     error?: Error | SerializedError | string;
     warning?: string;
     users?: { [userId: string]: User };
@@ -72,39 +73,43 @@ export interface Words {
 
 // Async thunks ////////////////////////////////////////////////////////
 
-export const activateGame = createAsyncThunk<
-  void,
-  Game,
-  { dispatch: AppDispatch; state: AppState }
->('app/activateGame', async (game, { dispatch, getState }) => {
-  const { userId } = getState().user;
-  const { gameId } = game;
-  const storage = createStorage(userId);
-  await storage.saveUserMeta({ gameId });
-  dispatch(setGame(game));
+type AsyncThunkProps = {
+  dispatch: AppDispatch;
+  state: AppState;
+};
 
-  const words = await storage.loadWords(gameId);
-  dispatch(setWords(words ?? {}));
+export const activateGame = createAsyncThunk<void, Game, AsyncThunkProps>(
+  'app/activateGame',
+  async (game, { dispatch, getState }) => {
+    const { userId } = getState().user;
+    const { gameId } = game;
+    const storage = createStorage(userId);
+    await storage.saveUserMeta({ gameId });
+    dispatch(setGame(game));
 
-  wordsSubscription?.off();
-  wordsSubscription = storage.subscribeToWords(game.gameId, (words) => {
+    const words = await storage.loadWords(gameId);
     dispatch(setWords(words ?? {}));
 
-    if (words) {
-      const game = selectGame(getState());
-      const rawWords = Object.keys(words);
-      const stats = {
-        wordsFound: rawWords.length,
-        score: computeScore(rawWords),
-      };
-      // Only need to update the local game stats since these words came from
-      // the store
-      dispatch(updateGame({ ...game, ...stats }));
-    }
-  });
-});
+    wordsSubscription?.off();
+    wordsSubscription = await storage.subscribeToWords(game.gameId, (words) => {
+      dispatch(setWords(words ?? {}));
 
-export const loadGame = createAsyncThunk<void, string, { state: AppState }>(
+      if (words) {
+        const game = selectGame(getState());
+        const rawWords = Object.keys(words);
+        const stats = {
+          wordsFound: rawWords.length,
+          score: computeScore(rawWords),
+        };
+        // Only need to update the local game stats since these words came from
+        // the store
+        dispatch(updateGame({ ...game, ...stats }));
+      }
+    });
+  }
+);
+
+export const loadGame = createAsyncThunk<void, string, AsyncThunkProps>(
   'app/loadGame',
   async (gameId, { dispatch, getState }) => {
     const { userId } = getState().user;
@@ -114,7 +119,7 @@ export const loadGame = createAsyncThunk<void, string, { state: AppState }>(
   }
 );
 
-export const loadGames = createAsyncThunk<void, void, { state: AppState }>(
+export const loadGames = createAsyncThunk<void, void, AsyncThunkProps>(
   'app/loadGames',
   async (_, { dispatch, getState }) => {
     const { userId } = selectUser(getState());
@@ -123,40 +128,53 @@ export const loadGames = createAsyncThunk<void, void, { state: AppState }>(
   }
 );
 
-export const loadUser = createAsyncThunk<
-  void,
-  User | void,
-  { dispatch: AppDispatch }
->('app/loadUser', async (user, { dispatch }) => {
-  dispatch(setUserLoading(true));
+export const loadUser = createAsyncThunk<void, User | void, AsyncThunkProps>(
+  'app/loadUser',
+  async (user, { dispatch, getState }) => {
+    dispatch(setUserLoading(true));
 
-  wordsSubscription?.off();
+    wordsSubscription?.off();
+    gamesSubscription?.off();
 
-  let loadedUser: User | undefined;
-  if (user) {
-    loadedUser = user;
-  } else {
-    loadedUser = await getCurrentUser();
-  }
-
-  if (loadedUser) {
-    dispatch(updateUser(loadedUser ?? { userId: localUser }));
-
-    const storage = createStorage(loadedUser.userId);
-    const userMeta = await storage.loadUserMeta();
-    if (userMeta?.gameId) {
-      // Load user's current game and word list
-      await dispatch(loadGame(userMeta.gameId));
+    let loadedUser: User | undefined;
+    if (user) {
+      loadedUser = user;
     } else {
-      // User has no current game -- create one
-      await dispatch(newGame());
+      loadedUser = await getCurrentUser();
     }
+
+    if (loadedUser) {
+      dispatch(updateUser(loadedUser ?? { userId: localUser }));
+
+      const storage = createStorage(loadedUser.userId);
+      const userMeta = await storage.loadUserMeta();
+      if (userMeta?.gameId) {
+        // Load user's current game and word list
+        await dispatch(loadGame(userMeta.gameId));
+      } else {
+        // User has no current game -- create one
+        await dispatch(newGame());
+      }
+
+      gamesSubscription = await storage.subscribeToNewGames(
+        loadedUser.userId,
+        async (gameId) => {
+          await dispatch(loadGames());
+          dispatch(
+            setNewGameIds({
+              ...selectNewGameIds(getState()),
+              ...gameId,
+            })
+          );
+        }
+      );
+    }
+
+    dispatch(setUserLoading(false));
   }
+);
 
-  dispatch(setUserLoading(false));
-});
-
-export const loadUsers = createAsyncThunk<void, void, { state: AppState }>(
+export const loadUsers = createAsyncThunk<void, void, AsyncThunkProps>(
   'app/loadUsers',
   async (_, { dispatch, getState }) => {
     const { userId } = selectUser(getState());
@@ -165,19 +183,18 @@ export const loadUsers = createAsyncThunk<void, void, { state: AppState }>(
   }
 );
 
-export const newGame = createAsyncThunk<
-  void,
-  void,
-  { dispatch: AppDispatch; state: AppState }
->('app/newGame', async (_, { dispatch, getState }) => {
-  const { userId } = getState().user;
-  const newGame = createGame({ userId });
-  const savedGame = await createStorage(userId).addGame(newGame);
-  dispatch(addGame(savedGame));
-  await dispatch(activateGame(savedGame));
-});
+export const newGame = createAsyncThunk<void, void, AsyncThunkProps>(
+  'app/newGame',
+  async (_, { dispatch, getState }) => {
+    const { userId } = getState().user;
+    const newGame = createGame({ userId });
+    const savedGame = await createStorage(userId).addGame(newGame);
+    dispatch(addGame(savedGame));
+    await dispatch(activateGame(savedGame));
+  }
+);
 
-export const removeGame = createAsyncThunk<void, string, { state: AppState }>(
+export const removeGame = createAsyncThunk<void, string, AsyncThunkProps>(
   'app/removeGame',
   async (gameId, { dispatch, getState }) => {
     const { userId } = getState().user;
@@ -186,26 +203,25 @@ export const removeGame = createAsyncThunk<void, string, { state: AppState }>(
   }
 );
 
-export const shareActiveGame = createAsyncThunk<
-  void,
-  string,
-  { state: AppState }
->('app/shareGame', async (otherUserId, { dispatch, getState }) => {
-  const { userId } = getState().user;
-  const { gameId } = getState().game;
-  if (otherUserId === userId) {
-    dispatch(setMessage('Unable to share game with self'));
-  } else {
-    try {
-      await createStorage(userId).shareGame({ otherUserId, gameId });
-    } catch (error) {
-      console.warn(error);
-      dispatch(setMessage('There as a problem sharing the game'));
+export const shareActiveGame = createAsyncThunk<void, string, AsyncThunkProps>(
+  'app/shareGame',
+  async (otherUserId, { dispatch, getState }) => {
+    const { userId } = getState().user;
+    const { gameId } = getState().game;
+    if (otherUserId === userId) {
+      dispatch(setMessage('Unable to share game with self'));
+    } else {
+      try {
+        await createStorage(userId).shareGame({ otherUserId, gameId });
+      } catch (error) {
+        console.warn(error);
+        dispatch(setMessage('There as a problem sharing the game'));
+      }
     }
   }
-});
+);
 
-export const signIn = createAsyncThunk(
+export const signIn = createAsyncThunk<void, void, AsyncThunkProps>(
   'app/signIn',
   async (_, { dispatch }) => {
     const user = await authSignIn();
@@ -220,6 +236,8 @@ export const signOut = createAsyncThunk(
   'app/signOut',
   async (_, { dispatch }) => {
     await authSignOut();
+
+    gamesSubscription?.off();
     dispatch(updateUser({ userId: localUser }));
 
     const storedGame = loadLocalState<Game>(localUser) ?? defaultGame;
@@ -227,49 +245,48 @@ export const signOut = createAsyncThunk(
   }
 );
 
-export const submitWord = createAsyncThunk<
-  void,
-  void,
-  { dispatch: AppDispatch; state: AppState }
->('app/submitWord', async (_, { dispatch, getState }) => {
-  const word = selectInput(getState()).join('');
-  if (!word) {
-    return;
+export const submitWord = createAsyncThunk<void, void, AsyncThunkProps>(
+  'app/submitWord',
+  async (_, { dispatch, getState }) => {
+    const word = selectInput(getState()).join('');
+    if (!word) {
+      return;
+    }
+
+    const { key } = selectGame(getState());
+    const validWords = selectValidWords(getState());
+    const pangram = key;
+    const center = key[0];
+
+    const message = validateWord({
+      words: Object.keys(getState().words),
+      validWords,
+      word,
+      pangram,
+      center,
+    });
+
+    if (message) {
+      dispatch(setMessage(message));
+    } else {
+      const state = getState();
+      const { userId } = state.user;
+      const { game, words } = state;
+      const { gameId, score } = game;
+
+      const storage = createStorage(userId);
+      const stats = {
+        wordsFound: Object.keys(words).length + 1,
+        score: score + computeScore(word),
+      };
+      const wordMeta = await storage.addWord(gameId, word, stats);
+
+      dispatch(setWords({ ...words, [word]: wordMeta }));
+      dispatch(updateGame({ ...game, ...stats }));
+      dispatch(clearInput());
+    }
   }
-
-  const { key } = selectGame(getState());
-  const validWords = selectValidWords(getState());
-  const pangram = key;
-  const center = key[0];
-
-  const message = validateWord({
-    words: Object.keys(getState().words),
-    validWords,
-    word,
-    pangram,
-    center,
-  });
-
-  if (message) {
-    dispatch(setMessage(message));
-  } else {
-    const state = getState();
-    const { userId } = state.user;
-    const { game, words } = state;
-    const { gameId, score } = game;
-
-    const storage = createStorage(userId);
-    const stats = {
-      wordsFound: Object.keys(words).length + 1,
-      score: score + computeScore(word),
-    };
-    const wordMeta = await storage.addWord(gameId, word, stats);
-
-    dispatch(setWords({ ...words, [word]: wordMeta }));
-    dispatch(updateGame({ ...game, ...stats }));
-    dispatch(clearInput());
-  }
-});
+);
 
 // Slice ///////////////////////////////////////////////////////////////
 
@@ -390,6 +407,13 @@ const appSlice = createSlice({
       state.liveState.messageVisible = action.payload;
     },
 
+    setNewGameIds(
+      state,
+      action: PayloadAction<AppState['liveState']['newGameIds']>
+    ) {
+      state.liveState.newGameIds = action.payload;
+    },
+
     setUserLoading(state, action: PayloadAction<boolean>) {
       state.liveState.userLoading = action.payload;
     },
@@ -463,6 +487,7 @@ export const {
   setMessage,
   setMessageGood,
   setMessageVisible,
+  setNewGameIds,
   setUserLoading,
   setUsers,
   setWarning,
@@ -474,6 +499,7 @@ export const {
 } = appSlice.actions;
 
 let wordsSubscription: Subscription | undefined;
+let gamesSubscription: Subscription | undefined;
 
 // Selectors ///////////////////////////////////////////////////////////
 
@@ -527,6 +553,12 @@ export function selectMessage(
   state: AppState
 ): AppState['liveState']['message'] {
   return state.liveState.message;
+}
+
+export function selectNewGameIds(
+  state: AppState
+): AppState['liveState']['newGameIds'] {
+  return state.liveState.newGameIds;
 }
 
 export function selectPangram(state: AppState): string {

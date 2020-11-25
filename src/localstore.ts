@@ -12,14 +12,15 @@ const baseKey = 'database';
 
 export interface LocalSnapshot {
   val(): unknown;
+  key: string | null;
 }
 
 export interface LocalRef {
   off(): void;
 
   on(
-    event: 'value',
-    callback: (snapshot: LocalSnapshot) => void
+    event: 'value' | 'child_added',
+    callback: (snapshot: LocalSnapshot, previousKey?: string | null) => void
   ): (snapshot: LocalSnapshot) => void;
 
   once(type: 'value'): Promise<LocalSnapshot>;
@@ -52,13 +53,17 @@ export function getRef(keyObj?: string | readonly string[]): LocalRef {
       // Local subscriptions can't have listeners, so 'off' does nothing
     },
 
-    on(_event, callback) {
+    on(event, callback) {
       logger.debug('Subscribing to', key);
-      // Call the callback with the current words value. This mirrors
-      // Firebase's behavior.
-      setTimeout(() => {
-        callback(ref);
-      });
+
+      if (event === 'value') {
+        // Call the callback with the current value. This mirrors Firebase's
+        // behavior.
+        setTimeout(() => {
+          callback(ref);
+        });
+      }
+
       return callback;
     },
 
@@ -67,6 +72,7 @@ export function getRef(keyObj?: string | readonly string[]): LocalRef {
         val() {
           return ref.val();
         },
+        key: ref.key,
       };
     },
 
