@@ -9,13 +9,9 @@ import classNames from 'classnames';
 import {
   AppDispatch,
   addInput,
-  deleteInput,
-  scrambleLetters,
   selectLetters,
-  submitWord,
-  isInputDisabled
+  isInputDisabled,
 } from '../store';
-import Button from './Button';
 import './Letters.css';
 
 const tileSize = 100;
@@ -117,33 +113,10 @@ const Letters: FunctionComponent = () => {
     [activeLetter, handleMouseUp, handleMouseDown, indices]
   );
 
-  const handleDelete = useCallback(() => {
-    if (!disabled) {
-      dispatch(deleteInput());
-    }
-  }, [disabled, dispatch]);
-
-  const handleScramble = useCallback(() => {
-    if (!disabled) {
-      dispatch(scrambleLetters());
-    }
-  }, [disabled, dispatch]);
-
-  const handleSubmit = useCallback(() => {
-    dispatch(submitWord());
-  }, [dispatch]);
-
   return (
     <div className="Letters">
-      <div className="Letters-letters">
-        {renderLetter(center)}
-        {renderLetters.map(renderLetter)}
-      </div>
-      <div className="Letters-controls">
-        <Button onClick={handleDelete}>Delete</Button>
-        <Button onClick={handleScramble}>Mix</Button>
-        <Button onClick={handleSubmit}>Enter</Button>
-      </div>
+      {renderLetter(center)}
+      {renderLetters.map(renderLetter)}
     </div>
   );
 };

@@ -22,6 +22,7 @@ import {
 } from '../store';
 import { createLogger } from '../logging';
 import AppError from '../AppError';
+import Button from './Button';
 import Input from './Input';
 import Letters from './Letters';
 import MenuBar from './MenuBar';
@@ -117,6 +118,22 @@ const App: FunctionComponent = () => {
     () => dispatch(setWarning(undefined));
   }, [dispatch]);
 
+  const handleDelete = useCallback(() => {
+    if (!inputDisabled) {
+      dispatch(deleteInput());
+    }
+  }, [dispatch, inputDisabled]);
+
+  const handleScramble = useCallback(() => {
+    if (!inputDisabled) {
+      dispatch(scrambleLetters());
+    }
+  }, [dispatch, inputDisabled]);
+
+  const handleSubmit = useCallback(() => {
+    dispatch(submitWord());
+  }, [dispatch]);
+
   const renderWords = useCallback(() => {
     return (
       <div className="App-words">
@@ -149,23 +166,26 @@ const App: FunctionComponent = () => {
       ) : (
         <>
           <MenuBar />
-          <div className="App-content-wrapper">
-            <div
-              className={classNames({
-                'App-content': true,
-                'App-words-expanded': wordListExpanded,
-              })}
-            >
-              {isVertical && renderWords()}
+          <div
+            className={classNames({
+              'App-content': true,
+              'App-words-expanded': wordListExpanded,
+            })}
+          >
+            {isVertical && renderWords()}
 
-              <div className="App-letters">
-                <Message />
-                <Input />
-                <Letters />
+            <div className="App-letters">
+              <Message />
+              <Input />
+              <Letters />
+              <div className="App-letters-controls">
+                <Button onClick={handleDelete}>Delete</Button>
+                <Button onClick={handleScramble}>Mix</Button>
+                <Button onClick={handleSubmit}>Enter</Button>
               </div>
-
-              {!isVertical && renderWords()}
             </div>
+
+            {!isVertical && renderWords()}
           </div>
         </>
       )}

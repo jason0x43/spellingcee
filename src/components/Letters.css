@@ -7,11 +7,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-evenly;
-  flex: 1;
-}
-
-.Letters-letters {
+  justify-content: space-between;
   position: relative;
   width: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
   height: calc(var(--letter-size) * 3 + var(--letter-pad) * 2);
@@ -80,21 +76,6 @@
 
 .Letters-letter-5 {
   transform: translate(-84%, 48%);
-}
-
-.Letters-controls {
-  display: flex;
-  justify-content: space-between;
-}
-
-.Letters-controls > * {
-  margin: var(--unit);
-}
-
-@media screen and (min-width: 641px) {
-  .Letters-controls {
-    margin-top: calc(var(--unit) * 8);
-  }
 }
 
 @media screen and (max-width: 640px) {

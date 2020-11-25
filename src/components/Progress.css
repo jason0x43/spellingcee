@@ -4,6 +4,7 @@
   text-transform: capitalize;
   justify-content: center;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .Progress-label {
