@@ -69,6 +69,10 @@
   display: flex;
 }
 
+.MenuBar-select-item-highlight {
+  background: var(--highlight);
+}
+
 .MenuBar-select-item:last-child {
   margin-bottom: 0;
 }
@@ -84,7 +88,7 @@
 }
 
 .MenuBar-select-item:hover {
-  background: var(--shaded);
+  opacity: 0.8;
 }
 
 .MenuBar-select-item:active {

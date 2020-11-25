@@ -153,7 +153,10 @@ const MenuBar: FunctionComponent = () => {
 
       return (
         <li
-          className="MenuBar-select-item"
+          className={classNames({
+            'MenuBar-select-item': true,
+            'MenuBar-select-item-highlight': game.isShared,
+          })}
           key={gameId}
           data-item-id={gameId}
           onClick={handleSelectGame}
