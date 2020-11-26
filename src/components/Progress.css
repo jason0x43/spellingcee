@@ -46,13 +46,23 @@
   color: var(--highlight);
 }
 
-.Progress-thresholds .Progress-threshold-current {
+.Progress-thresholds .Progress-threshold-current,
+.Progress-thresholds :not(.Progress-threshold-met) {
+  padding-left: var(--unit);
+  padding-right: var(--unit);
+}
+
+.Progress-thresholds .Progress-threshold-current,
+.Progress-thresholds .Progress-threshold-next {
   --size: var(--font-size-large);
+}
+
+.Progress-thresholds .Progress-threshold-current {
   color: var(--text-color-bright);
 }
 
-.Progress-thresholds .Progress-threshold-next {
-  --size: var(--font-size-large);
+.Progress-thresholds .Progress-threshold-next,
+.Progress-thresholds :not(.Progress-threshold-met) {
   color: var(--text-color);
 }
 
@@ -65,12 +75,11 @@
     display: none;
   }
 
-  .Progress-thresholds .Progress-threshold-current {
-    display: flex;
-  }
-
+  .Progress-thresholds .Progress-threshold-current,
   .Progress-thresholds .Progress-threshold-next {
     display: flex;
+    padding-left: var(--unit);
+    padding-right: var(--unit);
   }
 }
 
@@ -83,11 +92,10 @@
     display: none;
   }
 
-  .Progress-thresholds .Progress-threshold-current {
-    display: flex;
-  }
-
+  .Progress-thresholds .Progress-threshold-current,
   .Progress-thresholds .Progress-threshold-next {
     display: flex;
+    padding-left: var(--unit);
+    padding-right: var(--unit);
   }
 }
