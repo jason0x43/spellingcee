@@ -69,7 +69,7 @@ export type GameMeta = DatabaseSchema['game_data'][string]['meta'];
 export type GameStats = DatabaseSchema['game_data'][string]['stats'];
 
 export interface NewGameCallback {
-  (value: { [gameId: string]: string } | undefined): void;
+  (value: { [gameId: string]: string }): void;
 }
 
 export interface WordsCallback {

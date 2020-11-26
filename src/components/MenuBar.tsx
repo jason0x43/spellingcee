@@ -301,7 +301,19 @@ const MenuBar: FunctionComponent = () => {
               <ul className="MenuBar-select-list">
                 {renderGame(activeGameId)}
                 {Object.keys(games)
-                  .filter((gameId) => gameId !== activeGameId)
+                  .filter(
+                    (gameId) => gameId !== activeGameId && newGameIds?.[gameId]
+                  )
+                  .sort((a, b) => {
+                    const gameA = games[a];
+                    const gameB = games[b];
+                    return gameB.addedAt - gameA.addedAt;
+                  })
+                  .map(renderGame)}
+                {Object.keys(games)
+                  .filter(
+                    (gameId) => gameId !== activeGameId && !newGameIds?.[gameId]
+                  )
                   .sort((a, b) => {
                     const gameA = games[a];
                     const gameB = games[b];

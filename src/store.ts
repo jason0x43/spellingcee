@@ -52,7 +52,7 @@ export interface AppState extends PersistedAppState {
     error?: Error | SerializedError | string;
     warning?: string;
     users?: { [userId: string]: User };
-    games?: { [key: string]: Game };
+    games?: { [gameId: string]: Game };
     wordListExpanded?: boolean;
   };
 }
@@ -136,12 +136,7 @@ export const loadUser = createAsyncThunk<void, User | void, AsyncThunkProps>(
     wordsSubscription?.off();
     gamesSubscription?.off();
 
-    let loadedUser: User | undefined;
-    if (user) {
-      loadedUser = user;
-    } else {
-      loadedUser = await getCurrentUser();
-    }
+    const loadedUser = user ?? (await getCurrentUser());
 
     if (loadedUser) {
       dispatch(updateUser(loadedUser ?? { userId: localUser }));
@@ -158,14 +153,19 @@ export const loadUser = createAsyncThunk<void, User | void, AsyncThunkProps>(
 
       gamesSubscription = await storage.subscribeToNewGames(
         loadedUser.userId,
-        async (gameId) => {
-          await dispatch(loadGames());
-          dispatch(
-            setNewGameIds({
-              ...selectNewGameIds(getState()),
-              ...gameId,
-            })
-          );
+        async (newGameInfo) => {
+          const creator = Object.values(newGameInfo)[0];
+          if (creator !== loadedUser.userId) {
+            // Load games before setting the new game IDs so that when the IDs
+            // are added, there will be something to reference
+            await dispatch(loadGames());
+            dispatch(
+              setNewGameIds({
+                ...selectNewGameIds(getState()),
+                ...newGameInfo,
+              })
+            );
+          }
         }
       );
     }
@@ -188,9 +188,9 @@ export const newGame = createAsyncThunk<void, void, AsyncThunkProps>(
   async (_, { dispatch, getState }) => {
     const { userId } = getState().user;
     const newGame = createGame({ userId });
-    const savedGame = await createStorage(userId).addGame(newGame);
-    dispatch(addGame(savedGame));
-    await dispatch(activateGame(savedGame));
+    const createdGame = await createStorage(userId).addGame(newGame);
+    dispatch(addGame(createdGame));
+    await dispatch(activateGame(createdGame));
   }
 );
 
