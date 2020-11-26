@@ -18,7 +18,6 @@
   background: var(--background);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-
 }
 
 .Modal-background-active {
@@ -28,10 +27,11 @@
 .Modal {
   position: relative;
   background: var(--background);
-  border: solid 1px var(--border-color); 
+  border: solid 1px var(--border-color);
   border-radius: var(--unit);
   color: var(--text-color);
   transition: all 1s;
+  display: flex;
   overflow: hidden;
 }
 
