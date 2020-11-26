@@ -110,8 +110,8 @@
   width: calc(var(--unit) * 3);
 }
 
-.MenuBar-select-users .MenuBar-select-item .MenuBar-select-id {
-  letter-spacing: normal;
+.MenuBar-select-users .MenuBar-select-item {
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 3);
 }
 
 .MenuBar-select-item:hover {
@@ -147,10 +147,6 @@
 
 .MenuBar-select-info dd {
   display: inline-block;
-}
-
-.MenuBar-select-users .MenuBar-select-info dt {
-  width: 4em;
 }
 
 .MenuBar-select-info dd {

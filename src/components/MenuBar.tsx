@@ -246,13 +246,7 @@ const MenuBar: FunctionComponent = () => {
           data-item-id={userId}
           onClick={handleUserSelect}
         >
-          <div className="MenuBar-select-id">{user.name}</div>
-          <dl className="MenuBar-select-info">
-            <div>
-              <dt>ID</dt>
-              <dd>{userId}</dd>
-            </div>
-          </dl>
+          <div className="MenuBar-select-user">{user.name}</div>
         </li>
       );
     },
