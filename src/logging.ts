@@ -1,9 +1,18 @@
-const DEBUG = (import.meta as any).env.SNOWPACK_PUBLIC_DEBUG;
+const DEBUG = import.meta.env.SNOWPACK_PUBLIC_DEBUG;
 let rootLevel = Number(DEBUG) || 1;
+
+export interface Logger {
+  setLevel(lvl: number | undefined): void;
+  error(...args: unknown[]): void;
+  warn(...args: unknown[]): void;
+  log(...args: unknown[]): void;
+  debug(...args: unknown[]): void;
+  trace(...args: unknown[]): void;
+}
 
 export function createLogger(
   options: { prefix?: string; level?: number } = {}
-) {
+): Logger {
   let level = options.level ?? rootLevel;
   const prefix = options.prefix ? `[${options.prefix}]` : '';
 
@@ -12,9 +21,9 @@ export function createLogger(
       level = lvl ?? rootLevel;
     },
 
-    error(...args: any) {
+    error(...args: unknown[]) {
       if (level >= 1) {
-        let processedArgs = args.map((arg: unknown) => {
+        const processedArgs = args.map((arg: unknown) => {
           if (isError(arg)) {
             return formatError(arg);
           }
@@ -24,25 +33,25 @@ export function createLogger(
       }
     },
 
-    warn(...args: any) {
+    warn(...args: unknown[]) {
       if (level >= 2) {
         console.warn(prefix, ...args);
       }
     },
 
-    log(...args: any) {
+    log(...args: unknown[]) {
       if (level >= 3) {
         console.log(prefix, ...args);
       }
     },
 
-    debug(...args: any) {
+    debug(...args: unknown[]) {
       if (level >= 4) {
         console.debug(prefix, ...args);
       }
     },
 
-    trace(...args: any) {
+    trace(...args: unknown[]) {
       if (level >= 5) {
         console.trace(prefix, ...args);
       }
@@ -50,7 +59,7 @@ export function createLogger(
   };
 }
 
-export function setLevel(lvl: number) {
+export function setLevel(lvl: number): void {
   rootLevel = lvl;
 }
 
@@ -66,11 +75,11 @@ function formatError(error: Error): string {
   return message;
 }
 
-function isError(value: any): value is Error {
+function isError(value: unknown): value is Error {
   return (
-    value &&
+    value != null &&
     typeof value === 'object' &&
-    value.name != null &&
-    value.message != null
+    (value as Record<string, unknown>).name != null &&
+    (value as Record<string, unknown>).message != null
   );
 }
