@@ -21,7 +21,8 @@
   --shadow-color: rgba(100, 100, 100, 0.07);
   --big-space: calc(var(--unit) * 2);
   --border-radius: 6px;
-  --color-warn: orange;
+  --warn-background: orange;
+  --warn-foreground: var(--text-color);
 }
 
 body {
@@ -49,7 +50,7 @@ code {
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #111111;
-    --background-glass: rgba(40, 40, 40, 0.6);
+    --background-glass: rgba(40, 40, 40, 0.8);
     --text-color: #aaa;
     --text-color-dim: #777;
     --text-color-bright: #ccc;
@@ -60,5 +61,7 @@ code {
     --shaded-hover: #222222;
     --border-color: #222222;
     --shadow-color: rgba(150, 150, 150, 0.07);
+    --warn-background: rgba(187, 136, 0, 0.9);
+    --warn-foreground: var(--background);
   }
 }

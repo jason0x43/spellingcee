@@ -10,9 +10,11 @@
 }
 
 .App-content {
+  --content-margin: calc(var(--unit) * 4);
+  --inner-content-padding: calc(var(--unit) * 6);
   display: flex;
   position: relative;
-  margin: calc(var(--unit) * 4);
+  margin: 0 var(--content-margin);
   width: calc(100% - 40px);
 }
 
@@ -22,6 +24,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding-top: var(--inner-content-padding);
 }
 
 .App-letters-controls {
@@ -35,7 +38,9 @@
 
 .App .Message {
   position: absolute;
-  top: -56px;
+  left: 50%;
+  top: calc(var(--inner-content-padding) / 2);
+  transform: translate(-50%, -50%);
 }
 
 .App-words {
@@ -45,6 +50,7 @@
   width: 100%;
   justify-content: flex-start;
   position: relative;
+  padding-top: var(--inner-content-padding);
 }
 
 .App-words .Progress {
@@ -71,7 +77,8 @@
 
 @media screen and (min-width: 641px) {
   .App-content {
-    margin: calc(var(--unit) * 10);
+    --content-margin: calc(var(--unit) * 10);
+    --inner-content-padding: calc(var(--unit) * 12);
     width: calc(100% - 100px);
     max-width: 800px;
   }
@@ -109,6 +116,15 @@
   .App-letters {
     flex: 1;
     justify-content: space-evenly;
+  }
+
+  .App .Message {
+    top: 110px;
+    transform: translate(-50%, 0);
+  }
+
+  .App-letters .Message {
+    top: 20px;
   }
 
   .App-words {

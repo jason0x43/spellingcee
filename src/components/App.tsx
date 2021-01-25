@@ -9,16 +9,15 @@ import {
   scrambleLetters,
   submitWord,
   setInputDisabled,
-  setMessage,
-  setMessageGood,
-  setMessageVisible,
+  setLetterMessage,
   selectError,
-  selectMessage,
+  selectLetterMessage,
   selectWarning,
   setWarning,
   isUserLoading,
   isInputDisabled,
   isWordListExpanded,
+  selectToastMessage,
 } from '../store';
 import { createLogger } from '../logging';
 import AppError from '../AppError';
@@ -33,8 +32,6 @@ import Words from './Words';
 import './App.css';
 import useMediaQuery, { verticalQuery } from '../useMediaQuery';
 
-const messageTimeout = 1000;
-const inputShakeTimeout = 300;
 const logger = createLogger({ prefix: 'App' });
 
 const App: FunctionComponent = () => {
@@ -43,39 +40,23 @@ const App: FunctionComponent = () => {
   const userLoading = useSelector(isUserLoading);
   const error = useSelector(selectError);
   const warning = useSelector(selectWarning);
-  const message = useSelector(selectMessage);
+  const letterMessage = useSelector(selectLetterMessage);
   const wordListExpanded = useSelector(isWordListExpanded);
   const isVertical = useMediaQuery(verticalQuery);
+  const toastMessage = useSelector(selectToastMessage);
+
+  const handleLetterMessageHidden = useCallback(() => {
+    dispatch(clearInput());
+    dispatch(setInputDisabled(false));
+    dispatch(setLetterMessage(undefined));
+  }, [dispatch]);
 
   // If we have a message, display it
   useEffect(() => {
-    if (message) {
-      dispatch(setMessageVisible(true));
+    if (letterMessage) {
       dispatch(setInputDisabled(true));
-
-      // After a while, hide the message and clear the input
-      const timers = [
-        setTimeout(() => {
-          logger.log('Hiding message');
-          dispatch(setMessageVisible(false));
-        }, messageTimeout),
-
-        setTimeout(() => {
-          dispatch(setMessage(undefined));
-          dispatch(setMessageGood(false));
-        }, messageTimeout + 100),
-
-        setTimeout(() => {
-          dispatch(clearInput());
-          dispatch(setInputDisabled(false));
-        }, inputShakeTimeout),
-      ];
-
-      return () => {
-        timers.forEach((timer) => clearTimeout(timer));
-      };
     }
-  }, [dispatch, message]);
+  }, [dispatch, letterMessage]);
 
   // Handle a general keypress event
   const handleKeyPress = useCallback(
@@ -131,6 +112,7 @@ const App: FunctionComponent = () => {
   }, [dispatch, inputDisabled]);
 
   const handleSubmit = useCallback(() => {
+    console.log('submitting word');
     dispatch(submitWord());
   }, [dispatch]);
 
@@ -175,7 +157,6 @@ const App: FunctionComponent = () => {
             {isVertical && renderWords()}
 
             <div className="App-letters">
-              <Message />
               <Input />
               <Letters />
               <div className="App-letters-controls">
@@ -183,9 +164,20 @@ const App: FunctionComponent = () => {
                 <Button onClick={handleScramble}>Mix</Button>
                 <Button onClick={handleSubmit}>Enter</Button>
               </div>
+              <Message
+                message={letterMessage?.message}
+                type={letterMessage?.type}
+                visibleTime="normal"
+                onHide={handleLetterMessageHidden}
+              />
             </div>
 
             {!isVertical && renderWords()}
+
+            <Message
+              message={toastMessage?.message}
+              type={toastMessage?.type}
+            />
           </div>
         </>
       )}

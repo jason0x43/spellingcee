@@ -45,9 +45,8 @@ export interface AppState extends PersistedAppState {
     letters: string[];
     userLoading?: boolean;
     inputDisabled?: boolean;
-    messageGood?: boolean;
-    messageVisible?: boolean;
-    message?: string;
+    letterMessage?: { message: string; type?: 'normal' | 'good' | 'bad' };
+    toastMessage?: { message: string; type?: 'normal' | 'good' | 'bad' };
     newGameIds?: { [gameId: string]: string };
     error?: Error | SerializedError | string;
     warning?: string;
@@ -191,6 +190,7 @@ export const newGame = createAsyncThunk<void, void, AsyncThunkProps>(
     const createdGame = await createStorage(userId).addGame(newGame);
     dispatch(addGame(createdGame));
     await dispatch(activateGame(createdGame));
+    dispatch(setToastMessage({ message: `Started new game ${newGame.key}` }));
   }
 );
 
@@ -209,13 +209,23 @@ export const shareActiveGame = createAsyncThunk<void, string, AsyncThunkProps>(
     const { userId } = getState().user;
     const { gameId } = getState().game;
     if (otherUserId === userId) {
-      dispatch(setMessage('Unable to share game with self'));
+      dispatch(
+        setLetterMessage({
+          message: 'Unable to share game with self',
+          type: 'bad',
+        })
+      );
     } else {
       try {
         await createStorage(userId).shareGame({ otherUserId, gameId });
       } catch (error) {
         console.warn(error);
-        dispatch(setMessage('There as a problem sharing the game'));
+        dispatch(
+          setLetterMessage({
+            message: 'There as a problem sharing the game',
+            type: 'bad',
+          })
+        );
       }
     }
   }
@@ -267,7 +277,7 @@ export const submitWord = createAsyncThunk<void, void, AsyncThunkProps>(
     });
 
     if (message) {
-      dispatch(setMessage(message));
+      dispatch(setLetterMessage({ message, type: 'bad' }));
     } else {
       const state = getState();
       const { userId } = state.user;
@@ -281,6 +291,7 @@ export const submitWord = createAsyncThunk<void, void, AsyncThunkProps>(
       };
       const wordMeta = await storage.addWord(gameId, word, stats);
 
+      dispatch(setLetterMessage({ message: 'Good job!', type: 'good' }));
       dispatch(setWords({ ...words, [word]: wordMeta }));
       dispatch(updateGame({ ...game, ...stats }));
       dispatch(clearInput());
@@ -337,7 +348,10 @@ const appSlice = createSlice({
 
     addInput(state, action: PayloadAction<string>) {
       if (state.liveState.input.length > 18) {
-        state.liveState.message = 'Word too long';
+        state.liveState.letterMessage = {
+          message: 'Word too long',
+          type: 'bad',
+        };
       } else {
         state.liveState.input.push(action.payload);
       }
@@ -389,22 +403,18 @@ const appSlice = createSlice({
       state.liveState.inputDisabled = action.payload;
     },
 
-    setMessage(state, action: PayloadAction<AppState['liveState']['message']>) {
-      state.liveState.message = action.payload;
+    setLetterMessage(
+      state,
+      action: PayloadAction<AppState['liveState']['letterMessage']>
+    ) {
+      state.liveState.letterMessage = action.payload;
     },
 
-    setMessageGood(
+    setToastMessage(
       state,
-      action: PayloadAction<AppState['liveState']['messageGood']>
+      action: PayloadAction<AppState['liveState']['toastMessage']>
     ) {
-      state.liveState.messageGood = action.payload;
-    },
-
-    setMessageVisible(
-      state,
-      action: PayloadAction<AppState['liveState']['messageVisible']>
-    ) {
-      state.liveState.messageVisible = action.payload;
+      state.liveState.toastMessage = action.payload;
     },
 
     setNewGameIds(
@@ -484,9 +494,8 @@ export const {
   setGame,
   setGames,
   setInputDisabled,
-  setMessage,
-  setMessageGood,
-  setMessageVisible,
+  setLetterMessage,
+  setToastMessage,
   setNewGameIds,
   setUserLoading,
   setUsers,
@@ -509,14 +518,6 @@ export function isInputDisabled(state: AppState): boolean {
 
 export function isLoggedIn(state: AppState): boolean {
   return state.user.userId !== localUser;
-}
-
-export function isMessageVisible(state: AppState): boolean {
-  return state.liveState.messageVisible ?? false;
-}
-
-export function isMessageGood(state: AppState): boolean {
-  return state.liveState.messageGood ?? false;
 }
 
 export function isUserLoading(state: AppState): boolean {
@@ -549,10 +550,16 @@ export function selectLetters(
   return state.liveState.letters;
 }
 
-export function selectMessage(
+export function selectLetterMessage(
   state: AppState
-): AppState['liveState']['message'] {
-  return state.liveState.message;
+): AppState['liveState']['letterMessage'] {
+  return state.liveState.letterMessage;
+}
+
+export function selectToastMessage(
+  state: AppState
+): AppState['liveState']['toastMessage'] {
+  return state.liveState.toastMessage;
 }
 
 export function selectNewGameIds(
