@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import App from './components/App';
+import App from './App';
 import firebase from 'firebase/app';
 import store, { loadUser } from './store';
 import './index.css';

@@ -1,36 +1,38 @@
 import classNames from 'classnames';
 import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import './App.css';
+import AppError from './AppError';
 import {
-  AppDispatch,
+  Button,
+  Input,
+  Letters,
+  MenuBar,
+  Message,
+  Modal,
+  Progress,
+  Words,
+} from './components';
+import { useVerticalMediaQuery } from './hooks';
+import { createLogger } from './logging';
+import {
   addInput,
+  AppDispatch,
   clearInput,
   deleteInput,
+  isInputDisabled,
+  isUserLoading,
+  isWordListExpanded,
   scrambleLetters,
-  submitWord,
-  setInputDisabled,
-  setLetterMessage,
   selectError,
   selectLetterMessage,
-  selectWarning,
-  setWarning,
-  isUserLoading,
-  isInputDisabled,
-  isWordListExpanded,
   selectToastMessage,
-} from '../store';
-import { createLogger } from '../logging';
-import AppError from '../AppError';
-import Button from './Button';
-import Input from './Input';
-import Letters from './Letters';
-import MenuBar from './MenuBar';
-import Message from './Message';
-import Modal from './Modal';
-import Progress from './Progress';
-import Words from './Words';
-import './App.css';
-import { useVerticalMediaQuery } from '../hooks';
+  selectWarning,
+  setInputDisabled,
+  setLetterMessage,
+  setWarning,
+  submitWord,
+} from './store';
 
 const logger = createLogger({ prefix: 'App' });
 
