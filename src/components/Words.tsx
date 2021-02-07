@@ -18,7 +18,7 @@ import {
   setWordListExpanded,
 } from '../store';
 import { Words } from '../types';
-import useMediaQuery, { verticalQuery } from '../useMediaQuery';
+import { useVerticalMediaQuery } from '../hooks';
 import { isPangram } from '../wordUtil';
 import Button from './Button';
 import Modal from './Modal';
@@ -37,7 +37,7 @@ const Words: FunctionComponent = () => {
   const [alphabetical, setAlphabetical] = useState(false);
   const [definition, setDefinition] = useState<DefinedWord>();
   const [showWords, setShowWords] = useState(false);
-  const isVertical = useMediaQuery(verticalQuery);
+  const isVertical = useVerticalMediaQuery();
   const listRef = useRef<HTMLDivElement>(null);
   const expanded = useSelector(isWordListExpanded);
   const userId = useSelector(selectUserId);

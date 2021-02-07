@@ -30,7 +30,7 @@ import Modal from './Modal';
 import Progress from './Progress';
 import Words from './Words';
 import './App.css';
-import useMediaQuery, { verticalQuery } from '../useMediaQuery';
+import { useVerticalMediaQuery } from '../hooks';
 
 const logger = createLogger({ prefix: 'App' });
 
@@ -42,7 +42,7 @@ const App: FunctionComponent = () => {
   const warning = useSelector(selectWarning);
   const letterMessage = useSelector(selectLetterMessage);
   const wordListExpanded = useSelector(isWordListExpanded);
-  const isVertical = useMediaQuery(verticalQuery);
+  const isVertical = useVerticalMediaQuery();
   const toastMessage = useSelector(selectToastMessage);
 
   const handleLetterMessageHidden = useCallback(() => {

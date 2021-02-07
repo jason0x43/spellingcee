@@ -19,4 +19,6 @@ export default function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-export const verticalQuery = '(max-width: 640px)';
+export function useVerticalMediaQuery(): boolean {
+  return useMediaQuery('(max-width: 640px)');
+}
