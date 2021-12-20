@@ -1,16 +1,14 @@
 /// <reference lib="dom" />
 
-import { Provider, React, ReactDOM } from "./deps.ts";
+import { React, ReactDOM } from "./deps.ts";
 import App from "./App.tsx";
-import store, { loadUser } from "./store.ts";
+import "./global.ts";
 
-store.dispatch(loadUser());
-
-ReactDOM.render(
+ReactDOM.hydrate(
   <React.StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
+    <App {...globalThis.__PRELOADED_STATE__} />
   </React.StrictMode>,
   document.getElementById("root"),
 );
+
+delete globalThis.__PRELOADED_STATE__;

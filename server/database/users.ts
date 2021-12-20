@@ -1,13 +1,13 @@
 import { bcrypt, log } from "../deps.ts";
 import { query } from "./db.ts";
-import { User, UserConfig } from "../../types.ts";
+import { User, UserMeta } from "../../types.ts";
 
-type UserRow = [number, string, string, string?];
+type UserRow = [number, string, string, string, string?];
 
 function rowToUser(row: UserRow): User {
-  const [id, email, name, rawConfig] = row;
-  const config = rawConfig !== undefined ? JSON.parse(rawConfig) : undefined;
-  return { id, name, email, config };
+  const [id, email, _password, name, rawMeta] = row;
+  const meta = rawMeta !== undefined ? JSON.parse(rawMeta) : undefined;
+  return { id, name, email, meta };
 }
 
 export function addUser(
@@ -46,7 +46,7 @@ export function getUserByEmail(email: string): User {
   return rowToUser(rows[0]);
 }
 
-export function updateUserConfig(userId: number, config: UserConfig) {
+export function updateUserConfig(userId: number, config: UserMeta) {
   const dbConfig = JSON.stringify(config);
   query(
     "UPDATE users SET config = (json(:config)) WHERE id = (:userId)",

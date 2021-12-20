@@ -12,10 +12,9 @@ type DictionaryResult = [
 
 export async function getDefinition(word: string): Promise<string[]> {
   const result = await fetch(`${api}${word}?key=${apiKey}`);
+  if (result.status >= 400) {
+    throw new Error(`Error getting definition: ${result.statusText}`);
+  }
   const data: DictionaryResult = await result.json();
   return data[0].shortdef;
-}
-
-export function canGetDefinitions(): boolean {
-  return apiKey != null;
 }

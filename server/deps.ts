@@ -34,3 +34,5 @@ export {
 export * as log from "https://deno.land/std@0.118.0/log/mod.ts";
 export { expandGlob } from "https://deno.land/std@0.118.0/fs/mod.ts";
 export * as bcrypt from "https://deno.land/x/bcrypt@v0.2.4/mod.ts";
+
+export const wordListBase = "https://esm.sh/wordlist-english@1.2";

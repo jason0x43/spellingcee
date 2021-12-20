@@ -1,10 +1,14 @@
-import { React, useMemo, useSelector } from "../deps.ts";
+import { React, useMemo } from "../deps.ts";
 import { classNames } from "../util.ts";
 import { getProgressLabel, getProgressThresholds } from "../wordUtil.ts";
-import { AppState } from "../store.ts";
+import { Game } from "../../types.ts";
 
-const Progress: React.FC = () => {
-  const game = useSelector((state: AppState) => state.game);
+export interface ProgressProps {
+  game: Game;
+}
+
+const Progress: React.FC<ProgressProps> = (props) => {
+  const { game } = props;
   const { score, maxScore } = game;
   const thresholds = useMemo(() => getProgressThresholds(maxScore), [maxScore]);
   const label = getProgressLabel(score, maxScore);

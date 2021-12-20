@@ -63,18 +63,18 @@ async function readSecret(): Promise<string | null> {
 
         case "\r":
         case "\n":
-          return input.join('');
+          return input.join("");
 
         case "\u0008": // backspace
         case "\u007f": // delete
           if (input.length > 0) {
-            Deno.stdout.write(encoder.encode('\b \b'));
+            Deno.stdout.write(encoder.encode("\b \b"));
           }
           input.pop();
           break;
 
         default:
-          Deno.stdout.write(encoder.encode('*'));
+          Deno.stdout.write(encoder.encode("*"));
           input.push(char);
           break;
       }
@@ -90,6 +90,6 @@ export async function promptSecret(prompt: string): Promise<string | null> {
   Deno.setRaw(0, true);
   const secret = await readSecret();
   Deno.setRaw(Deno.stdin.rid, false);
-  Deno.stdout.write(encoder.encode('\n'));
+  Deno.stdout.write(encoder.encode("\n"));
   return secret;
 }

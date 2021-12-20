@@ -1,0 +1,26 @@
+#!/bin/sh
+
+cmd="deno run \
+	--allow-net \
+	--allow-env \
+	--allow-read=./ \
+	--allow-write=data.db,data.db-journal \
+	--unstable"
+
+if [ "$SC_MODE" = "dev" ]; then
+	if [ "$1" = "serve" ]; then
+		cmd="$cmd --watch --allow-run=touch"
+	fi
+
+	export SC_IMPORT_MAP="import_map.json"
+
+	$cmd \
+		--no-check=remote \
+		--import-map ./$SC_IMPORT_MAP \
+		mod.ts $@
+else
+	$cmd \
+		--no-check \
+		mod.ts $@
+fi
+

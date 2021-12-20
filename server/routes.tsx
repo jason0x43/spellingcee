@@ -1,7 +1,8 @@
-import { log, path, React, ReactDOMServer, Router } from "./deps.ts";
+import { path, React, ReactDOMServer, Router } from "./deps.ts";
 import { getUser, getUserByEmail, isUserPassword } from "./database/mod.ts";
-import { AppState, LoginRequest, User } from "../types.ts";
-import App, { AppProps } from "../client/components/App.tsx";
+import { AppState, LoginRequest } from "../types.ts";
+import { getDefinition } from "./dictionary.ts";
+import App, { AppProps } from "../client/App.tsx";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -62,6 +63,27 @@ export function createRouter(config: { client: string; styles: string }) {
     response.body = user;
   });
 
+  router.get("/definition", async ({ request, response }) => {
+    const params = request.url.searchParams;
+    const word = params.get("word");
+
+    response.type = "application/json";
+
+    if (!word) {
+      response.status = 400;
+      response.body = { error: "Missing word" };
+      return;
+    }
+
+    try {
+      const def = await getDefinition(word);
+      response.body = def;
+    } catch (error) {
+      response.status = 400;
+      response.body = { error: `${error.message}` };
+    }
+  });
+
   router.get("/client.js", ({ response }) => {
     response.type = "application/javascript";
     response.body = config.client;
@@ -85,24 +107,25 @@ export function createRouter(config: { client: string; styles: string }) {
     response.type = "application/json";
 
     if (!request.hasBody) {
-      response.status = 404;
+      response.status = 400;
       response.body = { error: "Missing or invalid credentials" };
       return;
     }
 
     const body = request.body();
-    const text = await body.value;
-    const data = JSON.parse(text) as LoginRequest;
+    const data = await body.value as LoginRequest;
     const user = getUserByEmail(data.email);
+
     if (!isUserPassword(user.id, data.password)) {
-      response.status = 404;
+      response.status = 400;
       response.body = { error: "Missing or invalid credentials" };
+      return;
     }
 
     state.userId = user.id;
     await cookies.set("userId", `${user.id}`, {
       secure: mode !== "dev",
-      httpOnly: true,
+      httpOnly: mode !== "dev",
       // assume we're being proxied through an SSL server
       ignoreInsecure: true,
     });
@@ -110,7 +133,7 @@ export function createRouter(config: { client: string; styles: string }) {
     response.body = user;
   });
 
-  router.get("/", ({ cookies, response, state }) => {
+  router.get("/", ({ response, state }) => {
     if (!state.userId) {
       response.redirect("/login");
       return;

@@ -11,11 +11,13 @@ const clientDir = path.join(__dirname, "..", "client");
 /**
  * Touch this file (to intiate a reload) if the client code changes.
  */
-async function watchClient() {
+async function watchStyles() {
   const watcher = Deno.watchFs(clientDir);
   let timer: number | undefined;
   for await (const event of watcher) {
-    if (event.paths.some((p) => /\.tsx?/.test(p))) {
+    if (
+      event.paths.some((p) => /\.css$/.test(p) || /client\/mod.tsx$/.test(p))
+    ) {
       clearTimeout(timer);
       timer = setTimeout(() => {
         Deno.run({ cmd: ["touch", __filename] });
@@ -34,7 +36,7 @@ export async function serve() {
     },
   };
 
-  const importMap = Deno.env.get("SN_IMPORT_MAP");
+  const importMap = Deno.env.get("SC_IMPORT_MAP");
   if (importMap) {
     emitOptions.importMapPath = path.join(__dirname, "..", importMap);
   }
@@ -52,23 +54,24 @@ export async function serve() {
   // Build and cache the styles
   let styles = "";
   for await (
-    const file of expandGlob(
+    const entry of expandGlob(
       path.join(__dirname, "..", "client", "**", "*.css"),
     )
   ) {
-    const text = await Deno.readTextFile(file);
+    const text = await Deno.readTextFile(entry.path);
     styles += `${text}\n`;
   }
 
   const router = createRouter({
-    path: "/client.js",
-    text: files["deno:///bundle.js"],
+    client: files["deno:///bundle.js"],
+    styles,
   });
 
-  const port = 8083;
+  const envPort = Deno.env.get("SC_PORT");
+  const port = envPort ? Number(envPort) : 8083;
   const app = new Application<AppState>();
 
-  const appKey = Deno.env.get("SN_KEY");
+  const appKey = Deno.env.get("SC_KEY");
   if (appKey) {
     app.keys = [appKey];
     log.debug("Set app key");
@@ -97,5 +100,5 @@ export async function serve() {
   });
 
   log.info(`Listening on port ${port}`);
-  await Promise.allSettled([app.listen({ port }), watchClient()]);
+  await Promise.allSettled([app.listen({ port }), watchStyles()]);
 }

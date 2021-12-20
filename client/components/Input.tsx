@@ -1,12 +1,14 @@
-import { React, useSelector } from "../deps.ts";
+import { React } from "../deps.ts";
 import { classNames } from "../util.ts";
-import { selectInput, selectLetterMessage, selectPangram } from "../store.ts";
 
-const Input: React.FC = () => {
-  const input = useSelector(selectInput);
-  const letterMessage = useSelector(selectLetterMessage);
-  const isInvalid = letterMessage && letterMessage.type === "bad";
-  const pangram = useSelector(selectPangram);
+export interface InputProps {
+  value: string[];
+  validLetters: string[];
+  isInvalid?: boolean;
+}
+
+const Input: React.FC<InputProps> = (props) => {
+  const { value: input, isInvalid, validLetters } = props;
 
   const className = classNames({
     Input: true,
@@ -18,7 +20,7 @@ const Input: React.FC = () => {
       {input.map((letter, i) => {
         const className = classNames({
           "Input-letter": true,
-          "Input-letter-invalid": !pangram.includes(letter),
+          "Input-letter-invalid": !validLetters.includes(letter),
         });
         return (
           <div key={i} className={className}>

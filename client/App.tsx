@@ -2,73 +2,93 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="deno.unstable" />
 
-import { classNames } from './util.ts';
-import {
-  React,
-  useCallback,
-  useDispatch,
-  useEffect,
-  useSelector,
-} from './deps.ts';
-import AppError from './AppError.ts';
-import Button from './components/Button.tsx';
-import Input from './components/Input.tsx';
-import Letters from './components/Letters.tsx';
-import MenuBar from './components/MenuBar.tsx';
-import Message from './components/Message.tsx';
-import Modal from './components/Modal.tsx';
-import Progress from './components/Progress.tsx';
-import Words from './components/Words.tsx';
-import { useVerticalMediaQuery } from './hooks/mod.ts';
-import { createLogger } from './logging.ts';
-import {
-  addInput,
-  AppDispatch,
-  clearInput,
-  deleteInput,
-  isInputDisabled,
-  isUserLoading,
-  isWordListExpanded,
-  scrambleLetters,
-  selectError,
-  selectLetterMessage,
-  selectToastMessage,
-  selectWarning,
-  setInputDisabled,
-  setLetterMessage,
-  setWarning,
-  submitWord,
-} from './store.ts';
+import { classNames } from "./util.ts";
+import { React, useCallback, useEffect, useState } from "./deps.ts";
+import AppError from "./AppError.ts";
+import Button from "./components/Button.tsx";
+import Input from "./components/Input.tsx";
+import Letters from "./components/Letters.tsx";
+import MenuBar from "./components/MenuBar.tsx";
+import Message from "./components/Message.tsx";
+import Modal from "./components/Modal.tsx";
+import Progress from "./components/Progress.tsx";
+import Words from "./components/Words.tsx";
+import { useVerticalMediaQuery } from "./hooks/mod.ts";
+import { addWord, login } from "./api.ts";
+import { Game, User } from "../types.ts";
+import { Words as WordsType } from "./types.ts";
+import { permute } from "./wordUtil.ts";
 
-const logger = createLogger({ prefix: 'App' });
+interface LoggedInProps {
+  user: User;
+}
 
-const App: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const inputDisabled = useSelector(isInputDisabled);
-  const userLoading = useSelector(isUserLoading);
-  const error = useSelector(selectError);
-  const warning = useSelector(selectWarning);
-  const letterMessage = useSelector(selectLetterMessage);
-  const wordListExpanded = useSelector(isWordListExpanded);
+const LoggedIn: React.FC<LoggedInProps> = (props) => {
+  const { user } = props;
+  const [inputDisabled, setInputDisabled] = useState(false);
+  const [userLoading, setUserLoading] = useState(false);
+  const [error, setError] = useState<Error | undefined>();
+  const [warning, setWarning] = useState<string | undefined>();
+  const [letters, setLetters] = useState<string[]>([]);
+  const [letterMessage, setLetterMessage] = useState<
+    { type: "normal" | "good" | "bad"; message: string } | undefined
+  >();
+  const [wordListExpanded, setWordListExpanded] = useState(false);
+  const [toastMessage, setToastMessage] = useState<
+    { type: "normal" | "good" | "bad"; message: string } | undefined
+  >();
+  const [inputValue, setInputValue] = useState<string[]>([]);
+  const [validLetters, setValidLetters] = useState<string[]>([]);
+  const [words, setWords] = useState<WordsType>({});
+  const [validWords, setValidWords] = useState<string[]>([]);
+  const [game, setGame] = useState<Game | undefined>();
   const isVertical = useVerticalMediaQuery();
-  const toastMessage = useSelector(selectToastMessage);
+
+  const scrambleLetters = () => {
+    if (letters) {
+      setLetters(permute(letters));
+    }
+  };
+
+  const addInput = (char: string) => {
+    setInputValue([...inputValue, char]);
+  };
+
+  const deleteInput = () => {
+    setInputValue(inputValue.slice(0, inputValue.length - 1));
+  };
+
+  const submitWord = async () => {
+    try {
+      if (game) {
+        await addWord({
+          userId: user.id,
+          gameId: game.id,
+          word: inputValue.join(""),
+        });
+      }
+    } catch (error) {
+      setError(error);
+    }
+  };
 
   const handleLetterMessageHidden = useCallback(() => {
-    dispatch(clearInput());
-    dispatch(setInputDisabled(false));
-    dispatch(setLetterMessage(undefined));
-  }, [dispatch]);
+    setInputValue([]);
+    setInputDisabled(false);
+    setLetterMessage(undefined);
+  }, []);
 
-  // If we have a message, display it
+  // TODO: update inputDisable when setting letterMessage
   useEffect(() => {
     if (letterMessage) {
-      dispatch(setInputDisabled(true));
+      setInputDisabled(true);
     }
-  }, [dispatch, letterMessage]);
+  }, [letterMessage]);
 
-  // Handle a general keypress event
-  const handleKeyPress = useCallback(
-    (event) => {
+  // Add event listeners
+  useEffect(() => {
+    // Handle a general keypress event
+    const handleKeyPress = (event: KeyboardEvent) => {
       if (inputDisabled) {
         return;
       }
@@ -81,67 +101,51 @@ const App: React.FC = () => {
       const { key } = event;
 
       if (key.length > 1) {
-        if (key === 'Backspace' || key === 'Delete') {
-          dispatch(deleteInput());
-        } else if (key === 'Enter') {
-          dispatch(submitWord());
+        if (key === "Backspace" || key === "Delete") {
+          deleteInput();
+        } else if (key === "Enter") {
+          if (game) {
+            submitWord();
+          }
         }
-      } else if (key === ' ') {
-        dispatch(scrambleLetters());
-      } else if ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')) {
-        dispatch(addInput(event.key));
+      } else if (key === " ") {
+        scrambleLetters();
+      } else if ((key >= "a" && key <= "z") || (key >= "A" && key <= "Z")) {
+        addInput(event.key);
       }
-    },
-    [dispatch, inputDisabled]
-  );
-
-  // Add event listeners
-  useEffect(() => {
-    globalThis.addEventListener('keydown', handleKeyPress);
-    return () => {
-      globalThis.removeEventListener('keydown', handleKeyPress);
     };
-  }, [handleKeyPress]);
+
+    globalThis.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      globalThis.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [inputDisabled, inputValue, user, game]);
 
   const handleHideWarning = useCallback(() => {
-    () => dispatch(setWarning(undefined));
-  }, [dispatch]);
-
-  const handleDelete = useCallback(() => {
-    if (!inputDisabled) {
-      dispatch(deleteInput());
-    }
-  }, [dispatch, inputDisabled]);
-
-  const handleScramble = useCallback(() => {
-    if (!inputDisabled) {
-      dispatch(scrambleLetters());
-    }
-  }, [dispatch, inputDisabled]);
-
-  const handleSubmit = useCallback(() => {
-    console.log('submitting word');
-    dispatch(submitWord());
-  }, [dispatch]);
-
-  const renderWords = useCallback(() => {
-    return (
-      <div className="App-words">
-        <Progress />
-        <Words />
-      </div>
-    );
+    setWarning(undefined);
   }, []);
+
+  const renderWords = () => (
+    <div className="App-words">
+      {game && <Progress game={game} />}
+      <Words
+        words={words}
+        validWords={validWords}
+        user={user}
+        setWordListExpanded={setWordListExpanded}
+      />
+    </div>
+  );
 
   // If there was an error, display an error message rather than the normal UI
   if (error) {
-    logger.error(error);
-    const message =
-      typeof error === 'string'
-        ? error
-        : AppError.isAppError(error)
-        ? error.appMessage
-        : 'There was an error loading the application';
+    console.error(error);
+    const message = typeof error === "string"
+      ? error
+      : AppError.isAppError(error)
+      ? error.appMessage
+      : "There was an error loading the application";
     return (
       <div className="App">
         <div className="App-error">{message}</div>
@@ -151,26 +155,54 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      {userLoading ? (
-        <Modal />
-      ) : (
+      {userLoading ? <Modal /> : (
         <>
-          <MenuBar />
+          <MenuBar
+            clearNewGameIds={() => undefined}
+            activateGame={() => undefined}
+            addGame={() => undefined}
+            removeGame={() => undefined}
+            loadUsers={() => Promise.resolve()}
+            loadGames={() => Promise.resolve()}
+            signIn={() => Promise.resolve()}
+            signOut={() => Promise.resolve()}
+            shareActiveGame={() => Promise.resolve()}
+          />
           <div
             className={classNames({
-              'App-content': true,
-              'App-words-expanded': wordListExpanded,
+              "App-content": true,
+              "App-words-expanded": wordListExpanded,
             })}
           >
             {isVertical && renderWords()}
 
             <div className="App-letters">
-              <Input />
-              <Letters />
+              <Input value={inputValue} validLetters={validLetters} />
+              <Letters
+                disabled={inputDisabled}
+                addInput={addInput}
+                letters={letters}
+              />
               <div className="App-letters-controls">
-                <Button onClick={handleDelete}>Delete</Button>
-                <Button onClick={handleScramble}>Mix</Button>
-                <Button onClick={handleSubmit}>Enter</Button>
+                <Button
+                  onClick={() => {
+                    if (!inputDisabled) {
+                      deleteInput();
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (!inputDisabled) {
+                      scrambleLetters();
+                    }
+                  }}
+                >
+                  Mix
+                </Button>
+                <Button onClick={() => submitWord()}>Enter</Button>
               </div>
               <Message
                 message={letterMessage?.message}
@@ -194,6 +226,69 @@ const App: React.FC = () => {
         <Modal type="warning" onHide={handleHideWarning}>
           {warning}
         </Modal>
+      )}
+    </div>
+  );
+};
+
+interface LoginProps {
+  setUser: (user: User) => void;
+}
+
+const Login: React.FC<LoginProps> = (props) => {
+  const { setUser } = props;
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<Error>();
+
+  const handleLogin = async () => {
+    try {
+      const user = await login(email, password);
+      console.log("got user:", user);
+      if (user) {
+        setUser(user);
+      }
+    } catch (error) {
+      setError(error);
+    }
+  };
+
+  return (
+    <form className="Login">
+      <input
+        placeholder="Email"
+        value={email}
+        onChange={(event) => {
+          setEmail(event.target.value);
+        }}
+      />
+      <input
+        placeholder="Password"
+        type="password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+      />
+      <button type="button" onClick={handleLogin}>Login</button>
+
+      {error && <div className="LoginError">{error.message}</div>}
+    </form>
+  );
+};
+
+export type AppProps = Partial<LoggedInProps>;
+
+const App: React.FC<AppProps> = (props) => {
+  const { user } = props;
+
+  return (
+    <div className="App">
+      {user ? <LoggedIn {...props} user={user} /> : (
+        <Login
+          setUser={() => {
+            console.log("setting href");
+            location.href = "/";
+          }}
+        />
       )}
     </div>
   );

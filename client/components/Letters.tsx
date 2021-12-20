@@ -1,18 +1,5 @@
-import {
-  React,
-  useCallback,
-  useDispatch,
-  useMemo,
-  useSelector,
-  useState,
-} from "../deps.ts";
+import { React, useCallback, useMemo, useState } from "../deps.ts";
 import { classNames } from "../util.ts";
-import {
-  addInput,
-  AppDispatch,
-  isInputDisabled,
-  selectLetters,
-} from "../store.ts";
 
 const tileSize = 100;
 
@@ -32,10 +19,14 @@ const points = (function () {
 
 type Indices = { [letter: string]: number | "center" };
 
-const Letters: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const letters = useSelector(selectLetters);
-  const disabled = useSelector(isInputDisabled);
+export interface LettersProps {
+  addInput: (char: string) => void;
+  disabled: boolean;
+  letters: string[];
+}
+
+const Letters: React.FC<LettersProps> = (props) => {
+  const { letters, disabled, addInput } = props;
   const center = letters[Math.floor(letters.length / 2)];
   const [activeLetter, setActiveLetter] = useState<string>();
 
@@ -61,10 +52,10 @@ const Letters: React.FC = () => {
       // Prevent both touch and click events from firing for a given action
       event.preventDefault();
       const letter = event.currentTarget.textContent as string;
-      dispatch(addInput(letter));
+      addInput(letter);
       setActiveLetter(letter);
     },
-    [disabled, dispatch, setActiveLetter],
+    [disabled, setActiveLetter],
   );
 
   const handleMouseUp = useCallback(
