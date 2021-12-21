@@ -1,8 +1,15 @@
 import { path, React, ReactDOMServer, Router } from "./deps.ts";
-import { getUser, getUserByEmail, isUserPassword } from "./database/mod.ts";
+import {
+  getGame,
+  getUser,
+  getUserByEmail,
+  isUserPassword,
+} from "./database/mod.ts";
 import { AppState, LoginRequest } from "../types.ts";
 import { getDefinition } from "./dictionary.ts";
 import App, { AppProps } from "../client/App.tsx";
+import { Game } from "../types.ts";
+import { createGame } from "./games.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -133,16 +140,22 @@ export function createRouter(config: { client: string; styles: string }) {
     response.body = user;
   });
 
-  router.get("/", ({ response, state }) => {
+  router.get("/", async ({ response, state }) => {
     if (!state.userId) {
       response.redirect("/login");
       return;
     }
 
     const user = getUser(state.userId);
+    let game: Game;
+    if (user.meta?.currentGame) {
+      game = getGame(user.meta.currentGame);
+    } else {
+      game = await createGame();
+    }
 
     response.type = "text/html";
-    response.body = render({ user });
+    response.body = render({ user, game });
   });
 
   return router;

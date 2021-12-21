@@ -21,12 +21,12 @@ import { permute } from "./wordUtil.ts";
 
 interface LoggedInProps {
   user: User;
+  game: Game | undefined;
 }
 
 const LoggedIn: React.FC<LoggedInProps> = (props) => {
   const { user } = props;
   const [inputDisabled, setInputDisabled] = useState(false);
-  const [userLoading, setUserLoading] = useState(false);
   const [error, setError] = useState<Error | undefined>();
   const [warning, setWarning] = useState<string | undefined>();
   const [letters, setLetters] = useState<string[]>([]);
@@ -41,7 +41,7 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
   const [validLetters, setValidLetters] = useState<string[]>([]);
   const [words, setWords] = useState<WordsType>({});
   const [validWords, setValidWords] = useState<string[]>([]);
-  const [game, setGame] = useState<Game | undefined>();
+  const [game, setGame] = useState<Game | undefined>(props.game);
   const isVertical = useVerticalMediaQuery();
 
   const scrambleLetters = () => {
@@ -120,7 +120,7 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
     return () => {
       globalThis.removeEventListener("keydown", handleKeyPress);
     };
-  }, [inputDisabled, inputValue, user, game]);
+  }, [inputDisabled, inputValue, game]);
 
   const handleHideWarning = useCallback(() => {
     setWarning(undefined);
@@ -155,72 +155,71 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
 
   return (
     <div className="App">
-      {userLoading ? <Modal /> : (
-        <>
-          <MenuBar
-            clearNewGameIds={() => undefined}
-            activateGame={() => undefined}
-            addGame={() => undefined}
-            removeGame={() => undefined}
-            loadUsers={() => Promise.resolve()}
-            loadGames={() => Promise.resolve()}
-            signIn={() => Promise.resolve()}
-            signOut={() => Promise.resolve()}
-            shareActiveGame={() => Promise.resolve()}
-          />
-          <div
-            className={classNames({
-              "App-content": true,
-              "App-words-expanded": wordListExpanded,
-            })}
-          >
-            {isVertical && renderWords()}
+      <>
+        <MenuBar
+          user={user}
+          clearNewGameIds={() => undefined}
+          activateGame={() => undefined}
+          addGame={() => undefined}
+          removeGame={() => undefined}
+          loadUsers={() => Promise.resolve()}
+          loadGames={() => Promise.resolve()}
+          signIn={() => Promise.resolve()}
+          signOut={() => Promise.resolve()}
+          shareActiveGame={() => Promise.resolve()}
+        />
+        <div
+          className={classNames({
+            "App-content": true,
+            "App-words-expanded": wordListExpanded,
+          })}
+        >
+          {isVertical && renderWords()}
 
-            <div className="App-letters">
-              <Input value={inputValue} validLetters={validLetters} />
-              <Letters
-                disabled={inputDisabled}
-                addInput={addInput}
-                letters={letters}
-              />
-              <div className="App-letters-controls">
-                <Button
-                  onClick={() => {
-                    if (!inputDisabled) {
-                      deleteInput();
-                    }
-                  }}
-                >
-                  Delete
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (!inputDisabled) {
-                      scrambleLetters();
-                    }
-                  }}
-                >
-                  Mix
-                </Button>
-                <Button onClick={() => submitWord()}>Enter</Button>
-              </div>
-              <Message
-                message={letterMessage?.message}
-                type={letterMessage?.type}
-                visibleTime="normal"
-                onHide={handleLetterMessageHidden}
-              />
+          <div className="App-letters">
+            <Input value={inputValue} validLetters={validLetters} />
+            <Letters
+              disabled={inputDisabled}
+              addInput={addInput}
+              letters={letters}
+            />
+            <div className="App-letters-controls">
+              <Button
+                onClick={() => {
+                  if (!inputDisabled) {
+                    deleteInput();
+                  }
+                }}
+              >
+                Delete
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!inputDisabled) {
+                    scrambleLetters();
+                  }
+                }}
+              >
+                Mix
+              </Button>
+              <Button onClick={() => submitWord()}>Enter</Button>
             </div>
-
-            {!isVertical && renderWords()}
-
             <Message
-              message={toastMessage?.message}
-              type={toastMessage?.type}
+              message={letterMessage?.message}
+              type={letterMessage?.type}
+              visibleTime="normal"
+              onHide={handleLetterMessageHidden}
             />
           </div>
-        </>
-      )}
+
+          {!isVertical && renderWords()}
+
+          <Message
+            message={toastMessage?.message}
+            type={toastMessage?.type}
+          />
+        </div>
+      </>
 
       {warning && (
         <Modal type="warning" onHide={handleHideWarning}>
@@ -278,14 +277,13 @@ const Login: React.FC<LoginProps> = (props) => {
 export type AppProps = Partial<LoggedInProps>;
 
 const App: React.FC<AppProps> = (props) => {
-  const { user } = props;
+  const { user, game } = props;
 
   return (
     <div className="App">
-      {user ? <LoggedIn {...props} user={user} /> : (
+      {user ? <LoggedIn {...props} user={user} game={game} /> : (
         <Login
           setUser={() => {
-            console.log("setting href");
             location.href = "/";
           }}
         />

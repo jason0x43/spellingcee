@@ -1,25 +1,17 @@
-import { wordListBase } from "./deps.ts";
+import { words10, words20, words35, words40, words50 } from "./deps.ts";
 
-let wordList: string[][] | undefined;
-let blocks: number[] | undefined;
+export const wordList = [
+  ...words10,
+  ...words20,
+  ...words35,
+  ...words40,
+  ...words50,
+];
 
-async function getList(id: string) {
-  const response = await fetch(`${wordListBase}/english-words-${id}.json`);
-  const list: string[] = await response.json();
-  return list.filter((word) => word.length >= 4);
-}
-
-export async function getWordList(): Promise<{
-  wordList: string[][];
-  blocks: number[];
-}> {
-  wordList ??= await Promise.all([
-    getList("10"),
-    getList("20"),
-    getList("35"),
-    getList("40"),
-    getList("50"),
-  ]);
-  blocks ??= wordList.map((list) => list.length);
-  return { wordList, blocks };
-}
+export const blocks = [
+  words10.length,
+  words20.length,
+  words35.length,
+  words40.length,
+  words50.length,
+];

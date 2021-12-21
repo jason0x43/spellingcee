@@ -3,7 +3,10 @@
 /// <reference lib="dom.asynciterable" />
 
 export * as color from "https://deno.land/std@0.118.0/fmt/colors.ts";
-export { DB } from "https://deno.land/x/sqlite@v3.1.3/mod.ts";
+export {
+  DB,
+  type QueryParameterSet,
+} from "https://deno.land/x/sqlite@v3.1.3/mod.ts";
 export {
   Application,
   Router,
@@ -36,3 +39,36 @@ export { expandGlob } from "https://deno.land/std@0.118.0/fs/mod.ts";
 export * as bcrypt from "https://deno.land/x/bcrypt@v0.2.4/mod.ts";
 
 export const wordListBase = "https://esm.sh/wordlist-english@1.2";
+
+export { makeSeededGenerators } from "https://deno.land/x/vegas@v1.3.0/mod.ts";
+
+export const words10 =
+  (await import("https://esm.sh/wordlist-english@1.2/english-words-10.json", {
+    assert: {
+      type: "json",
+    },
+  })).default;
+export const words20 =
+  (await import("https://esm.sh/wordlist-english@1.2/english-words-20.json", {
+    assert: {
+      type: "json",
+    },
+  })).default;
+export const words35 =
+  (await import("https://esm.sh/wordlist-english@1.2/english-words-35.json", {
+    assert: {
+      type: "json",
+    },
+  })).default;
+export const words40 =
+  (await import("https://esm.sh/wordlist-english@1.2/english-words-40.json", {
+    assert: {
+      type: "json",
+    },
+  })).default;
+export const words50 =
+  (await import("https://esm.sh/wordlist-english@1.2/english-words-50.json", {
+    assert: {
+      type: "json",
+    },
+  })).default;

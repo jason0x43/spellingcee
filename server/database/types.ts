@@ -5,7 +5,6 @@ export interface Game {
 }
 
 export interface UserGame {
-  id: number;
   userId: number;
   gameId: number;
   isOwner: boolean;

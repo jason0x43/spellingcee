@@ -25,13 +25,13 @@ export interface LoginRequest {
 }
 
 export interface Game extends GameEntity {
-  totalWords: number;
-  wordsFound: number;
-  score: number;
-  maxScore: number;
-  difficulty: number;
-  isShared: boolean;
-  addedBy: number;
+  // totalWords: number;
+  // wordsFound: number;
+  // score: number;
+  // maxScore: number;
+  // difficulty: number;
+  // isShared: boolean;
+  // addedBy: number;
 }
 
 export interface Word {

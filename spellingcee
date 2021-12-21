@@ -15,7 +15,7 @@ if [ "$SC_MODE" = "dev" ]; then
 	export SC_IMPORT_MAP="import_map.json"
 
 	$cmd \
-		--no-check=remote \
+		--no-check \
 		--import-map ./$SC_IMPORT_MAP \
 		mod.ts $@
 else

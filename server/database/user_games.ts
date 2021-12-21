@@ -1,27 +1,27 @@
 import { query } from "./db.ts";
 import { UserGame } from "./types.ts";
+import { createRowHelpers } from "./util.ts";
 
-type UserGameRow = [number, number, number, boolean];
-
-function rowToUserGame(row: UserGameRow): UserGame {
-  return {
-    id: row[0],
-    userId: row[1],
-    gameId: row[2],
-    isOwner: row[3],
-  };
-}
+const {
+  columns: userGameColumns,
+  query: userGameQuery,
+} = createRowHelpers<
+  UserGame
+>()(
+  "userId",
+  "gameId",
+  "isOwner",
+);
 
 export function getUserGames(data: { userId: number }): UserGame[] {
-  const rows = query<UserGameRow>(
-    `SELECT * FROM user_games WHERE user_id = (:userId)`,
+  return userGameQuery(
+    `SELECT ${userGameColumns} FROM user_games WHERE user_id = (:userId)`,
     data,
   );
-  return rows.map(rowToUserGame);
 }
 
 export function setGameOwner(data: { gameId: number; userId: number }) {
-  query<UserGameRow>(
+  query(
     `INSERT INTO user_games (user_id, game_id, is_owner)
     VALUES (:userId, :gameId, :isOwner)
     ON CONFLICT(user_id, game_id)

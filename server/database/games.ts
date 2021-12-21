@@ -1,19 +1,31 @@
 import { Game } from "./types.ts";
-import { query } from "./db.ts";
+import { createRowHelpers } from "./util.ts";
 
-type GameRow = [number, number, string];
-
-function rowToGame(row: GameRow): Game {
-  return {
-    id: row[0],
-    key: row[2],
-  };
-}
+const {
+  columns: gameColumns,
+  query: gameQuery,
+} = createRowHelpers<
+  Game
+>()(
+  "id",
+  "key",
+  "addedAt",
+);
 
 export function addGame(data: { key: string }): Game {
-  const rows = query<GameRow>(
-    "INSERT INTO games (key) VALUES (:key) RETURNING *",
+  return gameQuery(
+    `INSERT INTO games (key) VALUES (:key) RETURNING ${gameColumns}`,
     data,
-  );
-  return rowToGame(rows[0]);
+  )[0];
+}
+
+export function getGame(gameId: number): Game {
+  const game = gameQuery(
+    `SELECT ${gameColumns} FROM games WHERE game_id = (:gameId)`,
+    { gameId },
+  )[0];
+  if (!game) {
+    throw new Error("Invalid game ID");
+  }
+  return game;
 }

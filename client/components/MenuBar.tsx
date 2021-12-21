@@ -26,7 +26,7 @@ type SelectionState = "loading" | "selecting";
 export interface MenuBarProps {
   game?: Game;
   games?: Game[];
-  user?: User;
+  user: User | undefined;
   users?: User[];
   newGameIds?: number[];
   clearNewGameIds: () => void;

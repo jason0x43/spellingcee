@@ -5,13 +5,16 @@ const tileSize = 100;
 
 // Vertexes of hexagonal tiles
 const points = (function () {
+  const round2 = (val: number) =>
+    Math.round((val + Number.EPSILON) * 100) /
+    100;
   const r = tileSize / 2;
   const n = 6;
   const p: number[][] = [];
   for (let i = 0; i < n; i++) {
     p.push([
-      r + r * Math.cos((2 * Math.PI * i) / n),
-      r + r * Math.sin((2 * Math.PI * i) / n),
+      round2(r + r * Math.cos((2 * Math.PI * i) / n)),
+      round2(r + r * Math.sin((2 * Math.PI * i) / n)),
     ]);
   }
   return p.map((pt) => `${pt[0]},${pt[1]}`).join(" ");
