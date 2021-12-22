@@ -151,7 +151,7 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
       {game && gameData?.[game.id] && <Progress gameData={gameData[game.id]} />}
       <Words
         words={words}
-        validWords={validWords}
+        gameData={gameData[game.id]}
         user={user}
         setWordListExpanded={setWordListExpanded}
       />

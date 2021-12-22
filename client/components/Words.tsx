@@ -1,7 +1,7 @@
 import { classNames } from "../util.ts";
 import { React, useCallback, useEffect, useRef, useState } from "../deps.ts";
 import { getDefinition } from "../api.ts";
-import { User } from "../../types.ts";
+import { GameData, User } from "../../types.ts";
 import { Words } from "../types.ts";
 import { useVerticalMediaQuery } from "../hooks/mod.ts";
 import { isPangram } from "../../shared/util.ts";
@@ -16,14 +16,14 @@ type DefinedWord = {
 
 export interface WordsProps {
   words: Words;
-  validWords: string[];
+  gameData: GameData;
   wordListExpanded?: boolean;
   setWordListExpanded: (expanded: boolean) => void;
   user: User;
 }
 
 const Words: React.FC<WordsProps> = (props) => {
-  const { wordListExpanded, user, words, validWords, setWordListExpanded } =
+  const { wordListExpanded, user, words, gameData, setWordListExpanded } =
     props;
   const [alphabetical, setAlphabetical] = useState(false);
   const [definition, setDefinition] = useState<DefinedWord>();
@@ -62,15 +62,22 @@ const Words: React.FC<WordsProps> = (props) => {
     setDefinition(undefined);
   }, [setDefinition]);
 
-  const renderWordsContent = () => {
-    const displayWords = alphabetical && (!isVertical || wordListExpanded)
-      ? Object.keys(words).sort()
-      : Object.keys(words).sort(
-        (a, b) => words[b].addedAt - words[a].addedAt,
-      );
+  const displayWords = alphabetical && (!isVertical || wordListExpanded)
+    ? Object.keys(words).sort()
+    : Object.keys(words).sort(
+      (a, b) => words[b].addedAt - words[a].addedAt,
+    );
 
-    return (
-      <>
+  return (
+    <>
+      <div
+        className={classNames({
+          Words: true,
+          "Words-collapsed": !wordListExpanded,
+          "Words-expanded": wordListExpanded,
+        })}
+        ref={listRef}
+      >
         <div className="Words-list-wrapper">
           <ul
             className={classNames({
@@ -101,7 +108,7 @@ const Words: React.FC<WordsProps> = (props) => {
         </Button>
         <div className="Words-controls">
           <span className="Words-metrics">
-            {Object.keys(words).length} / {validWords.length} words
+            {Object.keys(words).length} / {gameData.totalWords} words
           </span>
           <Button
             size="small"
@@ -112,21 +119,6 @@ const Words: React.FC<WordsProps> = (props) => {
             {alphabetical ? "Time" : "Alpha"}
           </Button>
         </div>
-      </>
-    );
-  };
-
-  return (
-    <>
-      <div
-        className={classNames({
-          Words: true,
-          "Words-collapsed": !wordListExpanded,
-          "Words-expanded": wordListExpanded,
-        })}
-        ref={listRef}
-      >
-        {renderWordsContent()}
 
         {definition && (
           <Modal onHide={handleHideModal}>
