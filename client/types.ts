@@ -1,11 +1,11 @@
-import { Game, User, Word } from "../types.ts";
+import { Game, GameWord, User } from "../types.ts";
 
 export interface Games {
   [gameId: number]: Game;
 }
 
 export interface Words {
-  [word: string]: Word;
+  [word: string]: GameWord;
 }
 
 export interface Users {

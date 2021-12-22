@@ -1,5 +1,7 @@
 import { Game as GameEntity } from "./server/database/types.ts";
 
+export type { GameWord } from "./server/database/types.ts";
+
 export interface AppState {
   userId: number;
 }
@@ -25,16 +27,16 @@ export interface LoginRequest {
 }
 
 export interface Game extends GameEntity {
-  // totalWords: number;
-  // wordsFound: number;
-  // score: number;
-  // maxScore: number;
-  // difficulty: number;
-  // isShared: boolean;
-  // addedBy: number;
+  totalWords: number;
+  maxScore: number;
 }
 
-export interface Word {
-  addedAt: number;
-  addedBy: number;
+export interface GameData {
+  wordsFound: number;
+  score: number;
+  isShared: boolean;
+}
+
+export interface AddWordRequest {
+  word: string;
 }

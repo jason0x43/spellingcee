@@ -1,15 +1,24 @@
-import { path, React, ReactDOMServer, Router } from "./deps.ts";
 import {
-  getGame,
+  log,
+  Middleware,
+  path,
+  React,
+  ReactDOMServer,
+  Router,
+} from "./deps.ts";
+import {
+  addGameWord,
+  getGameWords,
   getUser,
   getUserByEmail,
   isUserPassword,
+  userCanPlay,
 } from "./database/mod.ts";
-import { AppState, LoginRequest } from "../types.ts";
+import { AddWordRequest, AppState, LoginRequest } from "../types.ts";
 import { getDefinition } from "./dictionary.ts";
 import App, { AppProps } from "../client/App.tsx";
-import { Game } from "../types.ts";
-import { createGame } from "./games.ts";
+import { Game, GameWord } from "../types.ts";
+import { createGame, getGame } from "./games.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -19,6 +28,17 @@ function toString(value: unknown): string {
 }
 
 const mode = Deno.env.get("SC_MODE") ?? "prod";
+
+const requireUser: Middleware<AppState> = async ({ response, state }, next) => {
+  log.debug("Checking for user");
+  if (state.userId === undefined) {
+    response.type = "application/json";
+    response.status = 403;
+    response.body = { error: "Must be logged in" };
+  } else {
+    await next();
+  }
+};
 
 export function createRouter(config: { client: string; styles: string }) {
   // Render the base HTML
@@ -110,6 +130,56 @@ export function createRouter(config: { client: string; styles: string }) {
     }
   });
 
+  router.get("/games/:id/words", requireUser, ({ params, response, state }) => {
+    const { userId } = state;
+    const { id } = params;
+    const gameId = Number(id);
+
+    response.type = "application/json";
+
+    if (!userCanPlay({ userId, gameId })) {
+      response.status = 400;
+      response.body = { error: `User ${userId} isn't part of game ${gameId}` };
+    } else {
+      response.body = getGameWords(gameId);
+    }
+  });
+
+  router.post(
+    "/games/:id/words",
+    requireUser,
+    async ({ params, request, response, state }) => {
+      log.debug("Trying to add word");
+      const { userId } = state;
+      const { id } = params;
+      const gameId = Number(id);
+      response.type = "application/json";
+
+      if (!userCanPlay({ userId, gameId })) {
+        response.status = 400;
+        response.body = {
+          error: `User ${userId} isn't part of game ${gameId}`,
+        };
+        return;
+      }
+
+      if (!request.hasBody) {
+        response.status = 400;
+        response.body = {
+          error: "Missing request body",
+        };
+        return;
+      }
+
+      const body = request.body();
+      const data = await body.value as AddWordRequest;
+      const word = addGameWord({ userId, gameId, word: data.word });
+
+      response.status = 200;
+      response.body = word;
+    },
+  );
+
   router.post("/login", async ({ cookies, request, response, state }) => {
     response.type = "application/json";
 
@@ -140,22 +210,26 @@ export function createRouter(config: { client: string; styles: string }) {
     response.body = user;
   });
 
-  router.get("/", async ({ response, state }) => {
+  router.get("/", ({ response, state }) => {
     if (!state.userId) {
       response.redirect("/login");
       return;
     }
 
     const user = getUser(state.userId);
+    const gameId = user.meta?.currentGame;
     let game: Game;
-    if (user.meta?.currentGame) {
-      game = getGame(user.meta.currentGame);
+    let words: GameWord[] | undefined;
+
+    if (gameId !== undefined) {
+      game = getGame(gameId);
+      words = getGameWords(gameId);
     } else {
-      game = await createGame();
+      game = createGame({ userId: state.userId });
     }
 
     response.type = "text/html";
-    response.body = render({ user, game });
+    response.body = render({ user, game, words });
   });
 
   return router;

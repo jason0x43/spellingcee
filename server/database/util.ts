@@ -42,3 +42,16 @@ export function createRowHelpers<T>() {
     };
   };
 }
+
+export function count(q: string, params?: QueryParameterSet): number {
+  return query<[number]>(q, params)[0][0];
+}
+
+export function select<T>(
+  q: string,
+  selector: (row: unknown[]) => T,
+  params?: QueryParameterSet,
+): T[] {
+  const rows = query(q, params);
+  return rows.map(selector);
+}

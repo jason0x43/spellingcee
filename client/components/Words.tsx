@@ -4,7 +4,7 @@ import { getDefinition } from "../api.ts";
 import { User } from "../../types.ts";
 import { Words } from "../types.ts";
 import { useVerticalMediaQuery } from "../hooks/mod.ts";
-import { isPangram } from "../wordUtil.ts";
+import { isPangram } from "../../shared/util.ts";
 import Button from "./Button.tsx";
 import Modal from "./Modal.tsx";
 import Spinner from "./Spinner.tsx";

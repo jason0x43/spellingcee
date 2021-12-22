@@ -30,48 +30,38 @@ export interface LettersProps {
 
 const Letters: React.FC<LettersProps> = (props) => {
   const { letters, disabled, addInput } = props;
-  const center = letters[Math.floor(letters.length / 2)];
   const [activeLetter, setActiveLetter] = useState<string>();
 
-  const centerIndex = letters.indexOf(center);
-  const otherLetters = [
-    ...letters.slice(0, centerIndex),
-    ...letters.slice(centerIndex + 1),
-  ];
-  const renderLetters = otherLetters.slice().sort();
+  const indices: Indices = useMemo(() => {
+    const newIndices: Indices = { [letters[0]]: "center" };
+    const nonCenter = letters.slice(1);
+    for (let i = 0; i < nonCenter.length; i++) {
+      newIndices[nonCenter[i]] = i;
+    }
+    return newIndices;
+  }, [letters]);
 
-  const indices: Indices = useMemo(() => ({ [center]: "center" }), [center]);
-  for (let i = 0; i < otherLetters.length; i++) {
-    indices[otherLetters[i]] = i;
-  }
+  const handleMouseDown = (event: React.MouseEvent | React.TouchEvent) => {
+    // Ignore clicks to the outer SVG; only pay attention to clicks of child
+    // nodes
+    if (disabled || event.target === event.currentTarget) {
+      return;
+    }
+    // Prevent both touch and click events from firing for a given action
+    event.preventDefault();
+    const letter = event.currentTarget.textContent as string;
+    addInput(letter);
+    setActiveLetter(letter);
+  };
 
-  const handleMouseDown = useCallback(
-    (event) => {
-      // Ignore clicks to the outer SVG; only pay attention to clicks of child
-      // nodes
-      if (disabled || event.target === event.currentTarget) {
-        return;
-      }
-      // Prevent both touch and click events from firing for a given action
-      event.preventDefault();
-      const letter = event.currentTarget.textContent as string;
-      addInput(letter);
-      setActiveLetter(letter);
-    },
-    [disabled, setActiveLetter],
-  );
-
-  const handleMouseUp = useCallback(
-    (event) => {
-      // Prevent both touch and click events from firing for a given action
-      if (disabled) {
-        return;
-      }
-      event.preventDefault();
-      setActiveLetter(undefined);
-    },
-    [disabled, setActiveLetter],
-  );
+  const handleMouseUp = (event: React.MouseEvent | React.TouchEvent) => {
+    // Prevent both touch and click events from firing for a given action
+    if (disabled) {
+      return;
+    }
+    event.preventDefault();
+    setActiveLetter(undefined);
+  };
 
   const renderLetter = useCallback(
     (letter: string) => {
@@ -111,8 +101,8 @@ const Letters: React.FC<LettersProps> = (props) => {
 
   return (
     <div className="Letters">
-      {renderLetter(center)}
-      {renderLetters.map(renderLetter)}
+      {renderLetter(letters[0])}
+      {letters.slice(1).map(renderLetter)}
     </div>
   );
 };

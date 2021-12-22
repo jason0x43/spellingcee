@@ -9,6 +9,7 @@ export {
 } from "https://deno.land/x/sqlite@v3.1.3/mod.ts";
 export {
   Application,
+  type Middleware,
   Router,
   send,
 } from "https://deno.land/x/oak@v10.0.0/mod.ts";
@@ -37,8 +38,6 @@ export {
 export * as log from "https://deno.land/std@0.118.0/log/mod.ts";
 export { expandGlob } from "https://deno.land/std@0.118.0/fs/mod.ts";
 export * as bcrypt from "https://deno.land/x/bcrypt@v0.2.4/mod.ts";
-
-export const wordListBase = "https://esm.sh/wordlist-english@1.2";
 
 export { makeSeededGenerators } from "https://deno.land/x/vegas@v1.3.0/mod.ts";
 

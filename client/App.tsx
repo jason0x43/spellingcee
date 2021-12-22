@@ -15,13 +15,14 @@ import Progress from "./components/Progress.tsx";
 import Words from "./components/Words.tsx";
 import { useVerticalMediaQuery } from "./hooks/mod.ts";
 import { addWord, login } from "./api.ts";
-import { Game, User } from "../types.ts";
+import { Game, GameWord, User } from "../types.ts";
 import { Words as WordsType } from "./types.ts";
-import { permute } from "./wordUtil.ts";
+import { permute } from "../shared/util.ts";
 
 interface LoggedInProps {
   user: User;
-  game: Game | undefined;
+  game: Game;
+  words: GameWord[];
 }
 
 const LoggedIn: React.FC<LoggedInProps> = (props) => {
@@ -29,7 +30,7 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
   const [inputDisabled, setInputDisabled] = useState(false);
   const [error, setError] = useState<Error | undefined>();
   const [warning, setWarning] = useState<string | undefined>();
-  const [letters, setLetters] = useState<string[]>([]);
+  const [letters, setLetters] = useState<string[]>([...props.game.key]);
   const [letterMessage, setLetterMessage] = useState<
     { type: "normal" | "good" | "bad"; message: string } | undefined
   >();
@@ -39,14 +40,19 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
   >();
   const [inputValue, setInputValue] = useState<string[]>([]);
   const [validLetters, setValidLetters] = useState<string[]>([]);
-  const [words, setWords] = useState<WordsType>({});
+  const [words, setWords] = useState<WordsType>(() =>
+    props.words.reduce((allWords, word) => {
+      allWords[word.word] = word;
+      return allWords;
+    }, {} as WordsType) ?? {}
+  );
   const [validWords, setValidWords] = useState<string[]>([]);
   const [game, setGame] = useState<Game | undefined>(props.game);
   const isVertical = useVerticalMediaQuery();
 
   const scrambleLetters = () => {
     if (letters) {
-      setLetters(permute(letters));
+      setLetters([letters[0], ...permute(letters.slice(1))]);
     }
   };
 
@@ -61,11 +67,16 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
   const submitWord = async () => {
     try {
       if (game) {
-        await addWord({
+        const newWord = await addWord({
           userId: user.id,
           gameId: game.id,
           word: inputValue.join(""),
         });
+        setWords({
+          ...words,
+          [newWord.word]: newWord,
+        });
+        setInputValue([]);
       }
     } catch (error) {
       setError(error);
@@ -281,7 +292,7 @@ const App: React.FC<AppProps> = (props) => {
 
   return (
     <div className="App">
-      {user ? <LoggedIn {...props} user={user} game={game} /> : (
+      {user && game ? <LoggedIn {...props} user={user} game={game} /> : (
         <Login
           setUser={() => {
             location.href = "/";

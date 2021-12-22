@@ -8,24 +8,39 @@ const {
   Game
 >()(
   "id",
+  "userId",
   "key",
-  "addedAt",
 );
 
-export function addGame(data: { key: string }): Game {
+export function addGame(data: { userId: number; key: string }): Game {
   return gameQuery(
-    `INSERT INTO games (key) VALUES (:key) RETURNING ${gameColumns}`,
+    `INSERT INTO games (user_id, key)
+    VALUES (:userId, :key)
+    RETURNING ${gameColumns}`,
     data,
   )[0];
 }
 
 export function getGame(gameId: number): Game {
   const game = gameQuery(
-    `SELECT ${gameColumns} FROM games WHERE game_id = (:gameId)`,
+    `SELECT ${gameColumns} FROM games WHERE id = (:gameId)`,
     { gameId },
   )[0];
   if (!game) {
     throw new Error("Invalid game ID");
+  }
+  return game;
+}
+
+export function getGameByKey(data: { userId: number; key: string }): Game {
+  const game = gameQuery(
+    `SELECT ${gameColumns}
+    FROM games
+    WHERE key = (:key) AND user_id = (:userId)`,
+    data,
+  )[0];
+  if (!game) {
+    throw new Error(`User ${data.userId} has no game with key ${data.key}`);
   }
   return game;
 }

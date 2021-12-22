@@ -1,66 +1,103 @@
-import random, { newRng } from "./random.ts";
-import { blocks, wordList } from "./wordList.ts";
+import { randomBelow } from "../shared/deps.ts";
+import { isPangram, permute } from "../shared/util.ts";
+import { findValidWords, wordList } from "./words.ts";
 import { Game } from "../types.ts";
-import { addGame } from "./database/games.ts";
+import { addGame, getGame as getDbGame } from "./database/games.ts";
+import { getUser, updateUserMeta } from "./database/users.ts";
 
-export function isPangram(word: string): boolean {
-  return new Set(word).size === 7;
-}
-
-export function findPangram(words: string[], startIndex: number): string {
-  let pangram = words[0];
-  for (let i = startIndex; i < words.length; i++) {
-    const word = words[i];
-    if (isPangram(word)) {
-      pangram = word;
-      break;
-    }
-  }
-  if (!pangram) {
-    for (let i = 0; i < startIndex; i++) {
-      const word = words[i];
-      if (isPangram(word)) {
-        pangram = word;
-        break;
-      }
-    }
-  }
-  return pangram;
-}
-
-export function getLetters(word: string | string[]): string[] {
-  return Array.from(new Set(word));
-}
-
-export function permute(letters: string[], rng = random): string[] {
-  if (letters.length === 1) {
-    return letters;
-  }
-  const index = rng(letters.length);
-  const remaining = [...letters.slice(0, index), ...letters.slice(index + 1)];
-  return [letters[index], ...permute(remaining, rng)];
+/**
+ * Compute the score of a set of words
+ */
+function computeScore(words: string[]): number {
+  return words.reduce(
+    (sum, word) =>
+      word.length === 4
+        ? sum + 1
+        : isPangram(word)
+        ? sum + 2 * word.length
+        : sum +
+          word.length,
+    0,
+  );
 }
 
 /**
- * Create a new random game ID
+ * Linearly search the word list for a pangram, starting from a given position.
  */
-export function getNewGameKey(rngSeed?: string): string {
-  const rng = newRng(rngSeed);
-  const maxIndex = blocks[0] + blocks[1] + blocks[2] + blocks[3] + blocks[4];
-  const start = rng(maxIndex);
-  const pangram = findPangram(wordList, start);
+function findPangram(startIndex: number): string {
+  for (let i = 0; i < wordList.length; i++) {
+    const index = (i + startIndex) % wordList.length;
+    const word = wordList[index];
+    if (isPangram(word)) {
+      return word;
+    }
+  }
+  return "";
+}
+
+/**
+ * Return the set of unique letters in a word.
+ */
+function getLetters(word: string | string[]): string[] {
+  return Array.from(new Set(word));
+}
+
+/**
+ * Return metadata for a game
+ */
+function getGameData(key: string) {
+  const words = findValidWords(key);
+  return {
+    totalWords: words.length,
+    maxScore: computeScore(words),
+  };
+}
+
+/**
+ * Create a new random game key
+ *
+ * A key is a center letter followed by 6 other letters in alphabetical order.
+ * All 7 letters must be unique.
+ */
+export function getNewGameKey(): string {
+  const maxIndex = wordList.length;
+  const start = randomBelow(maxIndex);
+  const pangram = findPangram(start);
   const uniqueLetters = getLetters(pangram);
-  const randomizedLetters = permute(uniqueLetters, rng).join("");
+  const randomizedLetters = permute(uniqueLetters).join("");
   return [
     randomizedLetters[0],
     ...randomizedLetters.slice(1).split("").sort(),
   ].join("");
 }
 
-export async function createGame(
-  key?: string,
-): Promise<Game> {
-  key ??= await getNewGameKey();
-  const game = addGame({ key });
-  return game;
+/**
+ * Create a new game for a user
+ */
+export function createGame({ userId, key }: {
+  userId: number;
+  key?: string;
+}): Game {
+  key ??= getNewGameKey();
+  const game = addGame({ userId, key });
+  const user = getUser(userId);
+  updateUserMeta(userId, {
+    ...user.meta,
+    currentGame: game.id,
+  });
+  return {
+    ...game,
+    ...getGameData(key),
+  };
+}
+
+/**
+ * Retrieve the user game associated with a key
+ */
+export function getGame(gameId: number): Game {
+  const game = getDbGame(gameId);
+  return {
+    ...game,
+    ...getGameData(game.key),
+  };
 }
