@@ -82,7 +82,7 @@ const Words: React.FC<WordsProps> = (props) => {
               const className = classNames({
                 "Words-word": true,
                 "Words-word-pangram": isPangram(word),
-                "Words-word-own": words[word].addedBy === userId,
+                "Words-word-own": words[word].userId === userId,
               });
               return (
                 <li key={i} className={className} onClick={handleWordClick}>

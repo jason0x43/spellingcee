@@ -1,8 +1,9 @@
 import { randomBelow } from "../shared/deps.ts";
 import { isPangram, permute } from "../shared/util.ts";
 import { findValidWords, wordList } from "./words.ts";
-import { Game } from "../types.ts";
-import { addGame, getGame as getDbGame } from "./database/games.ts";
+import { Game, GameData } from "../types.ts";
+import { addGame, getGame } from "./database/games.ts";
+import { getGameWords } from "./database/game_words.ts";
 import { getUser, updateUserMeta } from "./database/users.ts";
 
 /**
@@ -43,17 +44,6 @@ function getLetters(word: string | string[]): string[] {
 }
 
 /**
- * Return metadata for a game
- */
-function getGameData(key: string) {
-  const words = findValidWords(key);
-  return {
-    totalWords: words.length,
-    maxScore: computeScore(words),
-  };
-}
-
-/**
  * Create a new random game key
  *
  * A key is a center letter followed by 6 other letters in alphabetical order.
@@ -85,19 +75,21 @@ export function createGame({ userId, key }: {
     ...user.meta,
     currentGame: game.id,
   });
-  return {
-    ...game,
-    ...getGameData(key),
-  };
+  return game;
 }
 
 /**
- * Retrieve the user game associated with a key
+ * Return metadata for a game
  */
-export function getGame(gameId: number): Game {
-  const game = getDbGame(gameId);
+export function getGameData(gameId: number): GameData {
+  const game = getGame(gameId);
+  const validWords = findValidWords(game.key);
+  const gameWords = getGameWords(game.id);
   return {
-    ...game,
-    ...getGameData(game.key),
+    gameId,
+    totalWords: validWords.length,
+    maxScore: computeScore(validWords),
+    wordsFound: gameWords.length,
+    score: computeScore(gameWords.map(({ word }) => word)),
   };
 }

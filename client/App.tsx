@@ -15,7 +15,7 @@ import Progress from "./components/Progress.tsx";
 import Words from "./components/Words.tsx";
 import { useVerticalMediaQuery } from "./hooks/mod.ts";
 import { addWord, login } from "./api.ts";
-import { Game, GameWord, User } from "../types.ts";
+import { Game, GameData, GameWord, User } from "../types.ts";
 import { Words as WordsType } from "./types.ts";
 import { permute } from "../shared/util.ts";
 
@@ -23,6 +23,8 @@ interface LoggedInProps {
   user: User;
   game: Game;
   words: GameWord[];
+  games: Game[];
+  gameData: GameData[];
 }
 
 const LoggedIn: React.FC<LoggedInProps> = (props) => {
@@ -47,7 +49,14 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
     }, {} as WordsType) ?? {}
   );
   const [validWords, setValidWords] = useState<string[]>([]);
-  const [game, setGame] = useState<Game | undefined>(props.game);
+  const [game, setGame] = useState(props.game);
+  const [games, setGames] = useState(props.games);
+  const [gameData, setGameData] = useState(() =>
+    props.gameData.reduce((allData, data) => {
+      allData[data.gameId] = data;
+      return allData;
+    }, {} as { [id: number]: GameData })
+  );
   const isVertical = useVerticalMediaQuery();
 
   const scrambleLetters = () => {
@@ -139,7 +148,7 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
 
   const renderWords = () => (
     <div className="App-words">
-      {game && <Progress game={game} />}
+      {game && gameData?.[game.id] && <Progress gameData={gameData[game.id]} />}
       <Words
         words={words}
         validWords={validWords}
@@ -172,6 +181,7 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
           clearNewGameIds={() => undefined}
           activateGame={() => undefined}
           addGame={() => undefined}
+          games={games}
           removeGame={() => undefined}
           loadUsers={() => Promise.resolve()}
           loadGames={() => Promise.resolve()}
@@ -288,17 +298,28 @@ const Login: React.FC<LoginProps> = (props) => {
 export type AppProps = Partial<LoggedInProps>;
 
 const App: React.FC<AppProps> = (props) => {
-  const { user, game } = props;
+  const { user, game, games, words, gameData } = props;
 
   return (
     <div className="App">
-      {user && game ? <LoggedIn {...props} user={user} game={game} /> : (
-        <Login
-          setUser={() => {
-            location.href = "/";
-          }}
-        />
-      )}
+      {user && game && gameData && words && games
+        ? (
+          <LoggedIn
+            {...props}
+            user={user}
+            game={game}
+            gameData={gameData}
+            games={games}
+            words={words}
+          />
+        )
+        : (
+          <Login
+            setUser={() => {
+              location.href = "/";
+            }}
+          />
+        )}
     </div>
   );
 };

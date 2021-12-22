@@ -1,16 +1,9 @@
 import { Game } from "./types.ts";
 import { createRowHelpers } from "./util.ts";
 
-const {
-  columns: gameColumns,
-  query: gameQuery,
-} = createRowHelpers<
+export const { columns: gameColumns, query: gameQuery } = createRowHelpers<
   Game
->()(
-  "id",
-  "userId",
-  "key",
-);
+>()("id", "userId", "key");
 
 export function addGame(data: { userId: number; key: string }): Game {
   return gameQuery(
@@ -44,3 +37,11 @@ export function getGameByKey(data: { userId: number; key: string }): Game {
   }
   return game;
 }
+
+export function getGames(userId: number): Game[] {
+  return gameQuery(
+    `SELECT ${gameColumns} FROM games WHERE user_id = (:userId)`,
+    { userId },
+  );
+}
+

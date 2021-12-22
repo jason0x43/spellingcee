@@ -8,17 +8,25 @@ import {
 } from "./deps.ts";
 import {
   addGameWord,
+  getGame,
+  getGames,
   getGameWords,
   getUser,
   getUserByEmail,
+  getUserGames,
   isUserPassword,
   userCanPlay,
 } from "./database/mod.ts";
-import { AddWordRequest, AppState, LoginRequest } from "../types.ts";
+import {
+  AddWordRequest,
+  AppState,
+  Game,
+  GameWord,
+  LoginRequest,
+} from "../types.ts";
 import { getDefinition } from "./dictionary.ts";
 import App, { AppProps } from "../client/App.tsx";
-import { Game, GameWord } from "../types.ts";
-import { createGame, getGame } from "./games.ts";
+import { createGame, getGameData } from "./games.ts";
 import { validateWord } from "./words.ts";
 
 const __filename = new URL(import.meta.url).pathname;
@@ -131,6 +139,11 @@ export function createRouter(config: { client: string; styles: string }) {
     }
   });
 
+  router.get("/games", requireUser, ({ response, state }) => {
+    response.type = "application/json";
+    response.body = getUserGames(state.userId);
+  });
+
   router.get("/games/:id/words", requireUser, ({ params, response, state }) => {
     const { userId } = state;
     const { id } = params;
@@ -232,6 +245,8 @@ export function createRouter(config: { client: string; styles: string }) {
 
     const user = getUser(state.userId);
     const gameId = user.meta?.currentGame;
+    const games = getUserGames(state.userId);
+    const gameData = games.map(({ id }) => getGameData(id));
     let game: Game;
     let words: GameWord[] | undefined;
 
@@ -243,7 +258,7 @@ export function createRouter(config: { client: string; styles: string }) {
     }
 
     response.type = "text/html";
-    response.body = render({ user, game, words });
+    response.body = render({ user, game, gameData, games, words });
   });
 
   return router;

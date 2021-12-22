@@ -14,7 +14,7 @@ import {
 import { classNames } from "../util.ts";
 import Modal from "./Modal.tsx";
 import Spinner from "./Spinner.tsx";
-import { Game, User } from "../../types.ts";
+import { Game, GameData, User } from "../../types.ts";
 
 const { GrFormClose: CloseIcon } = GrIcons;
 const { GoPrimitiveDot: NotifyIcon } = GoIcons;
@@ -26,6 +26,7 @@ type SelectionState = "loading" | "selecting";
 export interface MenuBarProps {
   game?: Game;
   games?: Game[];
+  gameData?: { [id: number]: GameData };
   user: User | undefined;
   users?: User[];
   newGameIds?: number[];
@@ -45,6 +46,7 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
     activateGame,
     game,
     games,
+    gameData,
     loadGames,
     addGame,
     signIn,
@@ -161,68 +163,70 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
   }, [showAccountMenu]);
 
   const renderGame = useCallback(
-    (rg: Game) => {
-      return (
-        <li
-          className={classNames({
-            "MenuBar-select-item": true,
-            "MenuBar-select-item-noselect": rg.id === game?.id,
-          })}
-          key={rg.id}
-          data-item-id={rg.id}
-          onClick={rg.id !== game?.id ? handleSelectGame : undefined}
-        >
-          <dl className="MenuBar-select-info" title={`${rg.id}`}>
-            <div>
-              <dt>Letters</dt>
-              <dd className="MenuBar-select-letters">
-                {rg.key.slice(1, Math.ceil(rg.key.length / 2))}
-                <span className="MenuBar-select-letters-center">
-                  {rg.key[0]}
-                </span>
-                {rg.key.slice(Math.ceil(rg.key.length / 2))}
-              </dd>
-            </div>
-            <div>
-              <dt>Created</dt>
-              <dd>{new Date(rg.addedAt).toLocaleDateString()}</dd>
-            </div>
-            <div>
-              <dt>Words</dt>
-              <dd>
-                {rg.wordsFound} / {rg.totalWords}
-              </dd>
-            </div>
-            {rg.isShared && users?.find(({ id }) => id === rg.addedBy) && (
-              <div>
-                <dt>Creator</dt>
-                <dd>{users[rg.addedBy].name}</dd>
-              </div>
-            )}
-          </dl>
-          <div className="MenuBar-select-controls">
-            {rg.id !== game?.id && (
-              <div
-                className="MenuBar-select-control MenuBar-pressable"
-                onClickCapture={handleRemoveGame}
-              >
-                <CloseIcon className="MenuBar-select-control-icon" />
-              </div>
-            )}
-            {rg.isShared && (
-              <div className="MenuBar-select-control">
-                <ShareIcon className="MenuBar-select-control-icon" />
-              </div>
-            )}
-            {newGameIds?.includes(rg.id) && (
-              <div className="MenuBar-select-control">
-                <NewGameIcon className="MenuBar-select-control-icon MenuBar-notify" />
-              </div>
-            )}
+    (rg: Game) => (
+      <li
+        className={classNames({
+          "MenuBar-select-item": true,
+          "MenuBar-select-item-noselect": rg.id === game?.id,
+        })}
+        key={rg.id}
+        data-item-id={rg.id}
+        onClick={rg.id !== game?.id ? handleSelectGame : undefined}
+      >
+        <dl className="MenuBar-select-info" title={`${rg.id}`}>
+          <div>
+            <dt>Letters</dt>
+            <dd className="MenuBar-select-letters">
+              {rg.key.slice(1, Math.ceil(rg.key.length / 2))}
+              <span className="MenuBar-select-letters-center">
+                {rg.key[0]}
+              </span>
+              {rg.key.slice(Math.ceil(rg.key.length / 2))}
+            </dd>
           </div>
-        </li>
-      );
-    },
+          <div>
+            <dt>Created</dt>
+            <dd>{new Date(rg.addedAt).toLocaleDateString()}</dd>
+          </div>
+          <div>
+            <dt>Words</dt>
+            <dd>
+              {gameData?.[rg.id]
+                ? gameData[rg.id].wordsFound / gameData[rg.id].totalWords
+                : undefined}
+            </dd>
+          </div>
+          {rg.userId !== user?.id && users?.find(({ id }) =>
+            id === rg.userId
+          ) && (
+            <div>
+              <dt>Creator</dt>
+              <dd>{users[rg.userId].name}</dd>
+            </div>
+          )}
+        </dl>
+        <div className="MenuBar-select-controls">
+          {rg.id !== game?.id && (
+            <div
+              className="MenuBar-select-control MenuBar-pressable"
+              onClickCapture={handleRemoveGame}
+            >
+              <CloseIcon className="MenuBar-select-control-icon" />
+            </div>
+          )}
+          {rg.userId !== user?.id && (
+            <div className="MenuBar-select-control">
+              <ShareIcon className="MenuBar-select-control-icon" />
+            </div>
+          )}
+          {newGameIds?.includes(rg.id) && (
+            <div className="MenuBar-select-control">
+              <NewGameIcon className="MenuBar-select-control-icon MenuBar-notify" />
+            </div>
+          )}
+        </div>
+      </li>
+    ),
     [
       game?.id,
       games,

@@ -19,10 +19,3 @@ export function addSharedGame(data: { userId: number; gameId: number }) {
     data,
   );
 }
-
-export function getSharedGames(data: { userId: number }): SharedGame[] {
-  return sharedGameQuery(
-    `SELECT ${sharedGameColumns} FROM user_games WHERE user_id = (:userId)`,
-    data,
-  );
-}
