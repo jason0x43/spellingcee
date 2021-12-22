@@ -19,6 +19,7 @@ import { getDefinition } from "./dictionary.ts";
 import App, { AppProps } from "../client/App.tsx";
 import { Game, GameWord } from "../types.ts";
 import { createGame, getGame } from "./games.ts";
+import { validateWord } from "./words.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -165,14 +166,27 @@ export function createRouter(config: { client: string; styles: string }) {
 
       if (!request.hasBody) {
         response.status = 400;
-        response.body = {
-          error: "Missing request body",
-        };
+        response.body = { error: "Missing request body" };
         return;
       }
 
       const body = request.body();
       const data = await body.value as AddWordRequest;
+
+      const game = getGame(gameId);
+      if (!game) {
+        response.status = 404;
+        response.body = { error: "Invalid game ID" };
+        return;
+      }
+
+      const message = validateWord({ word: data.word, key: game.key });
+      if (message) {
+        response.status = 422;
+        response.body = { error: message };
+        return;
+      }
+
       const word = addGameWord({ userId, gameId, word: data.word });
 
       response.status = 200;

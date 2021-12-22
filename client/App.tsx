@@ -76,11 +76,11 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
           ...words,
           [newWord.word]: newWord,
         });
-        setInputValue([]);
       }
     } catch (error) {
-      setError(error);
+      console.error(error);
     }
+    setInputValue([]);
   };
 
   const handleLetterMessageHidden = useCallback(() => {

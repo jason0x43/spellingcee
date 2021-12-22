@@ -25,13 +25,11 @@ export const blocks = [
 
 type Check = ({
   word,
-  letters,
-  center,
+  key,
   foundWords,
 }: {
   word: string;
-  letters: string;
-  center: string;
+  key: string;
   foundWords?: string[];
 }) => string | undefined;
 
@@ -40,17 +38,16 @@ const checks: Check[] = [
   ({ word }) => word.length < 4 ? "Too short" : undefined,
 
   // only uses valid letters
-  ({ word, letters }) => {
+  ({ word, key }) => {
     for (const char of word) {
-      if (letters.indexOf(char) === -1) {
+      if (key.indexOf(char) === -1) {
         return "Bad letter";
       }
     }
   },
 
   // contains center letter
-  ({ word, center }) =>
-    word.indexOf(center) === -1 ? "Missing center" : undefined,
+  ({ word, key }) => word.indexOf(key[0]) === -1 ? "Missing center" : undefined,
 
   // is a valid word
   ({ word }) => !wordList.includes(word) ? "Not in word list" : undefined,
@@ -62,22 +59,15 @@ const checks: Check[] = [
 
 export function validateWord({
   word,
-  letters,
-  center,
+  key,
   foundWords,
 }: {
   word: string;
-  letters: string;
-  center: string;
+  key: string;
   foundWords?: string[];
 }): string | undefined {
   for (const check of checks) {
-    const message = check({
-      word,
-      foundWords,
-      letters,
-      center,
-    });
+    const message = check({ word, foundWords, key });
     if (message) {
       return message;
     }
@@ -86,12 +76,7 @@ export function validateWord({
 
 export function findValidWords(key: string) {
   const validWords = wordList.filter(
-    (word) =>
-      !validateWord({
-        word,
-        letters: key,
-        center: key[0],
-      }),
+    (word) => !validateWord({ word, key }),
   );
 
   return validWords;

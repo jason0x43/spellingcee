@@ -33,7 +33,8 @@ export async function addWord(
   });
 
   if (response.status >= 400) {
-    throw new Error(`Error setting active game: ${response.statusText}`);
+    const body = await response.json();
+    throw new Error(`Error adding word: ${body.error}`);
   }
 
   return response.json();
@@ -48,10 +49,10 @@ export async function login(email: string, password: string): Promise<User> {
     },
     body: JSON.stringify({ email, password }),
   });
-  console.log("got response:", response);
 
   if (response.status >= 400) {
-    throw new Error(`Error logging in: ${response.statusText}`);
+    const body = await response.json();
+    throw new Error(`Error logging in: ${body.error}`);
   }
 
   return await response.json();
