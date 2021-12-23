@@ -1,4 +1,5 @@
-export type { Game, GameWord } from "./server/database/types.ts";
+import { Game as DbGame } from "./server/database/types.ts";
+export type { GameWord } from "./server/database/types.ts";
 
 export interface AppState {
   userId: number;
@@ -16,7 +17,7 @@ export interface User {
   /** The user's email address */
   email: string;
   /** User settings */
-  meta?: UserMeta;
+  meta: UserMeta;
 }
 
 export interface LoginRequest {
@@ -24,8 +25,7 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface GameData {
-  gameId: number;
+export interface Game extends DbGame {
   maxScore: number;
   score: number;
   totalWords: number;

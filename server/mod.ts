@@ -37,6 +37,7 @@ export async function serve() {
   };
 
   const importMap = Deno.env.get("SC_IMPORT_MAP");
+
   if (importMap) {
     emitOptions.importMapPath = path.join(__dirname, "..", importMap);
   }

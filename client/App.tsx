@@ -3,7 +3,7 @@
 /// <reference lib="deno.unstable" />
 
 import { classNames } from "./util.ts";
-import { React, useCallback, useEffect, useReducer, useState } from "./deps.ts";
+import { React, useEffect, useReducer, useState } from "./deps.ts";
 import AppError from "./AppError.ts";
 import Button from "./components/Button.tsx";
 import Input from "./components/Input.tsx";
@@ -15,16 +15,15 @@ import Progress from "./components/Progress.tsx";
 import Words from "./components/Words.tsx";
 import { useVerticalMediaQuery } from "./hooks/mod.ts";
 import { addWord, login } from "./api.ts";
-import { Game, GameData, GameWord, User } from "../types.ts";
+import { Game, GameWord, User } from "../types.ts";
 import { Words as WordsType } from "./types.ts";
 import { permute } from "../shared/util.ts";
 
 interface LoggedInProps {
   user: User;
-  game: Game;
   words: GameWord[];
   games: Game[];
-  gameData: GameData[];
+  game: Game;
 }
 
 interface AppState {
@@ -43,9 +42,8 @@ interface AppState {
   inputValue: string[];
   words: WordsType;
   validWords: string[];
-  game: Game;
   games: Game[];
-  gameData: { [gameId: number]: GameData };
+  game: Game;
 }
 
 function initState(props: LoggedInProps): AppState {
@@ -64,12 +62,8 @@ function initState(props: LoggedInProps): AppState {
       return allWords;
     }, {} as WordsType) ?? {},
     validWords: [],
-    game: props.game,
     games: props.games,
-    gameData: props.gameData.reduce((allData, data) => {
-      allData[data.gameId] = data;
-      return allData;
-    }, {} as { [id: number]: GameData }),
+    game: props.game,
   };
 }
 
@@ -138,20 +132,22 @@ function updateState(state: AppState, action: AppStateAction): AppState {
 }
 
 interface AppWordsProps {
-  gameData: GameData;
   words: WordsType;
   user: User;
+  score: number;
+  maxScore: number;
+  totalWords: number;
   dispatch: React.Dispatch<AppStateAction>;
 }
 
 const AppWords: React.FC<AppWordsProps> = (props) => {
-  const { gameData, words, user, dispatch } = props;
+  const { score, maxScore, totalWords, words, user, dispatch } = props;
   return (
     <div className="App-words">
-      <Progress gameData={gameData} />
+      <Progress score={score} maxScore={maxScore} />
       <Words
         words={words}
-        gameData={gameData}
+        totalWords={totalWords}
         user={user}
         setWordListExpanded={(expanded) =>
           dispatch({ type: "setWordListExpanded", payload: expanded })}
@@ -183,7 +179,7 @@ function createKeyPressHandler(
   dispatch: React.Dispatch<AppStateAction>,
 ) {
   return (event: KeyboardEvent) => {
-    const { game, inputDisabled, user } = state;
+    const { game, inputDisabled } = state;
 
     if (inputDisabled) {
       return;
@@ -218,7 +214,6 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
   const {
     error,
     game,
-    gameData,
     games,
     inputDisabled,
     inputValue,
@@ -279,7 +274,9 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
         >
           {isVertical && (
             <AppWords
-              gameData={gameData[game.id]}
+              score={game.score}
+              maxScore={game.maxScore}
+              totalWords={game.totalWords}
               words={words}
               user={user}
               dispatch={dispatch}
@@ -331,7 +328,9 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
 
           {!isVertical && (
             <AppWords
-              gameData={gameData[game.id]}
+              score={game.score}
+              maxScore={game.maxScore}
+              totalWords={game.totalWords}
               words={words}
               user={user}
               dispatch={dispatch}
@@ -401,20 +400,20 @@ const Login: React.FC<LoginProps> = (props) => {
   );
 };
 
-export type AppProps = Partial<LoggedInProps>;
+export type AppProps = Partial<Omit<LoggedInProps, "game">>;
 
 const App: React.FC<AppProps> = (props) => {
-  const { user, game, games, words, gameData } = props;
+  const { user, games, words } = props;
+  const game = games?.find(({ id }) => id === user?.meta.currentGame);
 
   return (
     <div className="App">
-      {user && game && gameData && words && games
+      {user && words && games && game
         ? (
           <LoggedIn
             {...props}
             user={user}
             game={game}
-            gameData={gameData}
             games={games}
             words={words}
           />

@@ -8,12 +8,9 @@ import {
 } from "./deps.ts";
 import {
   addGameWord,
-  getGame,
-  getGames,
   getGameWords,
   getUser,
   getUserByEmail,
-  getUserGames,
   isUserPassword,
   userCanPlay,
 } from "./database/mod.ts";
@@ -26,7 +23,7 @@ import {
 } from "../types.ts";
 import { getDefinition } from "./dictionary.ts";
 import App, { AppProps } from "../client/App.tsx";
-import { createGame, getGameData } from "./games.ts";
+import { createGame, getGame, getGames } from "./games.ts";
 import { validateWord } from "./words.ts";
 
 const __filename = new URL(import.meta.url).pathname;
@@ -141,7 +138,7 @@ export function createRouter(config: { client: string; styles: string }) {
 
   router.get("/games", requireUser, ({ response, state }) => {
     response.type = "application/json";
-    response.body = getUserGames(state.userId);
+    response.body = getGames(state.userId);
   });
 
   router.get("/games/:id/words", requireUser, ({ params, response, state }) => {
@@ -243,22 +240,21 @@ export function createRouter(config: { client: string; styles: string }) {
       return;
     }
 
-    const user = getUser(state.userId);
+    let user = getUser(state.userId);
     const gameId = user.meta?.currentGame;
-    const games = getUserGames(state.userId);
-    const gameData = games.map(({ id }) => getGameData(id));
-    let game: Game;
     let words: GameWord[] | undefined;
 
     if (gameId !== undefined) {
-      game = getGame(gameId);
       words = getGameWords(gameId);
     } else {
-      game = createGame({ userId: state.userId });
+      createGame({ userId: state.userId });
+      user = getUser(state.userId);
     }
 
+    const games = getGames(state.userId);
+
     response.type = "text/html";
-    response.body = render({ user, game, gameData, games, words });
+    response.body = render({ user, games, words });
   });
 
   return router;

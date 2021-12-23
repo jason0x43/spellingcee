@@ -9,9 +9,8 @@ export {
   isUserPassword,
   updateUserPassword,
 } from "./users.ts";
-export { getGame, getGames } from "./games.ts";
 export { addGameWord, getGameWords } from "./game_words.ts";
-export { getUserGames, userCanPlay } from "./queries.ts";
+export { userCanPlay } from "./queries.ts";
 
 export function openDatabase(name = "data.db") {
   try {
