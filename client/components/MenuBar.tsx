@@ -14,7 +14,7 @@ import {
 import { classNames } from "../util.ts";
 import Modal from "./Modal.tsx";
 import Spinner from "./Spinner.tsx";
-import { Game, GameData, User } from "../../types.ts";
+import { Game, User } from "../../types.ts";
 
 const { GrFormClose: CloseIcon } = GrIcons;
 const { GoPrimitiveDot: NotifyIcon } = GoIcons;
@@ -23,10 +23,114 @@ const { AiFillStar: NewGameIcon } = AiIcons;
 
 type SelectionState = "loading" | "selecting";
 
+interface MenuGameProps {
+  game: Game;
+  currentGame: number;
+  newGameIds: number[] | undefined;
+  user: User | undefined;
+  users: User[] | undefined;
+  onSelect: (gameId: number) => void;
+  onRemove: (gameId: number) => void;
+}
+
+const MenuGame: React.FC<MenuGameProps> = (props) => {
+  const { game, currentGame, newGameIds, onSelect, onRemove, user, users } =
+    props;
+  return (
+    <li
+      className={classNames({
+        "MenuBar-select-item": true,
+        "MenuBar-select-item-noselect": game.id === game?.id,
+      })}
+      key={game.id}
+      data-item-id={game.id}
+      onClick={() => {
+        if (game.id !== currentGame) {
+          onSelect(game.id);
+        }
+      }}
+    >
+      <dl className="MenuBar-select-info" title={`${game.id}`}>
+        <div>
+          <dt>Letters</dt>
+          <dd className="MenuBar-select-letters">
+            {game.key.slice(1, Math.ceil(game.key.length / 2))}
+            <span className="MenuBar-select-letters-center">
+              {game.key[0]}
+            </span>
+            {game.key.slice(Math.ceil(game.key.length / 2))}
+          </dd>
+        </div>
+        <div>
+          <dt>Created</dt>
+          <dd>{new Date(game.addedAt).toLocaleDateString()}</dd>
+        </div>
+        <div>
+          <dt>Words</dt>
+          <dd>
+            {game.wordsFound / game.totalWords}
+          </dd>
+        </div>
+        {game.userId !== user?.id &&
+          users?.find(({ id }) => id === game.userId) && (
+          <div>
+            <dt>Creator</dt>
+            <dd>{users[game.userId].name}</dd>
+          </div>
+        )}
+      </dl>
+      <div className="MenuBar-select-controls">
+        {game.id !== game?.id && (
+          <div
+            className="MenuBar-select-control MenuBar-pressable"
+            onClickCapture={(event) => {
+              // Don't let events propogate -- they'd end up being handled by
+              // the containing game element, which we don't want since we just
+              // deleted the game.
+              event.stopPropagation();
+              onRemove(game.id);
+            }}
+          >
+            <CloseIcon className="MenuBar-select-control-icon" />
+          </div>
+        )}
+        {game.userId !== user?.id && (
+          <div className="MenuBar-select-control">
+            <ShareIcon className="MenuBar-select-control-icon" />
+          </div>
+        )}
+        {newGameIds?.includes(game.id) && (
+          <div className="MenuBar-select-control">
+            <NewGameIcon className="MenuBar-select-control-icon MenuBar-notify" />
+          </div>
+        )}
+      </div>
+    </li>
+  );
+};
+
+interface MenuUserProps {
+  user: User;
+  onSelect: (userId: number) => void;
+}
+
+const MenuUser: React.FC<MenuUserProps> = (props) => {
+  const { onSelect, user } = props;
+  return (
+    <li
+      className="MenuBar-select-item"
+      key={user.id}
+      data-item-id={user.id}
+      onClick={() => onSelect(user.id)}
+    >
+      <div className="MenuBar-select-user">{user.name}</div>
+    </li>
+  );
+};
+
 export interface MenuBarProps {
   game?: Game;
   games?: Game[];
-  gameData?: { [id: number]: GameData };
   user: User | undefined;
   users?: User[];
   newGameIds?: number[];
@@ -46,7 +150,6 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
     activateGame,
     game,
     games,
-    gameData,
     loadGames,
     addGame,
     signIn,
@@ -75,48 +178,26 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
     }
   }, [user]);
 
-  const handleSelectGame: React.MouseEventHandler<HTMLLIElement> = useCallback(
-    (event) => {
-      const gameId = event.currentTarget.getAttribute("data-item-id");
-      console.log(`selecting ${gameId} from games`, games);
-      if (gameId && games) {
-        activateGame(Number(gameId));
-      } else {
-        addGame();
-      }
-      setSelectingGame(undefined);
-    },
-    [games],
-  );
+  const handleSelectGame = (gameId: number) => {
+    console.log(`selecting ${gameId} from games`, games);
+    if (gameId && games) {
+      activateGame(Number(gameId));
+    } else {
+      addGame();
+    }
+    setSelectingGame(undefined);
+  };
 
   const handleHideModal = useCallback(() => {
     setSelectingGame(undefined);
     setSelectingUser(undefined);
   }, []);
 
-  const handleRemoveGame: React.MouseEventHandler<HTMLDivElement> = useCallback(
-    (event) => {
-      // Don't let events propogate -- they'd end up being handled by the
-      // containing game element, which we don't want since we just deleted the
-      // game.
-      event.stopPropagation();
-
-      // Walk up the DOM from the button that fired the event, looking for a
-      // node with a game ID attribute
-      let node: HTMLElement | null = event.currentTarget as HTMLElement;
-      while (node && !node.getAttribute("data-item-id")) {
-        node = node.parentElement;
-      }
-
-      const gameId = node?.getAttribute("data-item-id");
-      if (gameId) {
-        if (confirm("Are you sure you want to delete this game?")) {
-          removeGame(Number(gameId));
-        }
-      }
-    },
-    [],
-  );
+  const handleRemoveGame = (gameId: number) => {
+    if (confirm("Are you sure you want to delete this game?")) {
+      removeGame(Number(gameId));
+    }
+  };
 
   const handleShareGame = useCallback(async () => {
     setSelectingUser("loading");
@@ -130,17 +211,13 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
     setSelectingGame("selecting");
   }, []);
 
-  const handleUserSelect: React.MouseEventHandler<HTMLLIElement> = useCallback(
-    (event) => {
-      const otherUserId = event.currentTarget.getAttribute("data-item-id");
-      console.log("Sharing with", otherUserId);
-      if (user?.id && otherUserId) {
-        shareActiveGame(Number(otherUserId));
-      }
-      setSelectingUser(undefined);
-    },
-    [user?.id],
-  );
+  const handleUserSelect = (userId: number) => {
+    console.log("Sharing with", userId);
+    if (user?.id && userId) {
+      shareActiveGame(userId);
+    }
+    setSelectingUser(undefined);
+  };
 
   useEffect(() => {
     if (!selectingGame) {
@@ -161,97 +238,6 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
       globalThis.removeEventListener("click", listener);
     };
   }, [showAccountMenu]);
-
-  const renderGame = useCallback(
-    (rg: Game) => (
-      <li
-        className={classNames({
-          "MenuBar-select-item": true,
-          "MenuBar-select-item-noselect": rg.id === game?.id,
-        })}
-        key={rg.id}
-        data-item-id={rg.id}
-        onClick={rg.id !== game?.id ? handleSelectGame : undefined}
-      >
-        <dl className="MenuBar-select-info" title={`${rg.id}`}>
-          <div>
-            <dt>Letters</dt>
-            <dd className="MenuBar-select-letters">
-              {rg.key.slice(1, Math.ceil(rg.key.length / 2))}
-              <span className="MenuBar-select-letters-center">
-                {rg.key[0]}
-              </span>
-              {rg.key.slice(Math.ceil(rg.key.length / 2))}
-            </dd>
-          </div>
-          <div>
-            <dt>Created</dt>
-            <dd>{new Date(rg.addedAt).toLocaleDateString()}</dd>
-          </div>
-          <div>
-            <dt>Words</dt>
-            <dd>
-              {gameData?.[rg.id]
-                ? gameData[rg.id].wordsFound / gameData[rg.id].totalWords
-                : undefined}
-            </dd>
-          </div>
-          {rg.userId !== user?.id && users?.find(({ id }) =>
-            id === rg.userId
-          ) && (
-            <div>
-              <dt>Creator</dt>
-              <dd>{users[rg.userId].name}</dd>
-            </div>
-          )}
-        </dl>
-        <div className="MenuBar-select-controls">
-          {rg.id !== game?.id && (
-            <div
-              className="MenuBar-select-control MenuBar-pressable"
-              onClickCapture={handleRemoveGame}
-            >
-              <CloseIcon className="MenuBar-select-control-icon" />
-            </div>
-          )}
-          {rg.userId !== user?.id && (
-            <div className="MenuBar-select-control">
-              <ShareIcon className="MenuBar-select-control-icon" />
-            </div>
-          )}
-          {newGameIds?.includes(rg.id) && (
-            <div className="MenuBar-select-control">
-              <NewGameIcon className="MenuBar-select-control-icon MenuBar-notify" />
-            </div>
-          )}
-        </div>
-      </li>
-    ),
-    [
-      game?.id,
-      games,
-      handleSelectGame,
-      handleRemoveGame,
-      newGameIds,
-      users,
-    ],
-  );
-
-  const renderUser = useCallback(
-    (user: User) => {
-      return (
-        <li
-          className="MenuBar-select-item"
-          key={user.id}
-          data-item-id={user.id}
-          onClick={handleUserSelect}
-        >
-          <div className="MenuBar-select-user">{user.name}</div>
-        </li>
-      );
-    },
-    [handleUserSelect],
-  );
 
   return (
     <div className="MenuBar">
@@ -297,7 +283,15 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                 game?.id !== undefined)
               ? (
                 <ul className="MenuBar-select-list">
-                  {renderGame(game)}
+                  <MenuGame
+                    game={game}
+                    currentGame={game.id}
+                    newGameIds={newGameIds}
+                    user={user}
+                    users={users}
+                    onSelect={handleSelectGame}
+                    onRemove={handleRemoveGame}
+                  />
                   {games
                     .filter(
                       ({ id }) => id !== game.id && newGameIds?.includes(id),
@@ -305,7 +299,17 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                     .sort((a, b) => {
                       return b.addedAt - a.addedAt;
                     })
-                    .map(renderGame)}
+                    .map((g) => (
+                      <MenuGame
+                        game={g}
+                        currentGame={game.id}
+                        newGameIds={newGameIds}
+                        user={user}
+                        users={users}
+                        onSelect={handleSelectGame}
+                        onRemove={handleRemoveGame}
+                      />
+                    ))}
                   {games
                     .filter(
                       ({ id }) => id !== game.id && !newGameIds?.includes(id),
@@ -313,7 +317,17 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                     .sort((a, b) => {
                       return b.addedAt - a.addedAt;
                     })
-                    .map(renderGame)}
+                    .map((g) => (
+                      <MenuGame
+                        game={g}
+                        currentGame={game.id}
+                        newGameIds={newGameIds}
+                        user={user}
+                        users={users}
+                        onSelect={handleSelectGame}
+                        onRemove={handleRemoveGame}
+                      />
+                    ))}
                 </ul>
               )
               : <Spinner />}
@@ -327,7 +341,9 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                 <ul className="MenuBar-select-list MenuBar-select-users">
                   {users
                     .filter(({ id }) => id !== user.id)
-                    .map(renderUser)}
+                    .map((u) => (
+                      <MenuUser user={u} onSelect={handleUserSelect} />
+                    ))}
                 </ul>
               )
               : <Spinner />}
