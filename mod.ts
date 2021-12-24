@@ -11,7 +11,7 @@ import {
   openDatabase,
   updateUserPassword,
 } from "./server/database/mod.ts";
-import { promptSecret } from "./server/util.ts";
+import { promptSecret } from "./util.ts";
 
 async function configureLogger(args: Arguments) {
   await log.setup({

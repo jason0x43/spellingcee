@@ -8,3 +8,5 @@ type Yargs = ReturnType<typeof yargs>;
 export type { Yargs };
 
 export { log } from "./server/deps.ts";
+
+export * as color from "https://deno.land/std@0.118.0/fmt/colors.ts";

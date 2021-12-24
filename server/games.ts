@@ -1,4 +1,4 @@
-import { randomBelow } from "../shared/deps.ts";
+import { random } from "../shared/util.ts";
 import { isPangram, permute } from "../shared/util.ts";
 import { findValidWords, wordList } from "./words.ts";
 import { Game } from "../types.ts";
@@ -56,7 +56,7 @@ function getLetters(word: string | string[]): string[] {
  */
 export function getNewGameKey(): string {
   const maxIndex = wordList.length;
-  const start = randomBelow(maxIndex);
+  const start = random(maxIndex);
   const pangram = findPangram(start);
   const uniqueLetters = getLetters(pangram);
   const randomizedLetters = permute(uniqueLetters).join("");

@@ -1,4 +1,9 @@
-import { randomBelow } from "./deps.ts";
+/**
+ * Return an integer in [0, max)
+ */
+export function random(max: number) {
+  return Math.floor(Math.random() * max);
+}
 
 /**
  * Indicate whether a word is a pangram (a word containing 7 unique letters).
@@ -14,7 +19,7 @@ export function permute(letters: string[]): string[] {
   const newLetters: string[] = [];
   const oldLetters = letters.slice();
   while (oldLetters.length > 0) {
-    const index = randomBelow(oldLetters.length);
+    const index = random(oldLetters.length);
     newLetters.push(oldLetters.splice(index, 1)[0]);
   }
   return newLetters;
