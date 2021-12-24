@@ -15,12 +15,13 @@ import Progress from "./components/Progress.tsx";
 import Words from "./components/Words.tsx";
 import { useVerticalMediaQuery } from "./hooks/mod.ts";
 import { addWord, login } from "./api.ts";
-import { Game, GameWord, User } from "../types.ts";
+import { Game, GameWord, OtherUser, User } from "../types.ts";
 import { Words as WordsType } from "./types.ts";
 import { permute } from "../shared/util.ts";
 
 interface LoggedInProps {
   user: User;
+  otherUsers: OtherUser[];
   words: GameWord[];
   games: Game[];
   game: Game;
@@ -28,6 +29,7 @@ interface LoggedInProps {
 
 interface AppState {
   user: User;
+  otherUsers: OtherUser[];
   inputDisabled: boolean;
   error: Error | undefined;
   warning: string | undefined;
@@ -49,6 +51,7 @@ interface AppState {
 function initState(props: LoggedInProps): AppState {
   return {
     user: props.user,
+    otherUsers: props.otherUsers,
     inputDisabled: false,
     error: undefined,
     warning: undefined,
@@ -221,6 +224,7 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
     letters,
     toastMessage,
     user,
+    otherUsers,
     warning,
     wordListExpanded,
     words,
@@ -255,6 +259,8 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
       <>
         <MenuBar
           user={user}
+          game={game}
+          otherUsers={otherUsers}
           clearNewGameIds={() => undefined}
           activateGame={() => undefined}
           addGame={() => undefined}
@@ -403,16 +409,17 @@ const Login: React.FC<LoginProps> = (props) => {
 export type AppProps = Partial<Omit<LoggedInProps, "game">>;
 
 const App: React.FC<AppProps> = (props) => {
-  const { user, games, words } = props;
+  const { user, games, words, otherUsers } = props;
   const game = games?.find(({ id }) => id === user?.meta.currentGame);
 
   return (
     <div className="App">
-      {user && words && games && game
+      {user && otherUsers && words && games && game
         ? (
           <LoggedIn
             {...props}
             user={user}
+            otherUsers={otherUsers}
             game={game}
             games={games}
             words={words}

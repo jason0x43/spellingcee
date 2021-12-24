@@ -20,6 +20,11 @@ export interface User {
   meta: UserMeta;
 }
 
+export interface OtherUser {
+  id: number;
+  name: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

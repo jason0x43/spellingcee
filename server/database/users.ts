@@ -53,6 +53,12 @@ export function getUser(userId: number): User {
   return toUser(user);
 }
 
+export function getUsers(): User[] {
+  return userQuery(
+    `SELECT ${userColumns} FROM users WHERE deleted = FALSE`,
+  ).map(toUser);
+}
+
 export function getUserByEmail(email: string): User {
   const user = userQuery(
     `SELECT ${userColumns}

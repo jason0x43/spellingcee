@@ -24,6 +24,7 @@ import {
 import { getDefinition } from "./dictionary.ts";
 import App, { AppProps } from "../client/App.tsx";
 import { createGame, getGame, getGames } from "./games.ts";
+import { getOtherUsers } from "./users.ts";
 import { validateWord } from "./words.ts";
 
 const __filename = new URL(import.meta.url).pathname;
@@ -252,9 +253,10 @@ export function createRouter(config: { client: string; styles: string }) {
     }
 
     const games = getGames(state.userId);
+    const otherUsers = getOtherUsers(state.userId);
 
     response.type = "text/html";
-    response.body = render({ user, games, words });
+    response.body = render({ user, otherUsers, games, words });
   });
 
   return router;
