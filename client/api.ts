@@ -1,4 +1,4 @@
-import { GameWord, User } from "../types.ts";
+import { Game, GameWord, User } from "../types.ts";
 
 export async function setActiveGame(
   data: { userId: number; gameId: number },
@@ -68,5 +68,14 @@ export async function getDefinition(word: string): Promise<string[]> {
     throw new Error(body.error);
   }
 
+  return body;
+}
+
+export async function createGame(): Promise<Game> {
+  const response = await fetch("/create-game");
+  const body = await response.json();
+  if (response.status >= 400) {
+    throw new Error(body.error);
+  }
   return body;
 }

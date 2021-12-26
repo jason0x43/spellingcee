@@ -235,6 +235,12 @@ export function createRouter(config: { client: string; styles: string }) {
     response.body = user;
   });
 
+  router.get("/create-game", requireUser, ({ response, state }) => {
+    const game = createGame({ userId: state.userId });
+    response.type = "application/json";
+    response.body = game;
+  });
+
   router.get("/", ({ response, state }) => {
     if (!state.userId) {
       response.redirect("/login");

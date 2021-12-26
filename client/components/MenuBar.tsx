@@ -6,8 +6,6 @@ import {
   GrIcons,
   IoIcons,
   React,
-  useCallback,
-  useEffect,
   useRef,
   useState,
 } from "../deps.ts";
@@ -172,7 +170,6 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
   } = props;
   const [selectingGame, setSelectingGame] = useState<SelectionState>();
   const [selectingUser, setSelectingUser] = useState<SelectionState>();
-  const loggedIn = Boolean(user);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -220,7 +217,7 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
           <div className="MenuBar-item" onClick={addGame}>
             New
           </div>
-          {loggedIn && (
+          {otherUsers.length > 0 && (
             <div className="MenuBar-item" onClick={handleShareGame}>
               Share
             </div>
@@ -244,6 +241,7 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                 <ul className="MenuBar-select-list">
                   <MenuGame
                     game={game}
+                    key={game.id}
                     newGameIds={newGameIds}
                     user={user}
                     otherUsers={otherUsers}
@@ -260,6 +258,7 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                     .map((g) => (
                       <MenuGame
                         game={g}
+                        key={g.id}
                         newGameIds={newGameIds}
                         user={user}
                         otherUsers={otherUsers}
@@ -277,6 +276,7 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                     .map((g) => (
                       <MenuGame
                         game={g}
+                        key={g.id}
                         newGameIds={newGameIds}
                         user={user}
                         otherUsers={otherUsers}

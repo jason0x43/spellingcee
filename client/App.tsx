@@ -14,7 +14,7 @@ import Modal from "./components/Modal.tsx";
 import Progress from "./components/Progress.tsx";
 import Words from "./components/Words.tsx";
 import { useVerticalMediaQuery } from "./hooks/mod.ts";
-import { addWord, login } from "./api.ts";
+import { addWord, createGame, login } from "./api.ts";
 import { Game, GameWord, OtherUser, User } from "../types.ts";
 import { Words as WordsType } from "./types.ts";
 import { permute } from "../shared/util.ts";
@@ -84,6 +84,8 @@ type AppStateAction =
   | { type: "disableInput" }
   | { type: "addInput"; payload: string }
   | { type: "addWord"; payload: GameWord }
+  | { type: "addGame"; payload: Game }
+  | { type: "activateGame"; payload: number }
   | { type: "deleteInput" };
 
 function updateState(state: AppState, action: AppStateAction): AppState {
@@ -129,6 +131,32 @@ function updateState(state: AppState, action: AppStateAction): AppState {
           [action.payload.word]: action.payload,
         },
       };
+    case "addGame":
+      return {
+        ...state,
+        games: [
+          ...state.games,
+          action.payload,
+        ],
+      };
+    case "activateGame": {
+      const game = state.games.find(({ id }) => id === action.payload);
+      if (game) {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            meta: {
+              ...state.user.meta,
+              currentGame: action.payload,
+            },
+          },
+          game,
+          letters: [...game.key],
+        };
+      }
+      return state;
+    }
     default:
       return state;
   }
@@ -262,13 +290,18 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
           game={game}
           otherUsers={otherUsers}
           clearNewGameIds={() => undefined}
-          activateGame={() => undefined}
-          addGame={() => undefined}
+          activateGame={(gameId: number) => {
+            dispatch({ type: "activateGame", payload: gameId });
+          }}
+          addGame={async () => {
+            const result = await createGame();
+            dispatch({ type: "addGame", payload: result });
+            dispatch({ type: "activateGame", payload: result.id });
+          }}
           games={games}
           removeGame={() => undefined}
           loadUsers={() => Promise.resolve()}
           loadGames={() => Promise.resolve()}
-          signIn={() => Promise.resolve()}
           signOut={() => Promise.resolve()}
           shareActiveGame={() => Promise.resolve()}
         />
