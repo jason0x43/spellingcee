@@ -18,7 +18,7 @@ export function openDatabase(name = "data.db") {
   } catch {
     createDb(name);
     log.debug(`Foreign key support: ${getPragma("foreign_keys")}`);
-    migrateDatabase(1);
+    migrateDatabase(2);
     log.debug(`Database using v${getSchemaVersion()} schema`);
   }
 }
@@ -125,6 +125,38 @@ const migrations: Migration[] = [
         db.query("DROP TABLE user_games");
         db.query("DROP TABLE game_words");
       });
+    },
+  },
+
+  {
+    // add added_at to games
+    up: (db) => {
+      setPragma("foreign_keys", "OFF");
+
+      inTransaction(() => {
+        db.query(
+          `CREATE TABLE new_games (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            key TEXT NOT NULL,
+            user_id INTEGER REFERENCES users(id),
+            added_at INTEGER NOT NULL DEFAULT (strftime('%s.%f', 'now') * 1000),
+            UNIQUE (user_id, key)
+          )`,
+        );
+        db.query(
+          `INSERT INTO new_games (id, key, user_id)
+          SELECT id, key, user_id
+          FROM games`,
+        );
+        db.query("DROP TABLE games");
+        db.query("ALTER TABLE new_games RENAME TO games");
+      });
+
+      setPragma("foreign_keys", "ON");
+    },
+
+    down: (db) => {
+      db.query("ALTER TABLE games DROP COLUMN added_at");
     },
   },
 ];

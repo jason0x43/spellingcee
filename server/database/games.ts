@@ -3,7 +3,7 @@ import { createRowHelpers } from "./util.ts";
 
 export const { columns: gameColumns, query: gameQuery } = createRowHelpers<
   Game
->()("id", "userId", "key");
+>()("id", "userId", "key", "addedAt");
 
 export function addGame(data: { userId: number; key: string }): Game {
   return gameQuery(

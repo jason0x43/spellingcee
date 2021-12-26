@@ -30,22 +30,22 @@ interface LoggedInProps {
 interface AppState {
   user: User;
   otherUsers: OtherUser[];
+  words: WordsType;
+  games: Game[];
+  game: Game;
   inputDisabled: boolean;
+  wordListExpanded: boolean;
+  inputValue: string[];
+  validWords: string[];
   error: Error | undefined;
   warning: string | undefined;
   letters: string[];
   letterMessage:
     | { type: "normal" | "good" | "bad"; message: string }
     | undefined;
-  wordListExpanded: boolean;
   toastMessage:
     | { type: "normal" | "good" | "bad"; message: string }
     | undefined;
-  inputValue: string[];
-  words: WordsType;
-  validWords: string[];
-  games: Game[];
-  game: Game;
 }
 
 function initState(props: LoggedInProps): AppState {
