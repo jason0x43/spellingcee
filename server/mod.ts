@@ -33,6 +33,8 @@ export async function serve() {
     compilerOptions: {
       target: "esnext",
       lib: ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"],
+      sourceMap: Deno.env.get("SC_MODE") === "dev",
+      inlineSourceMap: Deno.env.get("SC_MODE") === "dev",
     },
   };
 
