@@ -13,7 +13,7 @@ export function userCanPlay(
 
   return count(
     `SELECT COUNT(*)
-    FROM shared_games
+    FROM user_games
     WHERE game_id = (:gameId) AND user_id = (:userId)`,
     { userId, gameId },
   ) > 0;
@@ -26,7 +26,7 @@ export function getUserGames(userId: number): Game[] {
   return gameQuery(
     `SELECT ${columnNames}
     FROM games as g
-    LEFT JOIN shared_games as sg
+    LEFT JOIN user_games as sg
       ON g.id = sg.game_id
     WHERE sg.user_id = (:userId) OR g.user_id = (:userId)`,
     { userId },

@@ -5,10 +5,10 @@ export interface Game {
   addedAt: number;
 }
 
-export interface SharedGame {
+export interface UserGame {
   userId: number;
   gameId: number;
-  isOwner: boolean;
+  isCurrent: boolean;
 }
 
 export interface GameWord {

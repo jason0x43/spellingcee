@@ -2,14 +2,11 @@ import { random } from "../shared/util.ts";
 import { isPangram, permute } from "../shared/util.ts";
 import { findValidWords, wordList } from "./words.ts";
 import { Game } from "../types.ts";
-import {
-  addGame,
-  getGame as getDbGame,
-  getGames as getDbGames,
-} from "./database/games.ts";
+import { addGame, getGame as getDbGame } from "./database/games.ts";
+import { getUserGames } from "./database/queries.ts";
 import { Game as DbGame } from "./database/types.ts";
 import { getGameWords } from "./database/game_words.ts";
-import { getUser, updateUserMeta } from "./database/users.ts";
+import { getCurrentGameId, setCurrentGameId } from "./database/user_games.ts";
 
 /**
  * Compute the score of a set of words
@@ -90,11 +87,7 @@ export function createGame({ userId, key }: {
 }): Game {
   key ??= getNewGameKey();
   const game = addGame({ userId, key });
-  const user = getUser(userId);
-  updateUserMeta(userId, {
-    ...user.meta,
-    currentGame: game.id,
-  });
+  setCurrentGameId({ userId, gameId: game.id });
   return addGameData(game);
 }
 
@@ -110,6 +103,13 @@ export function getGame(gameId: number): Game {
  * Return a user's games with computed data
  */
 export function getGames(userId: number): Game[] {
-  const games = getDbGames(userId);
-  return games.map(addGameData);
+  return getUserGames(userId).map(addGameData);
+}
+
+/**
+ * Return a user's current game
+ */
+export function getCurrentGame(userId: number): Game | undefined {
+  const gameId = getCurrentGameId(userId);
+  return gameId !== undefined ? addGameData(getGame(gameId)) : undefined;
 }

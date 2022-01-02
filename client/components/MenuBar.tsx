@@ -19,11 +19,10 @@ const { GoPrimitiveDot: NotifyIcon } = GoIcons;
 const { IoPeopleCircle: ShareIcon } = IoIcons;
 const { AiFillStar: NewGameIcon } = AiIcons;
 
-type SelectionState = "loading" | "selecting";
-
 interface MenuGameProps {
   user: User;
   game: Game;
+  currentGameId: number;
   otherUsers: OtherUser[];
   newGameIds: number[] | undefined;
   onSelect: (gameId: number) => void;
@@ -37,10 +36,9 @@ const MenuGame: React.FC<MenuGameProps> = (props) => {
     onSelect,
     removeGame,
     user,
+    currentGameId,
     otherUsers,
   } = props;
-
-  const { currentGame } = user.meta;
 
   return (
     <li
@@ -51,7 +49,7 @@ const MenuGame: React.FC<MenuGameProps> = (props) => {
       key={game.id}
       data-item-id={game.id}
       onClick={() => {
-        if (game.id !== currentGame) {
+        if (game.id !== currentGameId) {
           onSelect(game.id);
         }
       }}
@@ -157,7 +155,6 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
     activateGame,
     game,
     games,
-    loadGames,
     addGame,
     signOut,
     removeGame,
@@ -165,37 +162,17 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
     clearNewGameIds,
     user,
     otherUsers,
-    loadUsers,
     shareActiveGame,
   } = props;
-  const [selectingGame, setSelectingGame] = useState<SelectionState>();
-  const [selectingUser, setSelectingUser] = useState<SelectionState>();
+  const [selectingGame, setSelectingGame] = useState(false);
+  const [selectingUser, setSelectingUser] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleSelectGame = (gameId: number) => {
-    console.log(`selecting ${gameId} from games`, games);
-    if (gameId && games) {
-      activateGame(Number(gameId));
-    } else {
-      addGame();
-    }
-    setSelectingGame(undefined);
+    activateGame(gameId);
+    setSelectingGame(false);
     clearNewGameIds();
-  };
-
-  const handleShareGame = async () => {
-    setSelectingUser("loading");
-    await loadUsers();
-    setSelectingUser("selecting");
-  };
-
-  const handleShowGames = async () => {
-    if (!games || !otherUsers) {
-      setSelectingGame("loading");
-      await Promise.all([loadUsers, loadGames]);
-    }
-    setSelectingGame("selecting");
   };
 
   const handleUserSelect = (userId: number) => {
@@ -203,14 +180,17 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
     if (user?.id && userId) {
       shareActiveGame(userId);
     }
-    setSelectingUser(undefined);
+    setSelectingUser(false);
   };
 
   return (
     <div className="MenuBar">
       <div className="MenuBar-bar">
         <div className="MenuBar-left">
-          <div className="MenuBar-item" onClick={handleShowGames}>
+          <div
+            className="MenuBar-item"
+            onClick={() => setSelectingGame(true)}
+          >
             Games
             {newGameIds != null && <NotifyIcon className="MenuBar-notify" />}
           </div>
@@ -218,7 +198,10 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
             New
           </div>
           {otherUsers.length > 0 && (
-            <div className="MenuBar-item" onClick={handleShareGame}>
+            <div
+              className="MenuBar-item"
+              onClick={() => setSelectingUser(true)}
+            >
               Share
             </div>
           )}
@@ -234,14 +217,14 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
         </div>
 
         {selectingGame && (
-          <Modal onHide={() => setSelectingGame(undefined)}>
-            {(selectingGame === "selecting" && games &&
-                game?.id !== undefined)
+          <Modal onHide={() => setSelectingGame(false)}>
+            {selectingGame
               ? (
                 <ul className="MenuBar-select-list">
                   <MenuGame
-                    game={game}
                     key={game.id}
+                    game={game}
+                    currentGameId={game.id}
                     newGameIds={newGameIds}
                     user={user}
                     otherUsers={otherUsers}
@@ -257,8 +240,9 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                     })
                     .map((g) => (
                       <MenuGame
-                        game={g}
                         key={g.id}
+                        game={g}
+                        currentGameId={game.id}
                         newGameIds={newGameIds}
                         user={user}
                         otherUsers={otherUsers}
@@ -275,8 +259,9 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                     })
                     .map((g) => (
                       <MenuGame
-                        game={g}
                         key={g.id}
+                        game={g}
+                        currentGameId={game.id}
                         newGameIds={newGameIds}
                         user={user}
                         otherUsers={otherUsers}
@@ -291,8 +276,8 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
         )}
 
         {selectingUser && user && (
-          <Modal onHide={() => setSelectingUser(undefined)}>
-            {selectingUser === "selecting" && otherUsers
+          <Modal onHide={() => setSelectingUser(false)}>
+            {selectingUser
               ? (
                 <ul className="MenuBar-select-list MenuBar-select-users">
                   {otherUsers

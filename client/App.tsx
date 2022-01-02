@@ -144,13 +144,6 @@ function updateState(state: AppState, action: AppStateAction): AppState {
       if (game) {
         return {
           ...state,
-          user: {
-            ...state.user,
-            meta: {
-              ...state.user.meta,
-              currentGame: action.payload,
-            },
-          },
           game,
           letters: [...game.key],
         };
@@ -439,11 +432,10 @@ const Login: React.FC<LoginProps> = (props) => {
   );
 };
 
-export type AppProps = Partial<Omit<LoggedInProps, "game">>;
+export type AppProps = Partial<LoggedInProps>;
 
 const App: React.FC<AppProps> = (props) => {
-  const { user, games, words, otherUsers } = props;
-  const game = games?.find(({ id }) => id === user?.meta.currentGame);
+  const { user, game, games, words, otherUsers } = props;
 
   return (
     <div className="App">

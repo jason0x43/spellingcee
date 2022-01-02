@@ -17,8 +17,7 @@ export function openDatabase(name = "data.db") {
     getDb();
   } catch {
     createDb(name);
-    log.debug(`Foreign key support: ${getPragma("foreign_keys")}`);
-    migrateDatabase(2);
+    migrateDatabase(1);
     log.debug(`Database using v${getSchemaVersion()} schema`);
   }
 }
@@ -80,8 +79,7 @@ const migrations: Migration[] = [
             email TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             deleted BOOLEAN NOT NULL DEFAULT FALSE,
-            name TEXT,
-            meta JSON
+            name TEXT
           )`,
         );
 
@@ -90,16 +88,19 @@ const migrations: Migration[] = [
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             key TEXT NOT NULL,
             user_id INTEGER REFERENCES users(id),
+            added_at INTEGER NOT NULL DEFAULT (strftime('%s.%f', 'now') * 1000),
             UNIQUE (user_id, key)
           )`,
         );
 
         db.query(
-          `CREATE TABLE shared_games (
+          `CREATE TABLE user_games (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER REFERENCES users(id),
             game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
-            UNIQUE (user_id, game_id)
+            is_current BOOLEAN,
+            UNIQUE (user_id, game_id),
+            UNIQUE (user_id, is_current)
           )`,
         );
 
@@ -109,7 +110,7 @@ const migrations: Migration[] = [
             user_id INTEGER REFERENCES users(id),
             game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
             word TEXT NOT NULL,
-            added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIME,
+            added_at INTEGER NOT NULL DEFAULT (strftime('%s.%f', 'now') * 1000),
             UNIQUE (game_id, word)
           )`,
         );
@@ -125,38 +126,6 @@ const migrations: Migration[] = [
         db.query("DROP TABLE user_games");
         db.query("DROP TABLE game_words");
       });
-    },
-  },
-
-  {
-    // add added_at to games
-    up: (db) => {
-      setPragma("foreign_keys", "OFF");
-
-      inTransaction(() => {
-        db.query(
-          `CREATE TABLE new_games (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            key TEXT NOT NULL,
-            user_id INTEGER REFERENCES users(id),
-            added_at INTEGER NOT NULL DEFAULT (strftime('%s.%f', 'now') * 1000),
-            UNIQUE (user_id, key)
-          )`,
-        );
-        db.query(
-          `INSERT INTO new_games (id, key, user_id)
-          SELECT id, key, user_id
-          FROM games`,
-        );
-        db.query("DROP TABLE games");
-        db.query("ALTER TABLE new_games RENAME TO games");
-      });
-
-      setPragma("foreign_keys", "ON");
-    },
-
-    down: (db) => {
-      db.query("ALTER TABLE games DROP COLUMN added_at");
     },
   },
 ];

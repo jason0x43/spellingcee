@@ -23,7 +23,7 @@ import {
 } from "../types.ts";
 import { getDefinition } from "./dictionary.ts";
 import App, { AppProps } from "../client/App.tsx";
-import { createGame, getGame, getGames } from "./games.ts";
+import { createGame, getCurrentGame, getGame, getGames } from "./games.ts";
 import { getOtherUsers } from "./users.ts";
 import { validateWord } from "./words.ts";
 
@@ -247,22 +247,22 @@ export function createRouter(config: { client: string; styles: string }) {
       return;
     }
 
-    let user = getUser(state.userId);
-    const gameId = user.meta?.currentGame;
-    let words: GameWord[] | undefined;
+    const user = getUser(state.userId);
+    let game = getCurrentGame(state.userId);
+    let words: GameWord[];
 
-    if (gameId !== undefined) {
-      words = getGameWords(gameId);
+    if (game !== undefined) {
+      words = getGameWords(game.id);
     } else {
-      createGame({ userId: state.userId });
-      user = getUser(state.userId);
+      game = createGame({ userId: state.userId });
+      words = [];
     }
 
     const games = getGames(state.userId);
     const otherUsers = getOtherUsers(state.userId);
 
     response.type = "text/html";
-    response.body = render({ user, otherUsers, games, words });
+    response.body = render({ user, otherUsers, game, games, words });
   });
 
   return router;
