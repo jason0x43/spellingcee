@@ -1,6 +1,6 @@
 import { words10, words20, words35, words40, words50 } from "./deps.ts";
 
-const longWords = (word: string) => word.length > 4;
+const longWords = (word: string) => word.length >= 4;
 const longWords10 = words10.filter(longWords);
 const longWords20 = words20.filter(longWords);
 const longWords35 = words35.filter(longWords);
