@@ -11,9 +11,9 @@ game with some additional features (eventually).
 To enable dictionary support (for word lookups), see
 [Dictionary lookups](#dictionary-lookups).
 
-## Game IDs
+## Game keys
 
-Games are identified by IDs. A game ID is a string of 7 lowercase alphabetic
+Games are identified by keys. A game key is a string of 7 lowercase alphabetic
 characters, where the first character is the “center” letter, and the other 6
 letters are in alphabetical order, e.g. `icerotu`.
 
@@ -45,51 +45,3 @@ but is not important.
 
 Once you have created the `.env.local` file, stop and restart the development
 server.
-
-## Database schema
-
-```js
-{
-	// User profiles, readable by everyone
-	"users": {
-		[userId]: {
-			"name": string,
-			"userId": string
-		}
-	},
-
-	"user_games": {
-		// User games, readable by the owning user. New games may be added by
-		// any user.
-		[userId]: {
-			[gameId]: [creating user ID]
-		}
-	},
-
-	"game_meta": {
-		// Readable by associated users. May only be created, not updated.
-		[gameId]: {
-			key: string;
-		}
-	},
-
-	"game_users": {
-		// Readable and writable by associated users. Records may only be
-		// created, not updated.
-		[gameId]: {
-			[userId]: 'creator' | 'other'
-		}
-	},
-
-	"game_words": {
-		// Readable and writable by associated users. Records may only be
-		// created, not updated.
-		[gameId]: {
-			[word]: {
-				addedAt: number;
-				addedBy: string;
-			}
-		}
-	}
-}
-```
