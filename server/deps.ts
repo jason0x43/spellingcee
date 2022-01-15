@@ -12,7 +12,7 @@ export {
   Router,
   send,
 } from "https://deno.land/x/oak@v10.0.0/mod.ts";
-export * as path from "https://deno.land/std@0.118.0/path/mod.ts";
+export * as path from "https://deno.land/std@0.121.0/path/mod.ts";
 
 // import to make SSR React (at least v17) happy
 import "http://esm.sh/raf@3.4.1/polyfill";
@@ -23,8 +23,8 @@ export { React };
 import ReactDOMServer from "https://esm.sh/react-dom@17/server";
 export { ReactDOMServer };
 
-export * as log from "https://deno.land/std@0.118.0/log/mod.ts";
-export { expandGlob } from "https://deno.land/std@0.118.0/fs/mod.ts";
+export * as log from "https://deno.land/std@0.121.0/log/mod.ts";
+export { expandGlob } from "https://deno.land/std@0.121.0/fs/mod.ts";
 export * as bcrypt from "https://deno.land/x/bcrypt@v0.2.4/mod.ts";
 
 export const words10 =
