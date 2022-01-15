@@ -1,7 +1,6 @@
 import { classNames } from "../util.ts";
 import { React, useCallback, useEffect, useRef, useState } from "../deps.ts";
-import { getDefinition } from "../api.ts";
-import { Game, User } from "../../types.ts";
+import { User } from "../../types.ts";
 import { Words } from "../types.ts";
 import { useVerticalMediaQuery } from "../hooks/mod.ts";
 import { isPangram } from "../../shared/util.ts";
@@ -20,11 +19,18 @@ export interface WordsProps {
   wordListExpanded?: boolean;
   setWordListExpanded: (expanded: boolean) => void;
   user: User;
+  getDefinition: (word: string) => Promise<string[] | undefined>;
 }
 
 const Words: React.FC<WordsProps> = (props) => {
-  const { wordListExpanded, user, words, totalWords, setWordListExpanded } =
-    props;
+  const {
+    getDefinition,
+    wordListExpanded,
+    user,
+    words,
+    totalWords,
+    setWordListExpanded,
+  } = props;
   const [alphabetical, setAlphabetical] = useState(false);
   const [definition, setDefinition] = useState<DefinedWord>();
   const isVertical = useVerticalMediaQuery();
@@ -49,13 +55,15 @@ const Words: React.FC<WordsProps> = (props) => {
     setDefinition({ word, definition: undefined });
     const start = Date.now();
     const definition = await getDefinition(word);
-    modalTimer.current = setTimeout(
-      () => {
-        setDefinition({ word, definition });
-      },
-      Math.max(1000 - (Date.now() - start)),
-      0,
-    );
+    if (definition) {
+      modalTimer.current = setTimeout(
+        () => {
+          setDefinition({ word, definition });
+        },
+        Math.max(1000 - (Date.now() - start)),
+        0,
+      );
+    }
   };
 
   const handleHideModal = useCallback(() => {

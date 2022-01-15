@@ -3,7 +3,7 @@
 /// <reference lib="deno.unstable" />
 
 import { classNames } from "./util.ts";
-import { React, useEffect, useReducer, useState } from "./deps.ts";
+import { React, useCallback, useEffect, useReducer, useState } from "./deps.ts";
 import AppError from "./AppError.ts";
 import Button from "./components/Button.tsx";
 import Input from "./components/Input.tsx";
@@ -14,7 +14,13 @@ import Modal from "./components/Modal.tsx";
 import Progress from "./components/Progress.tsx";
 import Words from "./components/Words.tsx";
 import { useVerticalMediaQuery } from "./hooks/mod.ts";
-import { addWord, createGame, login } from "./api.ts";
+import {
+  addWord,
+  createGame,
+  getDefinition,
+  isResponseError,
+  login,
+} from "./api.ts";
 import { Game, GameWord, OtherUser, User } from "../types.ts";
 import { Words as WordsType } from "./types.ts";
 import { permute } from "../shared/util.ts";
@@ -25,6 +31,7 @@ interface LoggedInProps {
   words: GameWord[];
   games: Game[];
   game: Game;
+  logout: () => void;
 }
 
 interface AppState {
@@ -162,6 +169,7 @@ interface AppWordsProps {
   maxScore: number;
   totalWords: number;
   dispatch: React.Dispatch<AppStateAction>;
+  getDefinition: (word: string) => Promise<string[] | undefined>;
 }
 
 const AppWords: React.FC<AppWordsProps> = (props) => {
@@ -173,6 +181,7 @@ const AppWords: React.FC<AppWordsProps> = (props) => {
         words={words}
         totalWords={totalWords}
         user={user}
+        getDefinition={getDefinition}
         setWordListExpanded={(expanded) =>
           dispatch({ type: "setWordListExpanded", payload: expanded })}
       />
@@ -233,6 +242,7 @@ function createKeyPressHandler(
 }
 
 const LoggedIn: React.FC<LoggedInProps> = (props) => {
+  const { logout } = props;
   const [state, dispatch] = useReducer(updateState, props, initState);
   const isVertical = useVerticalMediaQuery();
   const {
@@ -259,6 +269,18 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
       globalThis.removeEventListener("keydown", handleKeyPress);
     };
   }, [inputDisabled, inputValue, game]);
+
+  const handleGetDefinition = useCallback(async (word: string) => {
+    try {
+      return await getDefinition(word);
+    } catch (error) {
+      if (isResponseError(error) && error.status === 403) {
+        logout();
+      } else {
+        console.warn(`Error getting definition: ${error.message}`);
+      }
+    }
+  }, []);
 
   // If there was an error, display an error message rather than the normal UI
   if (error) {
@@ -311,6 +333,7 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
               totalWords={game.totalWords}
               words={words}
               user={user}
+              getDefinition={handleGetDefinition}
               dispatch={dispatch}
             />
           )}
@@ -366,6 +389,7 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
               words={words}
               user={user}
               dispatch={dispatch}
+              getDefinition={getDefinition}
             />
           )}
 
@@ -448,6 +472,9 @@ const App: React.FC<AppProps> = (props) => {
             game={game}
             games={games}
             words={words}
+            logout={() => {
+              location.href = "/login";
+            }}
           />
         )
         : (

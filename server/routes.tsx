@@ -128,13 +128,10 @@ export function createRouter(config: { client: string; styles: string }) {
     response.body = config.styles;
   });
 
-  router.get("/login", ({ response, state }) => {
-    if (state.userId) {
-      response.redirect("/");
-    } else {
-      response.type = "text/html";
-      response.body = render({});
-    }
+  router.get("/login", ({ cookies, response, state }) => {
+    cookies.delete("userId");
+    response.type = "text/html";
+    response.body = render({});
   });
 
   router.get("/games", requireUser, ({ response, state }) => {
