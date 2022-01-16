@@ -18,8 +18,10 @@ import {
   addWord,
   createGame,
   getDefinition,
+  getWords,
   isResponseError,
   login,
+  setActiveGame,
 } from "./api.ts";
 import { Game, GameWord, OtherUser, User } from "../types.ts";
 import { Words as WordsType } from "./types.ts";
@@ -92,7 +94,7 @@ type AppStateAction =
   | { type: "addInput"; payload: string }
   | { type: "addWord"; payload: GameWord }
   | { type: "addGame"; payload: Game }
-  | { type: "activateGame"; payload: number }
+  | { type: "activateGame"; payload: { game: Game; words: WordsType } }
   | { type: "deleteInput" };
 
 function updateState(state: AppState, action: AppStateAction): AppState {
@@ -147,12 +149,13 @@ function updateState(state: AppState, action: AppStateAction): AppState {
         ],
       };
     case "activateGame": {
-      const game = state.games.find(({ id }) => id === action.payload);
+      const { game, words } = action.payload;
       if (game) {
         return {
           ...state,
           game,
           letters: [...game.key],
+          words,
         };
       }
       return state;
@@ -193,10 +196,9 @@ async function submitWord(
   state: AppState,
   dispatch: React.Dispatch<AppStateAction>,
 ) {
-  const { game, inputValue, user } = state;
+  const { game, inputValue } = state;
   try {
     const newWord = await addWord({
-      userId: user.id,
       gameId: game.id,
       word: inputValue.join(""),
     });
@@ -239,6 +241,34 @@ function createKeyPressHandler(
       dispatch({ type: "addInput", payload: event.key });
     }
   };
+}
+
+async function activateGame(
+  state: AppState,
+  dispatch: React.Dispatch<AppStateAction>,
+  gameId?: number,
+) {
+  let game: Game | undefined;
+  let gameWords: WordsType | undefined;
+
+  if (gameId) {
+    game = state.games.find(({ id }) => id === gameId);
+    if (game) {
+      const words = await getWords(game.id);
+      gameWords = words.reduce((gw, word) => {
+        gw[word.word] = word;
+        return gw;
+      }, {} as WordsType);
+      await setActiveGame(gameId);
+    }
+  } else {
+    game = await createGame();
+    gameWords = {};
+  }
+
+  if (game && gameWords) {
+    dispatch({ type: "activateGame", payload: { game, words: gameWords } });
+  }
 }
 
 const LoggedIn: React.FC<LoggedInProps> = (props) => {
@@ -305,13 +335,11 @@ const LoggedIn: React.FC<LoggedInProps> = (props) => {
           game={game}
           otherUsers={otherUsers}
           clearNewGameIds={() => undefined}
-          activateGame={(gameId: number) => {
-            dispatch({ type: "activateGame", payload: gameId });
+          activateGame={async (gameId) => {
+            await activateGame(state, dispatch, gameId);
           }}
           addGame={async () => {
-            const result = await createGame();
-            dispatch({ type: "addGame", payload: result });
-            dispatch({ type: "activateGame", payload: result.id });
+            await activateGame(state, dispatch);
           }}
           games={games}
           removeGame={() => undefined}

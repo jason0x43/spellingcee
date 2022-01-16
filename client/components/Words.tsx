@@ -36,7 +36,6 @@ const Words: React.FC<WordsProps> = (props) => {
   const isVertical = useVerticalMediaQuery();
   const listRef = useRef<HTMLDivElement>(null);
   const userId = user.id;
-
   const modalTimer = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {

@@ -9,23 +9,23 @@ import {
 import {
   addGameWord,
   getGameWords,
-  getUser,
-  getUserByEmail,
+  getUserIdFromEmail,
   isUserPassword,
   userCanPlay,
 } from "./database/mod.ts";
 import {
   AddWordRequest,
   AppState,
-  Game,
   GameWord,
   LoginRequest,
+  User,
 } from "../types.ts";
 import { getDefinition } from "./dictionary.ts";
 import App, { AppProps } from "../client/App.tsx";
 import { createGame, getCurrentGame, getGame, getGames } from "./games.ts";
-import { getOtherUsers } from "./users.ts";
+import { getOtherUsers, getUser } from "./users.ts";
 import { validateWord } from "./words.ts";
+import { setCurrentGameId } from "./database/user_games.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -91,13 +91,39 @@ export function createRouter(config: { client: string; styles: string }) {
 
   const router = new Router<AppState>();
 
-  router.get("/user", ({ response, state }) => {
+  router.get("/user", requireUser, ({ response, state }) => {
     const user = getUser(state.userId);
     response.type = "application/json";
     response.body = user;
   });
 
-  router.get("/definition", async ({ request, response }) => {
+  router.patch("/user", requireUser, async ({ request, response, state }) => {
+    if (!request.hasBody) {
+      response.status = 400;
+      response.body = { error: "Missing request body" };
+      return;
+    }
+
+    const body = request.body();
+    const data = await body.value as { currentGame: number };
+    console.log("patching with", data);
+    const dataKeys = Object.keys(data);
+    console.log("patch keys:", dataKeys);
+
+    // currently only currentGame can be patched
+    if (dataKeys.length !== 1 || dataKeys[0] !== "currentGame") {
+      response.status = 400;
+      response.body = { error: "Only 'currentGame' may be modified" };
+      return;
+    }
+
+    setCurrentGameId({ userId: state.userId, gameId: data.currentGame });
+
+    response.type = "application/json";
+    response.body = getUser(state.userId);
+  });
+
+  router.get("/definition", requireUser, async ({ request, response }) => {
     const params = request.url.searchParams;
     const word = params.get("word");
 
@@ -128,7 +154,7 @@ export function createRouter(config: { client: string; styles: string }) {
     response.body = config.styles;
   });
 
-  router.get("/login", ({ cookies, response, state }) => {
+  router.get("/login", ({ cookies, response }) => {
     cookies.delete("userId");
     response.type = "text/html";
     response.body = render({});
@@ -213,22 +239,23 @@ export function createRouter(config: { client: string; styles: string }) {
 
     const body = request.body();
     const data = await body.value as LoginRequest;
-    const user = getUserByEmail(data.email);
+    const userId = getUserIdFromEmail(data.email);
 
-    if (!isUserPassword(user.id, data.password)) {
+    if (!isUserPassword(userId, data.password)) {
       response.status = 400;
       response.body = { error: "Missing or invalid credentials" };
       return;
     }
 
-    state.userId = user.id;
-    await cookies.set("userId", `${user.id}`, {
+    state.userId = userId;
+    await cookies.set("userId", `${userId}`, {
       secure: mode !== "dev",
       httpOnly: mode !== "dev",
       // assume we're being proxied through an SSL server
       ignoreInsecure: true,
     });
 
+    const user: User = getUser(userId);
     response.body = user;
   });
 

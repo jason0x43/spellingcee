@@ -6,7 +6,7 @@ import { Arguments, log, Yargs, yargs } from "./deps.ts";
 import { serve } from "./server/mod.ts";
 import {
   addUser,
-  getUserByEmail,
+  getUserIdFromEmail,
   isUserPassword,
   openDatabase,
   updateUserPassword,
@@ -61,7 +61,7 @@ const parser = yargs(Deno.args)
     async (args: Arguments & { email: string; name: string }) => {
       const password = await promptSecret("Password: ");
       if (password) {
-        const user = addUser({ email: args.email, name: args.name }, password);
+        const user = addUser({ email: args.email, name: args.name, password });
         console.log(`Created user ${user.id}`);
       } else {
         console.log("Add cancelled");
@@ -78,11 +78,11 @@ const parser = yargs(Deno.args)
       });
     },
     async (args: Arguments & { email: string }) => {
-      const user = getUserByEmail(args.email);
+      const userId = getUserIdFromEmail(args.email);
       const password = await promptSecret("Password: ");
       if (password) {
-        updateUserPassword(user.id, password);
-        console.log(`Updated password for user ${user.id}`);
+        updateUserPassword(userId, password);
+        console.log(`Updated password for user ${userId}`);
       } else {
         console.log("Update cancelled");
       }
@@ -98,10 +98,10 @@ const parser = yargs(Deno.args)
       });
     },
     async (args: Arguments & { email: string }) => {
-      const user = getUserByEmail(args.email);
+      const userId = getUserIdFromEmail(args.email);
       const password = await promptSecret("Password: ");
       if (password) {
-        if (isUserPassword(user.id, password)) {
+        if (isUserPassword(userId, password)) {
           console.log("Login successful");
         } else {
           console.log("Invalid password");

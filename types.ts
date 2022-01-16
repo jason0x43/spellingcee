@@ -1,23 +1,12 @@
-import { Game as DbGame } from "./server/database/types.ts";
+import { Game as DbGame, User as DbUser } from "./server/database/types.ts";
 export type { GameWord } from "./server/database/types.ts";
 
 export interface AppState {
   userId: number;
 }
 
-export interface UserMeta {
-  currentGame: number;
-}
-
-export interface User {
-  /** A unique ID */
-  id: number;
-  /** The user's name */
-  name: string;
-  /** The user's email address */
-  email: string;
-  /** User settings */
-  meta: UserMeta;
+export interface User extends DbUser {
+  currentGame: number | undefined;
 }
 
 export interface OtherUser {

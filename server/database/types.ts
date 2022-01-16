@@ -5,6 +5,15 @@ export interface Game {
   addedAt: number;
 }
 
+export interface User {
+  /** A unique ID */
+  id: number;
+  /** The user's name */
+  name: string;
+  /** The user's email address */
+  email: string;
+}
+
 export interface UserGame {
   userId: number;
   gameId: number;

@@ -16,7 +16,7 @@ export class ResponseError<T = unknown> extends Error {
       body = await response.text();
       body = JSON.parse(body as string);
     } catch (error) {
-      console.warn("Error readin body", error);
+      console.warn("Error reading body", error);
       // ignore, just use the original text
     }
 
@@ -65,54 +65,117 @@ export function isResponseError(error: unknown): error is ResponseError {
     error instanceof ResponseError;
 }
 
-export async function setActiveGame(
-  data: { userId: number; gameId: number },
-) {
-  const response = await fetch("/user", {
-    method: "PATCH",
-    body: JSON.stringify({ currentGame: data.gameId }),
-  });
-  assertSuccess(response, "setting active game");
+/**
+ * Create a RequestInit object for a given body and init options
+ */
+function createRequest(body: unknown, options: RequestInit): RequestInit {
+  return {
+    ...options,
+    headers: {
+      "Content-Type": typeof body === "string"
+        ? "text/plain"
+        : "application/json",
+      ...options.headers,
+    },
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  };
 }
 
-export async function getWords(gameId: number) {
-  const response = await fetch(`/games/${gameId}/words`);
-  assertSuccess(response, "getting words");
-  return response.json();
+/**
+ * GET data from a given path
+ */
+async function get<T = unknown>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  const response = await fetch(path, options);
+  assertSuccess(response, `GETting ${path}`);
+  return await response.json() as T;
 }
 
+/**
+ * PATCH a given path
+ */
+async function patch<T = unknown>(
+  path: string,
+  body: unknown,
+  options?: RequestInit,
+): Promise<T> {
+  const response = await fetch(
+    path,
+    createRequest(body, {
+      ...options,
+      method: "PATCH",
+    }),
+  );
+  assertSuccess(response, `PATCHing ${path}`);
+  return await response.json() as T;
+}
+
+/**
+ * POST some data to a given path
+ */
+async function post<T = unknown>(
+  path: string,
+  body: unknown,
+  options?: RequestInit,
+): Promise<T> {
+  const response = await fetch(
+    path,
+    createRequest(body, {
+      ...options,
+      method: "POST",
+    }),
+  );
+  assertSuccess(response, `POSTing to ${path}`);
+  return await response.json() as T;
+}
+
+/**
+ * Get the words for a given game
+ */
+export async function getWords(gameId: number): Promise<GameWord[]> {
+  return await get<GameWord[]>(`/games/${gameId}/words`);
+}
+
+/**
+ * Add a new word to a game for the current user
+ */
 export async function addWord(
-  data: { word: string; gameId: number; userId: number },
+  data: { word: string; gameId: number },
 ): Promise<GameWord> {
-  const response = await fetch(`/games/${data.gameId}/words`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ word: data.word, user: data.userId }),
+  return await post<GameWord>(`/games/${data.gameId}/words`, {
+    word: data.word,
   });
-  assertSuccess(response, "adding word");
-  return response.json();
 }
 
+/**
+ * Login a user by email address
+ */
 export async function login(email: string, password: string): Promise<User> {
-  const response = await fetch("/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  assertSuccess(response, "logging in");
-  return response.json();
+  return await post<User>("/login", { email, password });
 }
 
+/**
+ * Get the definition for a word
+ */
 export async function getDefinition(word: string): Promise<string[]> {
   const params = new URLSearchParams();
   params.set("word", word);
-  const response = await fetch(`/definition?${params}`);
-  assertSuccess(response, "getting definition");
-  return response.json();
+  return await get<string[]>(`/definition?${params}`);
 }
 
+/**
+ * Create a new game for the current user
+ */
 export async function createGame(): Promise<Game> {
-  const response = await fetch("/create-game");
-  assertSuccess(response, "creating game");
-  return response.json();
+  return await get<Game>("/create-game");
 }
+
+/**
+ * Set the active game for the current user
+ */
+export async function setActiveGame(gameId: number): Promise<User> {
+  return await patch<User>("/user", { currentGame: gameId });
+}
+

@@ -5,7 +5,7 @@ export { inTransaction };
 export {
   addUser,
   getUser,
-  getUserByEmail,
+  getUserIdFromEmail,
   isUserPassword,
   updateUserPassword,
 } from "./users.ts";

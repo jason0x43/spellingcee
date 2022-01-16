@@ -1,7 +1,7 @@
 import { bcrypt } from "../deps.ts";
 import { query } from "./db.ts";
-import { User } from "../../types.ts";
 import { createRowHelpers, select } from "./util.ts";
+import { User } from "./types.ts";
 
 const {
   columns: userColumns,
@@ -45,17 +45,18 @@ export function getUsers(): User[] {
   );
 }
 
-export function getUserByEmail(email: string): User {
-  const user = userQuery(
-    `SELECT ${userColumns}
+export function getUserIdFromEmail(email: string): number {
+  const userId = select(
+    `SELECT id 
     FROM users
     WHERE email = (:email) AND deleted = FALSE`,
+    (row) => row[0] as number,
     { email },
   )[0];
-  if (!user) {
+  if (!userId) {
     throw new Error(`No user with email ${email}`);
   }
-  return user;
+  return userId;
 }
 
 export function updateUserPassword(userId: number, password: string): void {
