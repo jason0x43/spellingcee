@@ -1,5 +1,3 @@
-/// <reference lib="dom" />
-
 import { useEffect, useState } from "../deps.ts";
 
 export default function useMediaQuery(query: string): boolean {

@@ -1,5 +1,3 @@
-/// <reference lib="dom" />
-
 import { React, ReactDOM, useCallback, useEffect, useRef } from "../deps.ts";
 import { classNames } from "../util.ts";
 import Spinner from "./Spinner.tsx";

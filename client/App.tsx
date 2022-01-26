@@ -1,7 +1,3 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="deno.ns" />
-/// <reference lib="deno.unstable" />
-
 import { classNames } from "./util.ts";
 import { React, useCallback, useEffect, useReducer, useState } from "./deps.ts";
 import AppError from "./AppError.ts";
