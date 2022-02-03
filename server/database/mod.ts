@@ -62,10 +62,10 @@ export function migrateDatabase(targetVersion: number) {
   }
 }
 
-interface Migration {
+type Migration = {
   up: (db: DB) => void;
   down: (db: DB) => void;
-}
+};
 
 // DB version is index + 1
 const migrations: Migration[] = [
@@ -87,6 +87,8 @@ const migrations: Migration[] = [
           `CREATE TABLE games (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             key TEXT NOT NULL,
+            max_words NUMBER NOT NULL,
+            max_score NUMBER NOT NULL,
             user_id INTEGER REFERENCES users(id),
             added_at INTEGER NOT NULL DEFAULT (strftime('%s.%f', 'now') * 1000),
             UNIQUE (user_id, key)

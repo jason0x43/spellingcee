@@ -1,28 +1,30 @@
-export interface Game {
+export type Game = {
   id: number;
   userId: number;
   key: string;
+  maxWords: number;
+  maxScore: number;
   addedAt: number;
-}
+};
 
-export interface User {
+export type User = {
   /** A unique ID */
   id: number;
   /** The user's name */
   name: string;
   /** The user's email address */
   email: string;
-}
+};
 
-export interface UserGame {
+export type UserGame = {
   userId: number;
   gameId: number;
   isCurrent: boolean;
-}
+};
 
-export interface GameWord {
+export type GameWord = {
   gameId: number;
   userId: number;
   word: string;
   addedAt: number;
-}
+};

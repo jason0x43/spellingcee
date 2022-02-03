@@ -1,8 +1,8 @@
 import { React } from "../deps.ts";
 
-export interface SpinnerProps {
+export type SpinnerProps = {
   label?: string;
-}
+};
 
 const tileSize = 100;
 

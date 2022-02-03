@@ -1,28 +1,29 @@
-import {
-  log,
-  Middleware,
-  path,
-  React,
-  ReactDOMServer,
-  Router,
-} from "./deps.ts";
+import { log, Middleware, path, ReactDOMServer, Router } from "./deps.ts";
+import { React } from "../client/deps.ts";
 import {
   addGameWord,
-  getGameWords,
+  addUser,
   getUserIdFromEmail,
   isUserPassword,
   userCanPlay,
 } from "./database/mod.ts";
 import {
+  AddUserRequest,
   AddWordRequest,
   AppState,
+  Game,
   GameWord,
   LoginRequest,
   User,
 } from "../types.ts";
 import { getDefinition } from "./dictionary.ts";
-import App, { AppProps } from "../client/App.tsx";
-import { createGame, getCurrentGame, getGame, getGames } from "./games.ts";
+import { Provider } from "../client/deps.ts";
+import App from "../client/App.tsx";
+import {
+  AppState as ClientAppState,
+  createStore,
+} from "../client/store/mod.ts";
+import { createGame, getGame, getGames, getGameWords } from "./games.ts";
 import { getOtherUsers, getUser } from "./users.ts";
 import { validateWord } from "./words.ts";
 import { setCurrentGameId } from "./database/user_games.ts";
@@ -49,13 +50,18 @@ const requireUser: Middleware<AppState> = async ({ response, state }, next) => {
 
 export function createRouter(config: { client: string; styles: string }) {
   // Render the base HTML
-  const render = (initialState: AppProps) => {
-    const preloadedState = `globalThis.__PRELOADED_STATE__ = ${
-      toString(initialState)
-    };`;
+  const render = (initialState?: Partial<ClientAppState>) => {
+    const store = createStore(initialState);
+
     const renderedApp = ReactDOMServer.renderToString(
-      <App {...initialState} />,
+      <Provider store={store}>
+        <App />
+      </Provider>,
     );
+
+    const preloadedState = `globalThis.__PRELOADED_STATE__ = ${
+      toString(store.getState())
+    };`;
 
     const logo = Deno.readTextFileSync(
       path.join(__dirname, "..", "public", "favicon.svg"),
@@ -106,9 +112,7 @@ export function createRouter(config: { client: string; styles: string }) {
 
     const body = request.body();
     const data = await body.value as { currentGame: number };
-    console.log("patching with", data);
     const dataKeys = Object.keys(data);
-    console.log("patch keys:", dataKeys);
 
     // currently only currentGame can be patched
     if (dataKeys.length !== 1 || dataKeys[0] !== "currentGame") {
@@ -121,6 +125,21 @@ export function createRouter(config: { client: string; styles: string }) {
 
     response.type = "application/json";
     response.body = getUser(state.userId);
+  });
+
+  router.post("/user", async ({ request, response }) => {
+    if (!request.hasBody) {
+      response.status = 400;
+      response.body = { error: "Missing request body" };
+      return;
+    }
+
+    const body = request.body();
+    const data = await body.value as AddUserRequest;
+
+    response.type = "application/json";
+    response.body = addUser(data);
+    log.debug("Added user");
   });
 
   router.get("/definition", requireUser, async ({ request, response }) => {
@@ -154,15 +173,10 @@ export function createRouter(config: { client: string; styles: string }) {
     response.body = config.styles;
   });
 
-  router.get("/login", ({ cookies, response }) => {
-    cookies.delete("userId");
-    response.type = "text/html";
-    response.body = render({});
-  });
-
   router.get("/games", requireUser, ({ response, state }) => {
     response.type = "application/json";
-    response.body = getGames(state.userId);
+    const games: Game[] = getGames(state.userId);
+    response.body = games;
   });
 
   router.get("/games/:id/words", requireUser, ({ params, response, state }) => {
@@ -266,27 +280,53 @@ export function createRouter(config: { client: string; styles: string }) {
   });
 
   router.get("/", ({ response, state }) => {
+    const start = Date.now();
+    response.type = "text/html";
+
     if (!state.userId) {
-      response.redirect("/login");
+      response.body = render();
       return;
     }
 
     const user = getUser(state.userId);
-    let game = getCurrentGame(state.userId);
-    let words: GameWord[];
+    let game: Game;
+    let words: Record<string, GameWord>;
 
-    if (game !== undefined) {
+    const gotGame = Date.now();
+    log.debug(`Got user and game in ${gotGame - start} ms`);
+
+    if (user.currentGame !== undefined) {
+      game = getGame(user.currentGame);
       words = getGameWords(game.id);
     } else {
       game = createGame({ userId: state.userId });
-      words = [];
+      words = {};
     }
 
+    const gotWords = Date.now();
+    log.debug(`Got words in ${gotWords - gotGame} ms`);
+
     const games = getGames(state.userId);
+    const gotGames = Date.now();
+    log.debug(`Got games in ${gotGames - gotWords} ms`);
     const otherUsers = getOtherUsers(state.userId);
 
+    log.debug(`Got other users in ${Date.now() - gotGames} ms`);
+
     response.type = "text/html";
-    response.body = render({ user, otherUsers, game, games, words });
+    response.body = render({
+      user: {
+        user,
+        games,
+        otherUsers,
+      },
+      game: {
+        game,
+        words,
+      },
+    });
+
+    log.debug(`Rendered app in ${Date.now() - start} ms`);
   });
 
   return router;

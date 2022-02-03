@@ -1,73 +1,33 @@
 import { classNames } from "../util.ts";
-import { React, useCallback, useEffect, useRef, useState } from "../deps.ts";
-import { User } from "../../types.ts";
-import { Words } from "../types.ts";
+import { React } from "../deps.ts";
 import { useVerticalMediaQuery } from "../hooks/mod.ts";
 import { isPangram } from "../../shared/util.ts";
 import Button from "./Button.tsx";
 import Modal from "./Modal.tsx";
 import Spinner from "./Spinner.tsx";
+import { useAppDispatch, useAppSelector } from "../store/mod.ts";
+import { selectUser, signout } from "../store/user.ts";
+import { selectGame, selectWords } from "../store/game.ts";
+import {
+  clearDefinition,
+  getDefinition,
+  selectDefinition,
+  selectWordListExpanded,
+  setWordListExpanded,
+} from "../store/ui.ts";
 
-type DefinedWord = {
-  word: string;
-  definition: string[] | undefined;
-};
+const { useRef, useState } = React;
 
-export interface WordsProps {
-  words: Words;
-  totalWords: number;
-  wordListExpanded?: boolean;
-  setWordListExpanded: (expanded: boolean) => void;
-  user: User;
-  getDefinition: (word: string) => Promise<string[] | undefined>;
-}
-
-const Words: React.FC<WordsProps> = (props) => {
-  const {
-    getDefinition,
-    wordListExpanded,
-    user,
-    words,
-    totalWords,
-    setWordListExpanded,
-  } = props;
+const Words: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const words = useAppSelector(selectWords);
+  const game = useAppSelector(selectGame);
+  const definition = useAppSelector(selectDefinition);
+  const wordListExpanded = useAppSelector(selectWordListExpanded);
   const [alphabetical, setAlphabetical] = useState(false);
-  const [definition, setDefinition] = useState<DefinedWord>();
   const isVertical = useVerticalMediaQuery();
   const listRef = useRef<HTMLDivElement>(null);
-  const userId = user.id;
-  const modalTimer = useRef<ReturnType<typeof setTimeout>>();
-
-  useEffect(() => {
-    return () => {
-      if (modalTimer.current) {
-        clearTimeout(modalTimer.current);
-      }
-    };
-  }, []);
-
-  const handleWordClick: React.MouseEventHandler = async (event) => {
-    if (modalTimer.current) {
-      clearTimeout(modalTimer.current);
-    }
-    const word = event.currentTarget.textContent as string;
-    setDefinition({ word, definition: undefined });
-    const start = Date.now();
-    const definition = await getDefinition(word);
-    if (definition) {
-      modalTimer.current = setTimeout(
-        () => {
-          setDefinition({ word, definition });
-        },
-        Math.max(1000 - (Date.now() - start)),
-        0,
-      );
-    }
-  };
-
-  const handleHideModal = useCallback(() => {
-    setDefinition(undefined);
-  }, [setDefinition]);
 
   const displayWords = alphabetical && (!isVertical || wordListExpanded)
     ? Object.keys(words).sort()
@@ -96,10 +56,14 @@ const Words: React.FC<WordsProps> = (props) => {
               const className = classNames({
                 "Words-word": true,
                 "Words-word-pangram": isPangram(word),
-                "Words-word-own": words[word].userId === userId,
+                "Words-word-own": words[word].userId === user?.id,
               });
               return (
-                <li key={i} className={className} onClick={handleWordClick}>
+                <li
+                  key={i}
+                  className={className}
+                  onClick={() => dispatch(getDefinition(word))}
+                >
                   {word}
                 </li>
               );
@@ -109,13 +73,13 @@ const Words: React.FC<WordsProps> = (props) => {
         <Button
           className="Words-show-list"
           size="small"
-          onClick={() => setWordListExpanded(!wordListExpanded)}
+          onClick={() => dispatch(setWordListExpanded(!wordListExpanded))}
         >
           ▼
         </Button>
         <div className="Words-controls">
           <span className="Words-metrics">
-            {Object.keys(words).length} / {totalWords} words
+            {Object.keys(words).length} / {game?.maxWords} words
           </span>
           <Button
             size="small"
@@ -128,7 +92,7 @@ const Words: React.FC<WordsProps> = (props) => {
         </div>
 
         {definition && (
-          <Modal onHide={handleHideModal}>
+          <Modal onHide={() => dispatch(clearDefinition())}>
             {definition.definition
               ? (
                 <div className="Definition">

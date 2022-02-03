@@ -1,26 +1,23 @@
 import { React } from "../deps.ts";
+import { selectGameLetters } from "../store/game.ts";
+import { useAppSelector } from "../store/mod.ts";
+import { selectInput } from "../store/ui.ts";
 import { classNames } from "../util.ts";
 
-export interface InputProps {
-  value: string[];
-  validLetters: string[];
-  isInvalid?: boolean;
-}
-
-const Input: React.FC<InputProps> = (props) => {
-  const { value: input, isInvalid, validLetters } = props;
+const Input: React.FC = () => {
+  const input = useAppSelector(selectInput);
+  const validLetters = useAppSelector(selectGameLetters);
 
   const className = classNames({
     Input: true,
     [`Input-${input.length}`]: true,
-    "Input-invalid": isInvalid,
   });
   return (
     <div className={className}>
       {input.map((letter, i) => {
         const className = classNames({
           "Input-letter": true,
-          "Input-letter-invalid": !validLetters.includes(letter),
+          "Input-letter-invalid": !validLetters?.includes(letter),
         });
         return (
           <div key={i} className={className}>

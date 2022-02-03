@@ -26,9 +26,9 @@ export function getUserGames(userId: number): Game[] {
   return gameQuery(
     `SELECT ${columnNames}
     FROM games as g
-    LEFT JOIN user_games as sg
+    INNER JOIN user_games as sg
       ON g.id = sg.game_id
-    WHERE sg.user_id = (:userId) OR g.user_id = (:userId)`,
+    WHERE sg.user_id = (:userId)`,
     { userId },
   );
 }

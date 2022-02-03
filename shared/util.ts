@@ -24,3 +24,19 @@ export function permute(letters: string[]): string[] {
   }
   return newLetters;
 }
+
+/**
+ * Compute the score of a set of words
+ */
+export function computeScore(words: string[]): number {
+  return words.reduce(
+    (sum, word) =>
+      word.length === 4
+        ? sum + 1
+        : isPangram(word)
+        ? sum + 2 * word.length
+        : sum +
+          word.length,
+    0,
+  );
+}

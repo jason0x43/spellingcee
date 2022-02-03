@@ -132,6 +132,13 @@ async function post<T = unknown>(
 }
 
 /**
+ * Get the games for the current user
+ */
+export async function getGames(): Promise<Game[]> {
+  return await get<Game[]>(`/games`);
+}
+
+/**
  * Get the words for a given game
  */
 export async function getWords(gameId: number): Promise<GameWord[]> {

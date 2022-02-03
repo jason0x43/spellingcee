@@ -1,42 +1,37 @@
-import {
-  AiIcons,
-  GoIcons,
-  GrIcons,
-  IoIcons,
-  React,
-  useRef,
-  useState,
-} from "../deps.ts";
+import { AiIcons, GoIcons, GrIcons, IoIcons, React } from "../deps.ts";
 import { classNames } from "../util.ts";
 import Modal from "./Modal.tsx";
 import Spinner from "./Spinner.tsx";
-import { Game, OtherUser, User } from "../../types.ts";
+import { Game, OtherUser } from "../../types.ts";
+import { useAppDispatch, useAppSelector } from "../store/mod.ts";
+import { activateGame, selectGame, selectWords, shareActiveGame } from "../store/game.ts";
+import {
+  selectGames,
+  selectOtherUsers,
+  selectUser,
+  signout,
+} from "../store/user.ts";
+import { clearNewGameIds, selectNewGameIds } from "../store/ui.ts";
 
+const { useRef, useState } = React;
 const { GrFormClose: CloseIcon } = GrIcons;
 const { GoPrimitiveDot: NotifyIcon } = GoIcons;
 const { IoPeopleCircle: ShareIcon } = IoIcons;
 const { AiFillStar: NewGameIcon } = AiIcons;
 
-interface MenuGameProps {
-  user: User;
+type MenuGameProps = {
   game: Game;
-  currentGameId: number;
-  otherUsers: OtherUser[];
-  newGameIds: number[] | undefined;
-  onSelect: (gameId: number) => void;
-  removeGame: (gameId: number) => void;
-}
+  numWords: number;
+  onSelect: () => void;
+  onRemove: () => void;
+};
 
 const MenuGame: React.FC<MenuGameProps> = (props) => {
-  const {
-    game,
-    newGameIds,
-    onSelect,
-    removeGame,
-    user,
-    currentGameId,
-    otherUsers,
-  } = props;
+  const { game, numWords, onSelect, onRemove } = props;
+  const user = useAppSelector(selectUser);
+  const otherUsers = useAppSelector(selectOtherUsers);
+  const newGameIds = useAppSelector(selectNewGameIds);
+  const dispatch = useAppDispatch();
 
   return (
     <li
@@ -47,8 +42,10 @@ const MenuGame: React.FC<MenuGameProps> = (props) => {
       key={game.id}
       data-item-id={game.id}
       onClick={() => {
-        if (game.id !== currentGameId) {
-          onSelect(game.id);
+        if (game.id !== user?.currentGame) {
+          dispatch(activateGame(game.id));
+          dispatch(clearNewGameIds);
+          onSelect();
         }
       }}
     >
@@ -68,10 +65,8 @@ const MenuGame: React.FC<MenuGameProps> = (props) => {
           <dd>{new Date(game.addedAt).toLocaleDateString()}</dd>
         </div>
         <div>
-          <dt>Words</dt>
-          <dd>
-            {game.wordsFound} / {game.totalWords}
-          </dd>
+          <dt>Progress</dt>
+          <dd>{numWords } / {game.maxWords}</dd>
         </div>
         {game.userId !== user?.id &&
           otherUsers?.find(({ id }) => id === game.userId) && (
@@ -91,7 +86,7 @@ const MenuGame: React.FC<MenuGameProps> = (props) => {
               // deleted the game.
               event.stopPropagation();
               if (confirm("Are you sure you want to delete this game?")) {
-                removeGame(game.id);
+                onRemove();
               }
             }}
           >
@@ -113,73 +108,44 @@ const MenuGame: React.FC<MenuGameProps> = (props) => {
   );
 };
 
-interface MenuUserProps {
+type MenuUserProps = {
   user: OtherUser;
-  onSelect: (userId: number) => void;
-}
+  onSelect: () => void;
+};
 
 const MenuUser: React.FC<MenuUserProps> = (props) => {
   const { onSelect, user } = props;
+  const dispatch = useAppDispatch();
+
   return (
     <li
       className="MenuBar-select-item"
       key={user.id}
       data-item-id={user.id}
-      onClick={() => onSelect(user.id)}
+      onClick={() => {
+        dispatch(shareActiveGame(user.id));
+        onSelect();
+      }}
     >
       <div className="MenuBar-select-user">{user.name}</div>
     </li>
   );
 };
 
-export interface MenuBarProps {
-  game: Game;
-  games: Game[];
-  user: User;
-  otherUsers: OtherUser[];
-  newGameIds?: number[];
-  clearNewGameIds: () => void;
-  activateGame: (gameId: number) => void;
-  addGame: () => void;
-  removeGame: (gameId: number) => void;
-  loadUsers: () => Promise<void>;
-  loadGames: () => Promise<void>;
-  signOut: () => Promise<void>;
-  shareActiveGame: (otherUserId: number) => Promise<void>;
-}
-
-const MenuBar: React.FC<MenuBarProps> = (props) => {
-  const {
-    activateGame,
-    game,
-    games,
-    addGame,
-    signOut,
-    removeGame,
-    newGameIds,
-    clearNewGameIds,
-    user,
-    otherUsers,
-    shareActiveGame,
-  } = props;
+const MenuBar: React.FC = () => {
   const [selectingGame, setSelectingGame] = useState(false);
   const [selectingUser, setSelectingUser] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
+  const game = useAppSelector(selectGame);
+  const games = useAppSelector(selectGames);
+  const user = useAppSelector(selectUser);
+  const otherUsers = useAppSelector(selectOtherUsers);
+  const newGameIds = useAppSelector(selectNewGameIds);
+  const words = useAppSelector(selectWords);
 
-  const handleSelectGame = (gameId: number) => {
-    activateGame(gameId);
-    setSelectingGame(false);
-    clearNewGameIds();
-  };
-
-  const handleUserSelect = (userId: number) => {
-    console.log("Sharing with", userId);
-    if (user?.id && userId) {
-      shareActiveGame(userId);
-    }
-    setSelectingUser(false);
-  };
+  const handleGameSelected = () => setSelectingGame(false);
 
   return (
     <div className="MenuBar">
@@ -192,7 +158,10 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
             Games
             {newGameIds != null && <NotifyIcon className="MenuBar-notify" />}
           </div>
-          <div className="MenuBar-item" onClick={addGame}>
+          <div
+            className="MenuBar-item"
+            onClick={() => dispatch(activateGame())}
+          >
             New
           </div>
           {otherUsers.length > 0 && (
@@ -215,42 +184,36 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
         </div>
 
         {selectingGame && (
-          <Modal onHide={() => setSelectingGame(false)}>
+          <Modal onHide={handleGameSelected}>
             {selectingGame
               ? (
                 <ul className="MenuBar-select-list">
-                  <MenuGame
-                    key={game.id}
-                    game={game}
-                    currentGameId={game.id}
-                    newGameIds={newGameIds}
-                    user={user}
-                    otherUsers={otherUsers}
-                    onSelect={handleSelectGame}
-                    removeGame={removeGame}
-                  />
+                  {game && user && (
+                    <MenuGame
+                      key={game.id}
+                      game={game}
+                      numWords={Object.keys(words).length}
+                      onSelect={handleGameSelected}
+                      onRemove={handleGameSelected}
+                    />
+                  )}
                   {games
                     .filter(
-                      ({ id }) => id !== game.id && newGameIds?.includes(id),
+                      ({ id }) => id !== game?.id && newGameIds?.includes(id),
                     )
-                    .sort((a, b) => {
-                      return b.addedAt - a.addedAt;
-                    })
+                    .sort((a, b) => b.addedAt - a.addedAt)
                     .map((g) => (
                       <MenuGame
                         key={g.id}
                         game={g}
-                        currentGameId={game.id}
-                        newGameIds={newGameIds}
-                        user={user}
-                        otherUsers={otherUsers}
-                        onSelect={handleSelectGame}
-                        removeGame={removeGame}
+                        numWords={g.numWords}
+                        onSelect={handleGameSelected}
+                        onRemove={handleGameSelected}
                       />
                     ))}
                   {games
                     .filter(
-                      ({ id }) => id !== game.id && !newGameIds?.includes(id),
+                      ({ id }) => id !== game?.id && !newGameIds?.includes(id),
                     )
                     .sort((a, b) => {
                       return b.addedAt - a.addedAt;
@@ -259,12 +222,9 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                       <MenuGame
                         key={g.id}
                         game={g}
-                        currentGameId={game.id}
-                        newGameIds={newGameIds}
-                        user={user}
-                        otherUsers={otherUsers}
-                        onSelect={handleSelectGame}
-                        removeGame={removeGame}
+                        numWords={g.numWords}
+                        onSelect={handleGameSelected}
+                        onRemove={handleGameSelected}
                       />
                     ))}
                 </ul>
@@ -281,7 +241,10 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
                   {otherUsers
                     .filter(({ id }) => id !== user.id)
                     .map((u) => (
-                      <MenuUser user={u} onSelect={handleUserSelect} />
+                      <MenuUser
+                        user={u}
+                        onSelect={() => setSelectingUser(false)}
+                      />
                     ))}
                 </ul>
               )
@@ -303,7 +266,7 @@ const MenuBar: React.FC<MenuBarProps> = (props) => {
           <div className="MenuBar-menu-section">
             <div
               className="MenuBar-menu-item MenuBar-menu-item-pressable"
-              onClick={signOut}
+              onClick={signout}
             >
               Sign out
             </div>

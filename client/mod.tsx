@@ -1,10 +1,14 @@
-import { React, ReactDOM } from "./deps.ts";
+import { Provider, React, ReactDOM } from "./deps.ts";
 import App from "./App.tsx";
-import "./global.ts";
+import { createStore } from "./store/mod.ts";
+
+const store = createStore(globalThis.__PRELOADED_STATE__);
 
 ReactDOM.hydrate(
   <React.StrictMode>
-    <App {...globalThis.__PRELOADED_STATE__} />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>,
   document.getElementById("root"),
 );

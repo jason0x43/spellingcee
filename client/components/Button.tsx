@@ -1,7 +1,7 @@
 import { React } from "../deps.ts";
 import { classNames } from "../util.ts";
 
-export interface ButtonProps {
+export type ButtonProps = {
   className?: string;
   size?: "large" | "normal" | "small";
   type?: "link" | "text" | "normal";
@@ -9,7 +9,7 @@ export interface ButtonProps {
   children: React.ReactNode;
   onClick?(event: React.MouseEvent): void;
   onClickCapture?(event: React.MouseEvent): void;
-}
+};
 
 const Button: React.FC<ButtonProps> = (props) => {
   const {

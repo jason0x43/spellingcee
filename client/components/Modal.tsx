@@ -1,13 +1,15 @@
-import { React, ReactDOM, useCallback, useEffect, useRef } from "../deps.ts";
+import { React, ReactDOM } from "../deps.ts";
 import { classNames } from "../util.ts";
 import Spinner from "./Spinner.tsx";
 
-interface ModalProps {
+const { useCallback, useEffect, useRef } = React;
+
+type ModalProps = {
   children?: React.ReactNode;
   onHide?(): void;
   showCloseButton?: boolean;
   type?: "normal" | "warning";
-}
+};
 
 const Modal: React.FC<ModalProps> = (props) => {
   const { children, onHide, showCloseButton, type } = props;

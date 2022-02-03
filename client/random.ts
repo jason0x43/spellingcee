@@ -24,9 +24,9 @@ export function randomString(length: number): string {
   return chars.join("");
 }
 
-export interface RandomNumberGenerator {
+export type RandomNumberGenerator = {
   (max: number): number;
-}
+};
 
 export function newRng(seed?: string): RandomNumberGenerator {
   const rng = makeSeededGenerators(seed ?? "");

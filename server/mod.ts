@@ -1,6 +1,7 @@
 import { Application, expandGlob, log, path } from "./deps.ts";
 import { AppState } from "../types.ts";
 import { createRouter } from "./routes.tsx";
+import { openDatabase } from "./database/mod.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -26,7 +27,9 @@ async function watchStyles() {
   }
 }
 
-export async function serve() {
+export async function serve(port = 8083) {
+  openDatabase();
+
   const emitOptions: Deno.EmitOptions = {
     bundle: "module",
     check: false,
@@ -70,8 +73,6 @@ export async function serve() {
     styles,
   });
 
-  const envPort = Deno.env.get("SC_PORT");
-  const port = envPort ? Number(envPort) : 8083;
   const app = new Application<AppState>();
 
   const appKey = Deno.env.get("SC_KEY");

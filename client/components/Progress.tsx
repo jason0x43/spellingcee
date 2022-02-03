@@ -1,15 +1,16 @@
-import { React, useMemo } from "../deps.ts";
+import { React } from "../deps.ts";
 import { classNames } from "../util.ts";
 import { getProgressLabel, getProgressThresholds } from "../wordUtil.ts";
+import { useAppSelector } from "../store/mod.ts";
+import { selectGame, selectWords } from "../store/game.ts";
+import { computeScore } from "../../shared/util.ts";
 
-export interface ProgressProps {
-  score: number;
-  maxScore: number;
-}
-
-const Progress: React.FC<ProgressProps> = (props) => {
-  const { score, maxScore } = props;
-  const thresholds = useMemo(() => getProgressThresholds(maxScore), [maxScore]);
+const Progress: React.FC = () => {
+  const game = useAppSelector(selectGame);
+  const words = useAppSelector(selectWords);
+  const { maxScore = 0 } = game ?? {};
+  const thresholds = getProgressThresholds(maxScore);
+  const score = computeScore(Object.values(words).map(({ word }) => word));
   const label = getProgressLabel(score, maxScore);
   const currentThreshold = thresholds.findIndex((item) => item.label === label);
 

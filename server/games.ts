@@ -1,28 +1,19 @@
-import { random } from "../shared/util.ts";
+import { computeScore, random } from "../shared/util.ts";
 import { isPangram, permute } from "../shared/util.ts";
 import { findValidWords, wordList } from "./words.ts";
-import { Game } from "../types.ts";
-import { addGame, getGame as getDbGame } from "./database/games.ts";
+import { addGame, getGame as dbGetGame } from "./database/games.ts";
 import { getUserGames } from "./database/queries.ts";
-import { Game as DbGame } from "./database/types.ts";
-import { getGameWords } from "./database/game_words.ts";
-import { getCurrentGameId, setCurrentGameId } from "./database/user_games.ts";
-
-/**
- * Compute the score of a set of words
- */
-function computeScore(words: string[]): number {
-  return words.reduce(
-    (sum, word) =>
-      word.length === 4
-        ? sum + 1
-        : isPangram(word)
-        ? sum + 2 * word.length
-        : sum +
-          word.length,
-    0,
-  );
-}
+import { GameWord } from "./database/types.ts";
+import {
+  getGameWordCount,
+  getGameWords as dbGetGameWords,
+} from "./database/game_words.ts";
+import {
+  addUserGame,
+  getCurrentGameId,
+  setCurrentGameId,
+} from "./database/user_games.ts";
+import { Game } from "../types.ts";
 
 /**
  * Linearly search the word list for a pangram, starting from a given position.
@@ -64,21 +55,6 @@ export function getNewGameKey(): string {
 }
 
 /**
- * Mix computed game data into a game record
- */
-function addGameData(game: DbGame): Game {
-  const validWords = findValidWords(game.key);
-  const gameWords = getGameWords(game.id);
-  return {
-    ...game,
-    totalWords: validWords.length,
-    maxScore: computeScore(validWords),
-    wordsFound: gameWords.length,
-    score: computeScore(gameWords.map(({ word }) => word)),
-  };
-}
-
-/**
  * Create a new game for a user
  */
 export function createGame({ userId, key }: {
@@ -86,24 +62,35 @@ export function createGame({ userId, key }: {
   key?: string;
 }): Game {
   key ??= getNewGameKey();
-  const game = addGame({ userId, key });
+  const validWords = findValidWords(key);
+  const maxScore = computeScore(validWords);
+  const game = addGame({ userId, key, maxWords: validWords.length, maxScore });
+  addUserGame({ userId, gameId: game.id });
   setCurrentGameId({ userId, gameId: game.id });
-  return addGameData(game);
+  return {
+    ...game,
+    numWords: 0,
+  };
 }
 
 /**
  * Return a game with computed data
  */
 export function getGame(gameId: number): Game {
-  const game = getDbGame(gameId);
-  return addGameData(game);
+  return {
+    ...dbGetGame(gameId),
+    numWords: getGameWordCount(gameId),
+  };
 }
 
 /**
  * Return a user's games with computed data
  */
 export function getGames(userId: number): Game[] {
-  return getUserGames(userId).map(addGameData);
+  return getUserGames(userId).map((game) => ({
+    ...game,
+    numWords: getGameWordCount(game.id),
+  }));
 }
 
 /**
@@ -111,5 +98,16 @@ export function getGames(userId: number): Game[] {
  */
 export function getCurrentGame(userId: number): Game | undefined {
   const gameId = getCurrentGameId(userId);
-  return gameId !== undefined ? addGameData(getGame(gameId)) : undefined;
+  return gameId !== undefined ? getGame(gameId) : undefined;
+}
+
+/**
+ * Return game words as a word->GameWord mapping
+ */
+export function getGameWords(gameId: number): Record<string, GameWord> {
+  const words = dbGetGameWords(gameId);
+  return words.reduce((gameWords, word) => {
+    gameWords[word.word] = word;
+    return gameWords;
+  }, {} as Record<string, GameWord>);
 }

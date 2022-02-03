@@ -1,12 +1,14 @@
-import { React, useEffect, useRef, useState } from "../deps.ts";
+import { React } from "../deps.ts";
 import { classNames } from "../util.ts";
 
-export interface MessageProps {
+const { useEffect, useRef, useState } = React;
+
+export type MessageProps = {
   message: string | undefined;
   type?: "normal" | "good" | "bad";
   visibleTime?: "short" | "normal" | "long";
   onHide?(): void;
-}
+};
 
 const Message: React.FC<MessageProps> = (props) => {
   const { message, onHide, type, visibleTime } = props;

@@ -2,7 +2,7 @@ import { Game, GameWord, OtherUser, User } from "../types.ts";
 import { Words as WordsType } from "./types.ts";
 import { permute } from "../shared/util.ts";
 
-export interface AppState {
+export type AppState = {
   user: User;
   otherUsers: OtherUser[];
   words: WordsType;
@@ -21,7 +21,7 @@ export interface AppState {
   toastMessage:
     | { type: "normal" | "good" | "bad"; message: string }
     | undefined;
-}
+};
 
 type InitProps = {
   user: User;

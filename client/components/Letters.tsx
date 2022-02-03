@@ -1,6 +1,16 @@
-import { React, useCallback, useMemo, useState } from "../deps.ts";
+import { React } from "../deps.ts";
+import { selectGameLetters, submitWord } from "../store/game.ts";
+import { useAppDispatch, useAppSelector } from "../store/mod.ts";
+import {
+  addInput,
+  removeInput,
+  scrambleLetters,
+  selectInput,
+  selectInputDisabled,
+} from "../store/ui.ts";
 import { classNames } from "../util.ts";
 
+const { useCallback, useEffect, useMemo, useState } = React;
 const tileSize = 100;
 
 // Vertexes of hexagonal tiles
@@ -22,24 +32,59 @@ const points = (function () {
 
 type Indices = { [letter: string]: number | "center" };
 
-export interface LettersProps {
-  addInput: (char: string) => void;
-  disabled: boolean;
-  letters: string[];
-}
-
-const Letters: React.FC<LettersProps> = (props) => {
-  const { letters, disabled, addInput } = props;
+const Letters: React.FC = () => {
   const [activeLetter, setActiveLetter] = useState<string>();
+  const disabled = useAppSelector(selectInputDisabled);
+  const letters = useAppSelector(selectGameLetters);
+  const input = useAppSelector(selectInput);
+  const dispatch = useAppDispatch();
 
   const indices: Indices = useMemo(() => {
-    const newIndices: Indices = { [letters[0]]: "center" };
-    const nonCenter = letters.slice(1);
-    for (let i = 0; i < nonCenter.length; i++) {
-      newIndices[nonCenter[i]] = i;
+    if (letters) {
+      const newIndices: Indices = { [letters[0]]: "center" };
+      const nonCenter = letters.slice(1);
+      for (let i = 0; i < nonCenter.length; i++) {
+        newIndices[nonCenter[i]] = i;
+      }
+      return newIndices;
     }
-    return newIndices;
+    return {};
   }, [letters]);
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (disabled) {
+        return;
+      }
+
+      // Ignore meta/control keys
+      if (event.metaKey) {
+        return;
+      }
+
+      const { key } = event;
+
+      if (key.length > 1) {
+        if (key === "Backspace" || key === "Delete") {
+          dispatch(removeInput());
+        } else if (key === "Enter") {
+          if (input) {
+            dispatch(submitWord());
+          }
+        }
+      } else if (key === " ") {
+        dispatch(scrambleLetters());
+      } else if ((key >= "a" && key <= "z") || (key >= "A" && key <= "Z")) {
+        dispatch(addInput(event.key));
+      }
+    };
+
+    globalThis.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      globalThis.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [disabled, dispatch, input]);
 
   const handleMouseDown = (event: React.MouseEvent | React.TouchEvent) => {
     // Ignore clicks to the outer SVG; only pay attention to clicks of child
@@ -50,7 +95,7 @@ const Letters: React.FC<LettersProps> = (props) => {
     // Prevent both touch and click events from firing for a given action
     event.preventDefault();
     const letter = event.currentTarget.textContent as string;
-    addInput(letter);
+    dispatch(addInput(letter));
     setActiveLetter(letter);
   };
 
@@ -101,8 +146,8 @@ const Letters: React.FC<LettersProps> = (props) => {
 
   return (
     <div className="Letters">
-      {renderLetter(letters[0])}
-      {letters.slice(1).map(renderLetter)}
+      {letters && renderLetter(letters[0])}
+      {letters && [...letters.slice(1)].map(renderLetter)}
     </div>
   );
 };

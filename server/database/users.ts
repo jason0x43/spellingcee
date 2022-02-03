@@ -1,4 +1,4 @@
-import { bcrypt } from "../deps.ts";
+import { bcrypt, log } from "../deps.ts";
 import { query } from "./db.ts";
 import { createRowHelpers, select } from "./util.ts";
 import { User } from "./types.ts";
@@ -19,16 +19,21 @@ export function addUser({ name, email, password }: {
   email: string;
   password: string;
 }): User {
+  log.debug(`Adding user with email ${email}`);
   const hashedPassword = bcrypt.hashSync(password);
-  return userQuery(
+  log.debug('Hashed the password');
+  const user = userQuery(
     `INSERT INTO users (name, email, password)
     VALUES (:name, :email, :password)
     RETURNING ${userColumns}`,
     { name, email, password: hashedPassword },
   )[0];
+  log.debug('Finished add');
+  return user;
 }
 
 export function getUser(userId: number): User {
+  log.debug(`Getting user ${userId}`);
   const user = userQuery(
     `SELECT ${userColumns} FROM users WHERE id = (:userId) AND deleted = FALSE`,
     { userId },
@@ -40,12 +45,14 @@ export function getUser(userId: number): User {
 }
 
 export function getUsers(): User[] {
+  log.debug(`Getting users`);
   return userQuery(
     `SELECT ${userColumns} FROM users WHERE deleted = FALSE`,
   );
 }
 
 export function getUserIdFromEmail(email: string): number {
+  log.debug(`Getting user ID for email ${email}`);
   const userId = select(
     `SELECT id 
     FROM users
@@ -60,6 +67,7 @@ export function getUserIdFromEmail(email: string): number {
 }
 
 export function updateUserPassword(userId: number, password: string): void {
+  log.debug(`Updating password for ${userId}`);
   const hashedPassword = bcrypt.hashSync(password);
   query(
     "UPDATE users SET password = (:password) WHERE id = (:userId)",
@@ -68,6 +76,7 @@ export function updateUserPassword(userId: number, password: string): void {
 }
 
 export function isUserPassword(userId: number, password: string): boolean {
+  log.debug(`Checking password for ${userId}`);
   const userPassword = select(
     "SELECT password FROM users WHERE id = (:userId)",
     (row) => row[0] as string,

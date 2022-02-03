@@ -8,6 +8,11 @@ import {
   updateUserPassword,
 } from "./server/database/mod.ts";
 import { promptSecret } from "./util.ts";
+import { User } from "./server/database/types.ts";
+
+const defaultPort = 8084;
+const envPort = Deno.env.get("SC_PORT");
+const port = envPort ? Number(envPort) : defaultPort;
 
 async function configureLogger(args: Arguments) {
   await log.setup({
@@ -34,12 +39,8 @@ const parser = yargs(Deno.args)
   .option("h", {
     alias: "help",
   })
-  .middleware([
-    configureLogger,
-    () => openDatabase(),
-  ])
   .command("serve", "Start the RSS aggregator server", {}, async () => {
-    await serve();
+    await serve(port);
   })
   .command(
     "adduser <email> <name>",
@@ -57,7 +58,24 @@ const parser = yargs(Deno.args)
     async (args: Arguments & { email: string; name: string }) => {
       const password = await promptSecret("Password: ");
       if (password) {
-        const user = addUser({ email: args.email, name: args.name, password });
+        let user: User;
+        const userData = { email: args.email, name: args.name, password };
+        try {
+          const response = await fetch(`http://localhost:${port}/user`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(userData),
+          });
+          if (response.status !== 200) {
+            throw new Error("Couldn't add user through server");
+          }
+          user = await response.json();
+        } catch {
+          openDatabase();
+          user = addUser(userData);
+        }
         console.log(`Created user ${user.id}`);
       } else {
         console.log("Add cancelled");
@@ -74,6 +92,7 @@ const parser = yargs(Deno.args)
       });
     },
     async (args: Arguments & { email: string }) => {
+      openDatabase();
       const userId = getUserIdFromEmail(args.email);
       const password = await promptSecret("Password: ");
       if (password) {
@@ -94,6 +113,7 @@ const parser = yargs(Deno.args)
       });
     },
     async (args: Arguments & { email: string }) => {
+      openDatabase();
       const userId = getUserIdFromEmail(args.email);
       const password = await promptSecret("Password: ");
       if (password) {

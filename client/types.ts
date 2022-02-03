@@ -1,22 +1,13 @@
 import { Game, GameWord, User } from "../types.ts";
 
-export interface Games {
+export type Games = {
   [gameId: number]: Game;
-}
+};
 
-export interface Words {
+export type Words = {
   [word: string]: GameWord;
-}
+};
 
-export interface Users {
+export type Users = {
   [userId: number]: User;
-}
-
-/**
- * A handle to a store subscription
- */
-export interface Subscription {
-  key: string | undefined;
-  off(): void;
-  initialValue: Promise<unknown>;
-}
+};

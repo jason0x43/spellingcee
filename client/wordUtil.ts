@@ -22,10 +22,10 @@ export function getProgressLabel(
   return thresholds[Math.max(i - 1, 0)].label;
 }
 
-export interface Threshold {
+export type Threshold = {
   label: string;
   threshold: number;
-}
+};
 
 export function getProgressThresholds(maxScore: number): Threshold[] {
   return [
