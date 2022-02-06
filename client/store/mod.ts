@@ -43,4 +43,6 @@ export const useAppSelector: TypedUseSelectorHook<AppState> = useSelector;
 declare global {
   // deno-lint-ignore no-var
   var __PRELOADED_STATE__: AppState | undefined;
+  // deno-lint-ignore no-var
+  var __DEV__: boolean | undefined;
 }

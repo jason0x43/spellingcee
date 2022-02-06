@@ -27,6 +27,7 @@ import { createGame, getGame, getGames, getGameWords } from "./games.ts";
 import { getOtherUsers, getUser } from "./users.ts";
 import { validateWord } from "./words.ts";
 import { setCurrentGameId } from "./database/user_games.ts";
+import { addLiveReloadRoute } from "./reload.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -48,17 +49,28 @@ const requireUser: Middleware<AppState> = async ({ response, state }, next) => {
   }
 };
 
-export function createRouter(config: { client: string; styles: string }) {
+export type RouterConfig = { client: string; styles: string; dev: boolean };
+
+export function createRouter(init: RouterConfig) {
+  let config = init;
+
+  const updateConfig = (newConfig: Partial<RouterConfig>) => {
+    config = {
+      ...config,
+      ...newConfig,
+    };
+  };
+
   // Render the base HTML
   const render = (initialState?: Partial<ClientAppState>) => {
     const store = createStore(initialState);
 
+    const devMode = `globalThis.__DEV__ = ${init.dev ? "true" : "false"};`;
     const renderedApp = ReactDOMServer.renderToString(
       <Provider store={store}>
         <App />
       </Provider>,
     );
-
     const preloadedState = `globalThis.__PRELOADED_STATE__ = ${
       toString(store.getState())
     };`;
@@ -91,11 +103,14 @@ export function createRouter(config: { client: string; styles: string }) {
         </svg>
         <div id="root">${renderedApp}</div>
         <script>${preloadedState}</script>
+        <script>${devMode}</script>
       </body>
     </html>`;
   };
 
   const router = new Router<AppState>();
+
+  addLiveReloadRoute(router);
 
   router.get("/user", requireUser, ({ response, state }) => {
     const user = getUser(state.userId);
@@ -329,5 +344,8 @@ export function createRouter(config: { client: string; styles: string }) {
     log.debug(`Rendered app in ${Date.now() - start} ms`);
   });
 
-  return router;
+  return {
+    router,
+    updateConfig,
+  };
 }

@@ -1,6 +1,7 @@
 import { Provider, React, ReactDOM } from "./deps.ts";
 import App from "./App.tsx";
 import { createStore } from "./store/mod.ts";
+import initReloader from './reload.ts';
 
 const store = createStore(globalThis.__PRELOADED_STATE__);
 
@@ -14,3 +15,7 @@ ReactDOM.hydrate(
 );
 
 delete globalThis.__PRELOADED_STATE__;
+
+if (globalThis.__DEV__) {
+  initReloader();
+}

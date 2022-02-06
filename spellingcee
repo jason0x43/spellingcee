@@ -31,6 +31,7 @@ if [ "$mode" = "dev" ]; then
 	cmd="$cmd --no-check=remote"
 	echo "Using dev import map"
 	export SC_IMPORT_MAP="import_map_dev.json"
+	export SC_MODE="dev"
 else
 	cmd="$cmd --no-check"
 	export SC_IMPORT_MAP="import_map.json"
