@@ -4,7 +4,7 @@ import Button from "./components/Button.tsx";
 import Input from "./components/Input.tsx";
 import Letters from "./components/Letters.tsx";
 import MenuBar from "./components/MenuBar.tsx";
-import Message from "./components/Message.tsx";
+import ToastMessage from "./components/ToastMessage.tsx";
 import Modal from "./components/Modal.tsx";
 import Progress from "./components/Progress.tsx";
 import Words from "./components/Words.tsx";
@@ -13,6 +13,8 @@ import { useAppDispatch, useAppSelector } from "./store/mod.ts";
 import { selectUser, selectUserError, signin } from "./store/user.ts";
 import { submitWord } from "./store/game.ts";
 import {
+  removeInput,
+  scrambleLetters,
   selectError,
   selectInputDisabled,
   selectLetterMessage,
@@ -65,37 +67,25 @@ const LoggedIn: React.FC = () => {
             <Letters />
             <div className="App-letters-controls">
               <Button
-                onClick={() => {
-                  if (!inputDisabled) {
-                    dispatch({ type: "deleteInput" });
-                  }
-                }}
+                disabled={inputDisabled}
+                onClick={() => dispatch(removeInput())}
               >
                 Delete
               </Button>
               <Button
-                onClick={() => {
-                  if (!inputDisabled) {
-                    dispatch({ type: "scrambleLetters" });
-                  }
-                }}
+                disabled={inputDisabled}
+                onClick={() => dispatch(scrambleLetters())}
               >
                 Mix
               </Button>
-              <Button onClick={() => dispatch(submitWord())}>
+              <Button
+                disabled={inputDisabled}
+                onClick={() => dispatch(submitWord())}
+              >
                 Enter
               </Button>
             </div>
-            <Message
-              message={letterMessage?.message}
-              type={letterMessage?.type}
-              visibleTime="normal"
-              onHide={() => {
-                dispatch({ type: "clearInput" });
-                dispatch({ type: "enableInput" });
-                dispatch({ type: "clearLetterMessage" });
-              }}
-            />
+            <ToastMessage message={letterMessage} />
           </div>
 
           {!isVertical && (
@@ -105,10 +95,7 @@ const LoggedIn: React.FC = () => {
             </div>
           )}
 
-          <Message
-            message={toastMessage?.message}
-            type={toastMessage?.type}
-          />
+          <ToastMessage message={toastMessage} />
         </div>
       </>
 

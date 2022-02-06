@@ -11,6 +11,11 @@ type DefinedWord = {
   definition: string[] | undefined;
 };
 
+export type Message = {
+  message: string;
+  type: "normal" | "good" | "bad";
+};
+
 export type UiState = {
   input: string[];
   inputDisabled: boolean;
@@ -21,14 +26,8 @@ export type UiState = {
   newGameIds: number[];
   error?: string;
   warning?: string;
-  toastMessage?: {
-    message: string;
-    type: 'normal' | 'good' | 'bad';
-  };
-  letterMessage?: {
-    message: string;
-    type: 'normal' | 'good' | 'bad';
-  };
+  toastMessage?: Message;
+  letterMessage?: Message;
 };
 
 export const getDefinition = createAsyncThunk<
@@ -64,18 +63,21 @@ export const uiSlice = createSlice({
   reducers: {
     addInput: (state, action: PayloadAction<string>) => {
       if (action.payload.length !== 1) {
-        throw new Error('Only a single letter may be added');
+        throw new Error("Only a single letter may be added");
       }
       state.input = [...state.input, action.payload];
     },
     removeInput: (state) => {
       state.input = state.input.slice(0, state.input.length - 1);
     },
+    clearInput: (state) => {
+      state.input = [];
+    },
 
     scrambleLetters: (state) => {
       state.letters = [
         state.letters[0],
-        ...permute(state.letters.slice(1))
+        ...permute(state.letters.slice(1)),
       ];
     },
     setWordListExpanded: (state, action: PayloadAction<boolean>) => {
@@ -137,10 +139,6 @@ export const uiSlice = createSlice({
       state.newGameIds = newIds.filter((id) => !existingIds.includes(id));
     });
 
-    builder.addCase(submitWord.fulfilled, (state) => {
-      state.input = [];
-    });
-
     builder.addCase(activateGame.fulfilled, (state, { payload }) => {
       state.letters = [...payload.game.key];
     });
@@ -153,6 +151,7 @@ export const {
   addInput,
   clearDefinition,
   clearError,
+  clearInput,
   clearLetterMessage,
   clearNewGameIds,
   clearToastMessage,

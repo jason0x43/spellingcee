@@ -3,48 +3,59 @@ import { Game, GameWord, User } from "../types.ts";
 /**
  * An error thrown when a response indicates failure
  */
-export class ResponseError<T = unknown> extends Error {
+export class ResponseError extends Error {
   private _status: number;
-  private _body: T;
+  private _error: string | undefined;
+  private _details: Record<string, unknown> | undefined;
 
-  static async create<B = unknown>(
+  static async create(
     response: Response,
     action?: string,
-  ): Promise<ResponseError<B>> {
-    let body: unknown;
+  ): Promise<ResponseError> {
     try {
-      body = await response.text();
-      body = JSON.parse(body as string);
-    } catch (error) {
-      console.warn("Error reading body", error);
-      // ignore, just use the original text
+      const text = await response.text();
+      const obj = JSON.parse(text);
+      const { error, ...details } = obj;
+      return new ResponseError(
+        action,
+        response.status,
+        response.statusText,
+        error,
+        details
+      );
+    } catch {
+      return new ResponseError(
+        action,
+        response.status,
+        response.statusText,
+        undefined
+      );
     }
-
-    return new ResponseError(
-      action,
-      response.status,
-      response.statusText,
-      body as B,
-    );
   }
 
   constructor(
     action: string | undefined,
     status: number,
     statusText: string,
-    body: T,
+    error: string | undefined,
+    details?: Record<string, unknown>,
   ) {
     super(action ? `Error while ${action}` : statusText);
     this._status = status;
-    this._body = body;
+    this._error = error;
+    this._details = details;
   }
 
   get status() {
     return this._status;
   }
 
-  get body() {
-    return this._body;
+  get error() {
+    return this._error;
+  }
+
+  get details() {
+    return this._details;
   }
 }
 
@@ -53,6 +64,7 @@ export class ResponseError<T = unknown> extends Error {
  */
 async function assertSuccess(response: Response, action?: string) {
   if (response.status >= 400) {
+    console.log('response status was bad');
     throw await ResponseError.create(response, action);
   }
 }
@@ -89,7 +101,7 @@ async function get<T = unknown>(
   options?: RequestInit,
 ): Promise<T> {
   const response = await fetch(path, options);
-  assertSuccess(response, `GETting ${path}`);
+  await assertSuccess(response, `GETting ${path}`);
   return await response.json() as T;
 }
 
@@ -108,7 +120,7 @@ async function patch<T = unknown>(
       method: "PATCH",
     }),
   );
-  assertSuccess(response, `PATCHing ${path}`);
+  await assertSuccess(response, `PATCHing ${path}`);
   return await response.json() as T;
 }
 
@@ -127,7 +139,7 @@ async function post<T = unknown>(
       method: "POST",
     }),
   );
-  assertSuccess(response, `POSTing to ${path}`);
+  await assertSuccess(response, `POSTing to ${path}`);
   return await response.json() as T;
 }
 

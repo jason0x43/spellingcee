@@ -1,10 +1,11 @@
 import { Game, GameWord } from "../../types.ts";
 import { Words } from "../types.ts";
-import { createAsyncThunk, createSlice } from "../deps.ts";
-import { addWord, createGame, getWords, setActiveGame } from "../api.ts";
-import { AppState } from "./mod.ts";
+import { createAsyncThunk, createSlice, PayloadAction } from "../deps.ts";
+import * as api from "../api.ts";
+import { AppDispatch, AppState } from "./mod.ts";
 import { selectGames, signin } from "./user.ts";
-import { selectInput } from "./ui.ts";
+import { clearInput, clearLetterMessage, selectInput, setInputDisabled, setLetterMessage } from "./ui.ts";
+import { ResponseError } from "../api.ts";
 
 export type GameState = {
   game: Game | null;
@@ -36,16 +37,16 @@ export const activateGame = createAsyncThunk<
         throw new Error(`Unknown game ID: ${gameId}`);
       }
 
-      await setActiveGame(gameId);
+      await api.setActiveGame(gameId);
 
       return {
         game: g,
-        words: await getWords(g.id),
+        words: await api.getWords(g.id),
       };
     }
 
     return {
-      game: await createGame(),
+      game: await api.createGame(),
       words: [],
     };
   },
@@ -64,12 +65,12 @@ export const shareActiveGame = createAsyncThunk<
 );
 
 export const submitWord = createAsyncThunk<
-  GameWord,
   void,
-  { state: AppState }
+  void,
+  { state: AppState; dispatch: AppDispatch }
 >(
   "game/submitWord",
-  async (_, { getState }) => {
+  async (_, { getState, dispatch }) => {
     const game = selectGame(getState());
     const inputValue = selectInput(getState());
 
@@ -77,10 +78,27 @@ export const submitWord = createAsyncThunk<
       throw new Error("No active game");
     }
 
-    return await addWord({
-      gameId: game.id,
-      word: inputValue.join(""),
-    });
+    try {
+      const word = await api.addWord({
+        gameId: game.id,
+        word: inputValue.join(""),
+      });
+      dispatch(addWord(word));
+      dispatch(clearInput());
+    } catch (error) {
+      const message = error instanceof ResponseError
+        ? error.error
+        : error.message;
+      dispatch(setInputDisabled(true));
+      dispatch(setLetterMessage({ type: "bad", message }));
+
+      setTimeout(() => {
+        dispatch(clearInput());
+        dispatch(setInputDisabled(false));
+        dispatch(clearLetterMessage());
+      }, 1000);
+      throw error;
+    }
   },
 );
 
@@ -94,22 +112,17 @@ export const gameSlice = createSlice({
 
   initialState,
 
-  reducers: {},
+  reducers: {
+    addWord: (state, action: PayloadAction<GameWord>) => {
+      const { payload } = action;
+      state.words[payload.word] = payload;
+    },
+  },
 
   extraReducers: (builder) => {
-    // builder.addCase(activateGame.rejected, (state, { error }) => {
-    //   state.error = error.message;
-    // });
     builder.addCase(activateGame.fulfilled, (state, { payload }) => {
       state.game = payload.game;
       state.words = toWords(payload.words);
-    });
-
-    // builder.addCase(submitWord.rejected, (state, { error }) => {
-    //   state.error = error.message;
-    // });
-    builder.addCase(submitWord.fulfilled, (state, { payload }) => {
-      state.words[payload.word] = payload;
     });
 
     builder.addCase(signin.fulfilled, (state, { payload }) => {
@@ -119,6 +132,8 @@ export const gameSlice = createSlice({
     });
   },
 });
+
+const { addWord } = gameSlice.actions;
 
 export default gameSlice.reducer;
 

@@ -36,7 +36,7 @@
   margin: var(--unit);
 }
 
-.App .Message {
+.App .ToastMessage {
   position: absolute;
   left: 50%;
   top: calc(var(--inner-content-padding) / 2);
@@ -132,12 +132,12 @@
     justify-content: space-evenly;
   }
 
-  .App .Message {
+  .App .ToastMessage {
     top: 110px;
     transform: translate(-50%, 0);
   }
 
-  .App-letters .Message {
+  .App-letters .ToastMessage {
     top: 20px;
   }
 
