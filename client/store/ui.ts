@@ -3,7 +3,6 @@ import { AppState } from "./mod.ts";
 import { getDefinition as getDef } from "../api.ts";
 import { AppDispatch } from "./mod.ts";
 import { getUserGames } from "./user.ts";
-import { activateGame, submitWord } from "./game.ts";
 import { permute } from "../../shared/util.ts";
 
 type DefinedWord = {
@@ -19,7 +18,7 @@ export type Message = {
 export type UiState = {
   input: string[];
   inputDisabled: boolean;
-  letters: string[];
+  letterIndices: number[];
   wordListExpanded: boolean;
   definition?: DefinedWord;
   gameIds: number[];
@@ -51,7 +50,7 @@ const initialState: UiState = {
   wordListExpanded: false,
   gameIds: [],
   input: [],
-  letters: [],
+  letterIndices: [0, 1, 2, 3, 4, 5, 6],
   newGameIds: [],
 };
 
@@ -75,9 +74,9 @@ export const uiSlice = createSlice({
     },
 
     scrambleLetters: (state) => {
-      state.letters = [
-        state.letters[0],
-        ...permute(state.letters.slice(1)),
+      state.letterIndices = [
+        0,
+        ...permute(state.letterIndices.slice(1)),
       ];
     },
     setWordListExpanded: (state, action: PayloadAction<boolean>) => {
@@ -138,10 +137,6 @@ export const uiSlice = createSlice({
       state.gameIds = newIds;
       state.newGameIds = newIds.filter((id) => !existingIds.includes(id));
     });
-
-    builder.addCase(activateGame.fulfilled, (state, { payload }) => {
-      state.letters = [...payload.game.key];
-    });
   },
 });
 
@@ -172,6 +167,7 @@ export const selectInputDisabled = (state: AppState) => state.ui.inputDisabled;
 export const selectDefinition = (state: AppState) => state.ui.definition;
 export const selectNewGameIds = (state: AppState) => state.ui.newGameIds;
 export const selectInput = (state: AppState) => state.ui.input;
+export const selectLetterIndices = (state: AppState) => state.ui.letterIndices;
 export const selectError = (state: AppState) => state.ui.error;
 export const selectWarning = (state: AppState) => state.ui.warning;
 export const selectLetterMessage = (state: AppState) => state.ui.letterMessage;

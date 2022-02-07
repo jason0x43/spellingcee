@@ -7,10 +7,11 @@ import {
   scrambleLetters,
   selectInput,
   selectInputDisabled,
+  selectLetterIndices,
 } from "../store/ui.ts";
 import { classNames } from "../util.ts";
 
-const { useCallback, useEffect, useMemo, useState } = React;
+const { useEffect, useState } = React;
 const tileSize = 100;
 
 // Vertexes of hexagonal tiles
@@ -30,26 +31,13 @@ const points = (function () {
   return p.map((pt) => `${pt[0]},${pt[1]}`).join(" ");
 })();
 
-type Indices = { [letter: string]: number | "center" };
-
 const Letters: React.FC = () => {
   const [activeLetter, setActiveLetter] = useState<string>();
   const disabled = useAppSelector(selectInputDisabled);
   const letters = useAppSelector(selectGameLetters);
+  const letterIndices = useAppSelector(selectLetterIndices);
   const input = useAppSelector(selectInput);
   const dispatch = useAppDispatch();
-
-  const indices: Indices = useMemo(() => {
-    if (letters) {
-      const newIndices: Indices = { [letters[0]]: "center" };
-      const nonCenter = letters.slice(1);
-      for (let i = 0; i < nonCenter.length; i++) {
-        newIndices[nonCenter[i]] = i;
-      }
-      return newIndices;
-    }
-    return {};
-  }, [letters]);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -108,41 +96,38 @@ const Letters: React.FC = () => {
     setActiveLetter(undefined);
   };
 
-  const renderLetter = useCallback(
-    (letter: string) => {
-      const letterClassName = `Letters-letter Letters-letter-${
-        indices[letter]
-      }`;
-      const shapeClassName = classNames({
-        "Letters-letter-shape": true,
-        "Letters-letter-shape-active": letter === activeLetter,
-      });
+  const renderLetter = (letter: string) => {
+    const index = letters!.indexOf(letter);
+    const letterIndex = letterIndices[index] || 'center';
+    const letterClassName = `Letters-letter Letters-letter-${letterIndex}`;
+    const shapeClassName = classNames({
+      "Letters-letter-shape": true,
+      "Letters-letter-shape-active": letter === activeLetter,
+    });
 
-      return (
-        <svg
-          key={letter}
-          className={letterClassName}
-          viewBox={`0 0 ${tileSize} ${tileSize}`}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onTouchEnd={handleMouseUp}
+    return (
+      <svg
+        key={letter}
+        className={letterClassName}
+        viewBox={`0 0 ${tileSize} ${tileSize}`}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onTouchEnd={handleMouseUp}
+      >
+        <polygon className={shapeClassName} points={points} />
+        <text
+          x="50%"
+          y="50%"
+          dy="3%"
+          dominantBaseline="middle"
+          textAnchor="middle"
         >
-          <polygon className={shapeClassName} points={points} />
-          <text
-            x="50%"
-            y="50%"
-            dy="3%"
-            dominantBaseline="middle"
-            textAnchor="middle"
-          >
-            {letter}
-          </text>
-        </svg>
-      );
-    },
-    [activeLetter, handleMouseUp, handleMouseDown, indices],
-  );
+          {letter}
+        </text>
+      </svg>
+    );
+  };
 
   return (
     <div className="Letters">

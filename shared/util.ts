@@ -13,16 +13,16 @@ export function isPangram(word: string): boolean {
 }
 
 /**
- * Permute the letters in a string
+ * Permute the values in an array
  */
-export function permute(letters: string[]): string[] {
-  const newLetters: string[] = [];
-  const oldLetters = letters.slice();
-  while (oldLetters.length > 0) {
-    const index = random(oldLetters.length);
-    newLetters.push(oldLetters.splice(index, 1)[0]);
+export function permute<T>(values: T[]): T[] {
+  const newValues: T[] = [];
+  const oldValues = values.slice();
+  while (oldValues.length > 0) {
+    const index = random(oldValues.length);
+    newValues.push(oldValues.splice(index, 1)[0]);
   }
-  return newLetters;
+  return newValues;
 }
 
 /**
