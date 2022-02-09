@@ -1,6 +1,7 @@
 import { classNames } from "./util.ts";
 import { React } from "./deps.ts";
 import Button from "./components/Button.tsx";
+import Input from "./components/Input.tsx";
 import LetterInput from "./components/LetterInput.tsx";
 import Letters from "./components/Letters.tsx";
 import MenuBar from "./components/MenuBar.tsx";
@@ -119,25 +120,22 @@ const Login: React.FC = () => {
 
   return (
     <form className="Login">
-      <input
+      <Input
         placeholder="Email"
         value={email}
-        onChange={(event) => {
-          setEmail(event.target.value);
-        }}
+        onChange={setEmail}
       />
-      <input
+      <Input
         placeholder="Password"
         type="password"
         value={password}
-        onChange={(event) => setPassword(event.target.value)}
+        onChange={setPassword}
       />
-      <button
-        type="button"
+      <Button
         onClick={() => dispatch(signin({ email, password }))}
       >
         Login
-      </button>
+      </Button>
 
       {error && <div className="LoginError">{error}</div>}
     </form>

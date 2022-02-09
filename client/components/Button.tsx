@@ -41,6 +41,7 @@ const Button: React.FC<ButtonProps> = (props) => {
       title={tooltip}
       onClick={onClick}
       onClickCapture={onClickCapture}
+      type="button"
     >
       {children}
     </button>
