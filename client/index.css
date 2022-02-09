@@ -56,9 +56,9 @@ code {
     --text-color-bright: #ccc;
     --highlight: #225566;
     --highlight-active: #336677;
-    --shaded: #444444;
-    --shaded-active: #777777;
-    --shaded-hover: #222222;
+    --shaded: #222222;
+    --shaded-active: #444444;
+    --shaded-hover: #333333;
     --border-color: #222222;
     --shadow-color: rgba(150, 150, 150, 0.07);
     --warn-background: rgba(187, 136, 0, 0.9);

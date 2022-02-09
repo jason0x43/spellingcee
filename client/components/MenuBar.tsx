@@ -32,17 +32,18 @@ const MenuGame: React.FC<MenuGameProps> = (props) => {
   const otherUsers = useAppSelector(selectOtherUsers);
   const newGameIds = useAppSelector(selectNewGameIds);
   const dispatch = useAppDispatch();
+  const isCurrentGame = game.id === user?.currentGame;
 
   return (
     <li
       className={classNames({
         "MenuBar-select-item": true,
-        "MenuBar-select-item-noselect": game.id === game?.id,
+        "MenuBar-select-item-noselect": isCurrentGame,
       })}
       key={game.id}
       data-item-id={game.id}
       onClick={() => {
-        if (game.id !== user?.currentGame) {
+        if (!isCurrentGame) {
           dispatch(activateGame(game.id));
           dispatch(clearNewGameIds);
           onSelect();
@@ -156,7 +157,7 @@ const MenuBar: React.FC = () => {
             onClick={() => setSelectingGame(true)}
           >
             Games
-            {newGameIds != null && <NotifyIcon className="MenuBar-notify" />}
+            {newGameIds.length > 0 && <NotifyIcon className="MenuBar-notify" />}
           </div>
           <div
             className="MenuBar-item"

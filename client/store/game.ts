@@ -3,7 +3,13 @@ import { createAsyncThunk, createSlice, PayloadAction } from "../deps.ts";
 import * as api from "../api.ts";
 import { AppDispatch, AppState } from "./mod.ts";
 import { selectGames, signin } from "./user.ts";
-import { clearInput, clearLetterMessage, selectInput, setInputDisabled, setLetterMessage } from "./ui.ts";
+import {
+  clearInput,
+  clearLetterMessage,
+  selectInput,
+  setInputDisabled,
+  setLetterMessage,
+} from "./ui.ts";
 import { ResponseError } from "../api.ts";
 
 export type GameState = {
@@ -12,12 +18,12 @@ export type GameState = {
 };
 
 export const activateGame = createAsyncThunk<
-  { game: Game; words: Words },
+  number,
   number | undefined,
-  { state: AppState }
+  { state: AppState; dispatch: AppDispatch }
 >(
   "game/activate",
-  async (gameId, { getState }) => {
+  async (gameId, { dispatch, getState }) => {
     if (gameId) {
       const games = selectGames(getState());
       const g = games.find(({ id }) => id === gameId);
@@ -26,17 +32,17 @@ export const activateGame = createAsyncThunk<
       }
 
       await api.setActiveGame(gameId);
+      const words = await api.getWords(gameId);
 
-      return {
-        game: g,
-        words: await api.getWords(g.id),
-      };
+      dispatch(setGame(g));
+      dispatch(setWords(words));
+      return gameId;
     }
 
-    return {
-      game: await api.createGame(),
-      words: {},
-    };
+    const game = await api.createGame();
+    dispatch(setGame(game));
+    dispatch(setWords({}));
+    return game.id;
   },
 );
 
@@ -105,14 +111,16 @@ export const gameSlice = createSlice({
       const { payload } = action;
       state.words[payload.word] = payload;
     },
+
+    setGame: (state, action: PayloadAction<Game>) => {
+      state.game = action.payload;
+    },
+    setWords: (state, action: PayloadAction<Words>) => {
+      state.words = action.payload;
+    },
   },
 
   extraReducers: (builder) => {
-    builder.addCase(activateGame.fulfilled, (state, { payload }) => {
-      state.game = payload.game;
-      state.words = payload.words;
-    });
-
     builder.addCase(signin.fulfilled, (state, { payload }) => {
       const { user, games, words } = payload;
       state.game = games.find((g) => g.id === user.currentGame) ?? null;
@@ -121,7 +129,7 @@ export const gameSlice = createSlice({
   },
 });
 
-const { addWord } = gameSlice.actions;
+const { addWord, setGame, setWords } = gameSlice.actions;
 
 export default gameSlice.reducer;
 

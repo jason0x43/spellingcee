@@ -2,6 +2,7 @@ import { Game, Words, OtherUser, User } from "../../types.ts";
 import { createAsyncThunk, createSlice } from "../deps.ts";
 import { AppDispatch, AppState } from "./mod.ts";
 import { getGames, getWords, login } from "../api.ts";
+import { activateGame } from "./game.ts";
 
 export type UserState = {
   user: User | null;
@@ -76,6 +77,12 @@ export const userSlice = createSlice({
     });
     builder.addCase(getUserGames.rejected, (state, { error }) => {
       state.error = error.message || `${error}`;
+    });
+
+    builder.addCase(activateGame.fulfilled, (state, { payload }) => {
+      if (state.user) {
+        state.user.currentGame = payload;
+      }
     });
   },
 });
