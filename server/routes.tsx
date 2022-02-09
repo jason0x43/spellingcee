@@ -3,7 +3,7 @@ import { React } from "../client/deps.ts";
 import {
   addGameWord,
   addUser,
-  getUserIdFromEmail,
+  getUserIdFromUsername,
   isUserPassword,
   userCanPlay,
 } from "./database/mod.ts";
@@ -268,7 +268,7 @@ export function createRouter(init: RouterConfig) {
 
     const body = request.body();
     const data = await body.value as LoginRequest;
-    const userId = getUserIdFromEmail(data.email);
+    const userId = getUserIdFromUsername(data.username);
 
     if (!isUserPassword(userId, data.password)) {
       response.status = 400;

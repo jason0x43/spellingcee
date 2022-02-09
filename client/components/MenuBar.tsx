@@ -73,7 +73,7 @@ const MenuGame: React.FC<MenuGameProps> = (props) => {
           otherUsers?.find(({ id }) => id === game.userId) && (
           <div>
             <dt>Creator</dt>
-            <dd>{otherUsers[game.userId].name}</dd>
+            <dd>{otherUsers[game.userId].username}</dd>
           </div>
         )}
       </dl>
@@ -128,7 +128,7 @@ const MenuUser: React.FC<MenuUserProps> = (props) => {
         onSelect();
       }}
     >
-      <div className="MenuBar-select-user">{user.name}</div>
+      <div className="MenuBar-select-user">{user.username}</div>
     </li>
   );
 };
@@ -243,6 +243,7 @@ const MenuBar: React.FC = () => {
                     .filter(({ id }) => id !== user.id)
                     .map((u) => (
                       <MenuUser
+                        key={u.id}
                         user={u}
                         onSelect={() => setSelectingUser(false)}
                       />
@@ -258,7 +259,7 @@ const MenuBar: React.FC = () => {
         <div ref={menuRef} className="MenuBar-menu">
           <div className="MenuBar-menu-section">
             <div className="MenuBar-menu-item">
-              <strong>Name:</strong> {user.name}
+              <strong>Name:</strong> {user.username}
             </div>
             <div className="MenuBar-menu-item">
               <strong>ID:</strong> {user.id}

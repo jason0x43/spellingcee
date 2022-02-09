@@ -10,8 +10,8 @@ export type Game = {
 export type User = {
   /** A unique ID */
   id: number;
-  /** The user's name */
-  name: string;
+  /** A unique username */
+  username: string;
   /** The user's email address */
   email: string;
 };

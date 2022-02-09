@@ -2,7 +2,7 @@ import { Arguments, log, Yargs, yargs } from "./deps.ts";
 import { serve } from "./server/mod.ts";
 import {
   addUser,
-  getUserIdFromEmail,
+  getUserIdFromUsername,
   isUserPassword,
   openDatabase,
   updateUserPassword,
@@ -39,27 +39,32 @@ const parser = yargs(Deno.args)
   .option("h", {
     alias: "help",
   })
+  .middleware([configureLogger])
   .command("serve", "Start the RSS aggregator server", {}, async () => {
     await serve(port);
   })
   .command(
-    "adduser <email> <name>",
+    "adduser <username> <email>",
     "Add a new user",
     (yargs: Yargs) => {
+      yargs.positional("username", {
+        describe: "The user's name, or a username",
+        type: "string",
+      });
       yargs.positional("email", {
         describe: "An email address for the new account",
         type: "string",
       });
-      yargs.positional("name", {
-        describe: "The user's name, or a username",
-        type: "string",
-      });
     },
-    async (args: Arguments & { email: string; name: string }) => {
+    async (args: Arguments & { email: string; username: string }) => {
       const password = await promptSecret("Password: ");
       if (password) {
         let user: User;
-        const userData = { email: args.email, name: args.name, password };
+        const userData = {
+          email: args.email,
+          username: args.username,
+          password,
+        };
         try {
           const response = await fetch(`http://localhost:${port}/user`, {
             method: "POST",
@@ -83,17 +88,17 @@ const parser = yargs(Deno.args)
     },
   )
   .command(
-    "resetpw <email>",
+    "resetpw <username>",
     "Reset a user password",
     (yargs: Yargs) => {
-      yargs.positional("email", {
-        describe: "An existing account email address",
+      yargs.positional("username", {
+        describe: "An existing account username",
         type: "string",
       });
     },
-    async (args: Arguments & { email: string }) => {
+    async (args: Arguments & { username: string }) => {
       openDatabase();
-      const userId = getUserIdFromEmail(args.email);
+      const userId = getUserIdFromUsername(args.username);
       const password = await promptSecret("Password: ");
       if (password) {
         updateUserPassword(userId, password);
@@ -104,17 +109,17 @@ const parser = yargs(Deno.args)
     },
   )
   .command(
-    "login <email>",
+    "login <username>",
     "Authenticate as a given user",
     (yargs: Yargs) => {
-      yargs.positional("email", {
-        describe: "An existing account email address",
+      yargs.positional("username", {
+        describe: "An existing account username",
         type: "string",
       });
     },
-    async (args: Arguments & { email: string }) => {
+    async (args: Arguments & { username: string }) => {
       openDatabase();
-      const userId = getUserIdFromEmail(args.email);
+      const userId = getUserIdFromUsername(args.username);
       const password = await promptSecret("Password: ");
       if (password) {
         if (isUserPassword(userId, password)) {

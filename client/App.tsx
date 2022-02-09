@@ -113,7 +113,7 @@ const LoggedIn: React.FC = () => {
 };
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useAppDispatch();
   const error = useAppSelector(selectUserError);
@@ -121,9 +121,9 @@ const Login: React.FC = () => {
   return (
     <form className="Login">
       <Input
-        placeholder="Email"
-        value={email}
-        onChange={setEmail}
+        placeholder="Username"
+        value={username}
+        onChange={setUsername}
       />
       <Input
         placeholder="Password"
@@ -132,7 +132,7 @@ const Login: React.FC = () => {
         onChange={setPassword}
       />
       <Button
-        onClick={() => dispatch(signin({ email, password }))}
+        onClick={() => dispatch(signin({ username, password }))}
       >
         Login
       </Button>

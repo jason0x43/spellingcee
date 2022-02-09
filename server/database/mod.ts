@@ -5,7 +5,7 @@ export { inTransaction };
 export {
   addUser,
   getUser,
-  getUserIdFromEmail,
+  getUserIdFromUsername,
   isUserPassword,
   updateUserPassword,
 } from "./users.ts";
@@ -76,10 +76,10 @@ const migrations: Migration[] = [
         db.query(
           `CREATE TABLE users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
             email TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
-            deleted BOOLEAN NOT NULL DEFAULT FALSE,
-            name TEXT
+            deleted BOOLEAN NOT NULL DEFAULT FALSE
           )`,
         );
 

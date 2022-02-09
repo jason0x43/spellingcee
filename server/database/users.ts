@@ -11,22 +11,22 @@ const {
 >()(
   "id",
   "email",
-  "name",
+  "username"
 );
 
-export function addUser({ name, email, password }: {
-  name: string;
+export function addUser({ username, email, password }: {
+  username: string;
   email: string;
   password: string;
 }): User {
-  log.debug(`Adding user with email ${email}`);
+  log.debug(`Adding user ${username} with email ${email}`);
   const hashedPassword = bcrypt.hashSync(password);
   log.debug('Hashed the password');
   const user = userQuery(
-    `INSERT INTO users (name, email, password)
-    VALUES (:name, :email, :password)
+    `INSERT INTO users (username, email, password)
+    VALUES (:username, :email, :password)
     RETURNING ${userColumns}`,
-    { name, email, password: hashedPassword },
+    { username, email, password: hashedPassword },
   )[0];
   log.debug('Finished add');
   return user;
@@ -51,17 +51,17 @@ export function getUsers(): User[] {
   );
 }
 
-export function getUserIdFromEmail(email: string): number {
-  log.debug(`Getting user ID for email ${email}`);
+export function getUserIdFromUsername(username: string): number {
+  log.debug(`Getting user ID for username ${username}`);
   const userId = select(
     `SELECT id 
     FROM users
-    WHERE email = (:email) AND deleted = FALSE`,
+    WHERE username = (:username) AND deleted = FALSE`,
     (row) => row[0] as number,
-    { email },
+    { username },
   )[0];
   if (!userId) {
-    throw new Error(`No user with email ${email}`);
+    throw new Error(`No user with username ${username}`);
   }
   return userId;
 }

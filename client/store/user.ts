@@ -13,13 +13,13 @@ export type UserState = {
 
 export const signin = createAsyncThunk<
   { user: User; games: Game[]; words: Words },
-  { email: string; password: string },
+  { username: string; password: string },
   { dispatch: AppDispatch }
 >(
   "user/signin",
-  async ({ email, password }, { dispatch }) => {
+  async ({ username, password }, { dispatch }) => {
     dispatch(clearError());
-    const user = await login(email, password);
+    const user = await login(username, password);
     const games = await getGames();
     const words = user.currentGame ? await getWords(user.currentGame) : {};
     return {

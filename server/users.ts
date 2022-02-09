@@ -13,8 +13,8 @@ export function getUser(userId: number): User {
 
 export function getOtherUsers(userId: number): OtherUser[] {
   const users = getUsers();
-  return users.filter(({ id }) => id !== userId).map(({ id, name }) => ({
+  return users.filter(({ id }) => id !== userId).map(({ id, username }) => ({
     id,
-    name,
+    username,
   }));
 }

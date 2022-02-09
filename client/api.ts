@@ -169,10 +169,10 @@ export async function addWord(
 }
 
 /**
- * Login a user by email address
+ * Login a user by username
  */
-export async function login(email: string, password: string): Promise<User> {
-  return await post<User>("/login", { email, password });
+export async function login(username: string, password: string): Promise<User> {
+  return await post<User>("/login", { username, password });
 }
 
 /**

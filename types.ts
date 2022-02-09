@@ -24,11 +24,11 @@ export type Words = {
 
 export type OtherUser = {
   id: number;
-  name: string;
+  username: string;
 };
 
 export type LoginRequest = {
-  email: string;
+  username: string;
   password: string;
 };
 
@@ -37,7 +37,7 @@ export type AddWordRequest = {
 };
 
 export type AddUserRequest = {
+  username: string;
   email: string;
   password: string;
-  name: string;
 };
