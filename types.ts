@@ -1,5 +1,8 @@
-import { Game as DbGame, User as DbUser } from "./server/database/types.ts";
-export type { GameWord } from "./server/database/types.ts";
+import {
+  Game as DbGame,
+  GameWord,
+  User as DbUser,
+} from "./server/database/types.ts";
 
 export type AppState = {
   userId: number;
@@ -11,6 +14,12 @@ export type User = DbUser & {
 
 export type Game = DbGame & {
   numWords: number;
+};
+
+export { type GameWord };
+
+export type Words = {
+  [word: string]: GameWord;
 };
 
 export type OtherUser = {

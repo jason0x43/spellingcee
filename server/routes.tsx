@@ -12,9 +12,9 @@ import {
   AddWordRequest,
   AppState,
   Game,
-  GameWord,
   LoginRequest,
   User,
+  Words,
 } from "../types.ts";
 import { getDefinition } from "./dictionary.ts";
 import { Provider } from "../client/deps.ts";
@@ -305,7 +305,7 @@ export function createRouter(init: RouterConfig) {
 
     const user = getUser(state.userId);
     let game: Game;
-    let words: Record<string, GameWord>;
+    let words: Words;
 
     const gotGame = Date.now();
     log.debug(`Got user and game in ${gotGame - start} ms`);

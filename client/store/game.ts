@@ -1,5 +1,4 @@
-import { Game, GameWord } from "../../types.ts";
-import { Words } from "../types.ts";
+import { Game, GameWord, Words } from "../../types.ts";
 import { createAsyncThunk, createSlice, PayloadAction } from "../deps.ts";
 import * as api from "../api.ts";
 import { AppDispatch, AppState } from "./mod.ts";
@@ -12,19 +11,8 @@ export type GameState = {
   words: Words;
 };
 
-function toWords(words: GameWord[]): Words {
-  if (!words) {
-    return {};
-  }
-
-  return words.reduce((gw, word) => {
-    gw[word.word] = word;
-    return gw;
-  }, {} as Words);
-}
-
 export const activateGame = createAsyncThunk<
-  { game: Game; words: GameWord[] },
+  { game: Game; words: Words },
   number | undefined,
   { state: AppState }
 >(
@@ -47,7 +35,7 @@ export const activateGame = createAsyncThunk<
 
     return {
       game: await api.createGame(),
-      words: [],
+      words: {},
     };
   },
 );
@@ -122,13 +110,13 @@ export const gameSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(activateGame.fulfilled, (state, { payload }) => {
       state.game = payload.game;
-      state.words = toWords(payload.words);
+      state.words = payload.words;
     });
 
     builder.addCase(signin.fulfilled, (state, { payload }) => {
       const { user, games, words } = payload;
       state.game = games.find((g) => g.id === user.currentGame) ?? null;
-      state.words = toWords(words);
+      state.words = words;
     });
   },
 });

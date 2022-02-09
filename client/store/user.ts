@@ -1,4 +1,4 @@
-import { Game, GameWord, OtherUser, User } from "../../types.ts";
+import { Game, Words, OtherUser, User } from "../../types.ts";
 import { createAsyncThunk, createSlice } from "../deps.ts";
 import { AppDispatch, AppState } from "./mod.ts";
 import { getGames, getWords, login } from "../api.ts";
@@ -11,7 +11,7 @@ export type UserState = {
 };
 
 export const signin = createAsyncThunk<
-  { user: User; games: Game[]; words: GameWord[] },
+  { user: User; games: Game[]; words: Words },
   { email: string; password: string },
   { dispatch: AppDispatch }
 >(
@@ -20,7 +20,7 @@ export const signin = createAsyncThunk<
     dispatch(clearError());
     const user = await login(email, password);
     const games = await getGames();
-    const words = user.currentGame ? await getWords(user.currentGame) : [];
+    const words = user.currentGame ? await getWords(user.currentGame) : {};
     return {
       user,
       games,
@@ -65,6 +65,7 @@ export const userSlice = createSlice({
     builder.addCase(signin.fulfilled, (state, { payload }) => {
       state.user = payload.user;
       state.games = payload.games;
+      console.log('set user to', state.user);
     });
     builder.addCase(signin.rejected, (state, { error }) => {
       state.error = error.message || `${error}`;

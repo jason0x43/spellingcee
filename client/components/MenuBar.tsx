@@ -266,7 +266,7 @@ const MenuBar: React.FC = () => {
           <div className="MenuBar-menu-section">
             <div
               className="MenuBar-menu-item MenuBar-menu-item-pressable"
-              onClick={signout}
+              onClick={() => dispatch(signout())}
             >
               Sign out
             </div>

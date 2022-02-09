@@ -1,4 +1,4 @@
-import { Game, GameWord, User } from "../types.ts";
+import { Game, GameWord, User, Words } from "../types.ts";
 
 /**
  * An error thrown when a response indicates failure
@@ -153,8 +153,8 @@ export async function getGames(): Promise<Game[]> {
 /**
  * Get the words for a given game
  */
-export async function getWords(gameId: number): Promise<GameWord[]> {
-  return await get<GameWord[]>(`/games/${gameId}/words`);
+export async function getWords(gameId: number): Promise<Words> {
+  return await get<Words>(`/games/${gameId}/words`);
 }
 
 /**

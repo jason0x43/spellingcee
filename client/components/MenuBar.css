@@ -187,6 +187,10 @@
   cursor: pointer;
 }
 
+.MenuBar-menu-item-pressable {
+  cursor: pointer;
+}
+
 .MenuBar-menu-item-pressable:hover {
   background: var(--shaded);
 }
