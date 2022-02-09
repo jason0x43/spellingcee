@@ -113,7 +113,7 @@
     flex-grow: 0;
   }
 
-  .App-letters .Input {
+  .App-letters .LetterInput {
     margin-bottom: calc(var(--unit) * 8);
   }
 }

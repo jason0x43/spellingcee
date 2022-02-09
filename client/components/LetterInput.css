@@ -1,4 +1,4 @@
-.Input {
+.LetterInput {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -8,7 +8,7 @@
   text-transform: capitalize;
 }
 
-.Input-cursor {
+.LetterInput-cursor {
   --blink: blinky steps(2, start) 1500ms infinite;
   animation: var(--blink);
   -webkit-animation: var(--blink);
@@ -22,18 +22,18 @@
   to { visibility: hidden; }
 }
 
-.Input-letter {
+.LetterInput-letter {
   margin-right: 4px;
   display: flex;
   align-items: center;
   color: var(--text-color);
 }
 
-.Input-letter-invalid {
+.LetterInput-letter-invalid {
   color: var(--text-color-dim);
 }
 
-.Input-invalid {
+.LetterInput-invalid {
   animation: shake ease-in-out 0.3s;
 }
 
@@ -46,40 +46,40 @@
   100% { transform: translateX(0px); }
 }
 
-.Input-11 .Input-letter {
+.LetterInput-11 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.95);
 }
-.Input-12 .Input-letter {
+.LetterInput-12 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.90);
 }
-.Input-13 .Input-letter {
+.LetterInput-13 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.85);
 }
-.Input-14 .Input-letter {
+.LetterInput-14 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.80);
   margin-right: 3px;
 }
-.Input-15 .Input-letter {
+.LetterInput-15 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.75);
   margin-right: 3px;
 }
-.Input-16 .Input-letter {
+.LetterInput-16 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.70);
   margin-right: 3px;
 }
-.Input-17 .Input-letter {
+.LetterInput-17 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.65);
   margin-right: 2px;
 }
-.Input-18 .Input-letter {
+.LetterInput-18 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.60);
   margin-right: 2px;
 }
-.Input-19 .Input-letter {
+.LetterInput-19 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.55);
   margin-right: 1px;
 }
-.Input-20 .Input-letter {
+.LetterInput-20 .LetterInput-letter {
   font-size: calc(var(--font-size-large) * 0.55);
   margin-right: 1px;
 }

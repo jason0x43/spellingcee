@@ -4,20 +4,20 @@ import { useAppSelector } from "../store/mod.ts";
 import { selectInput } from "../store/ui.ts";
 import { classNames } from "../util.ts";
 
-const Input: React.FC = () => {
+const LetterInput: React.FC = () => {
   const input = useAppSelector(selectInput);
   const validLetters = useAppSelector(selectGameLetters);
 
   const className = classNames({
-    Input: true,
-    [`Input-${input.length}`]: true,
+    LetterInput: true,
+    [`LetterInput-${input.length}`]: true,
   });
   return (
     <div className={className}>
       {input.map((letter, i) => {
         const className = classNames({
-          "Input-letter": true,
-          "Input-letter-invalid": !validLetters?.includes(letter),
+          "LetterInput-letter": true,
+          "LetterInput-letter-invalid": !validLetters?.includes(letter),
         });
         return (
           <div key={i} className={className}>
@@ -26,9 +26,9 @@ const Input: React.FC = () => {
         );
       })}
 
-      <div className="Input-cursor" />
+      <div className="LetterInput-cursor" />
     </div>
   );
 };
 
-export default Input;
+export default LetterInput;

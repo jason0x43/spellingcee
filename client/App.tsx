@@ -1,7 +1,7 @@
 import { classNames } from "./util.ts";
 import { React } from "./deps.ts";
 import Button from "./components/Button.tsx";
-import Input from "./components/Input.tsx";
+import LetterInput from "./components/LetterInput.tsx";
 import Letters from "./components/Letters.tsx";
 import MenuBar from "./components/MenuBar.tsx";
 import ToastMessage from "./components/ToastMessage.tsx";
@@ -63,7 +63,7 @@ const LoggedIn: React.FC = () => {
           )}
 
           <div className="App-letters">
-            <Input />
+            <LetterInput />
             <Letters />
             <div className="App-letters-controls">
               <Button
