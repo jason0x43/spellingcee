@@ -176,6 +176,13 @@ export async function login(username: string, password: string): Promise<User> {
 }
 
 /**
+ * Logout the currently logged in user
+ */
+export async function logout(): Promise<void> {
+  return await get("/logout");
+}
+
+/**
  * Get the definition for a word
  */
 export async function getDefinition(word: string): Promise<string[]> {

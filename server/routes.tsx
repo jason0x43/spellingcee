@@ -54,6 +54,13 @@ export type RouterConfig = { client: string; styles: string; dev: boolean };
 export function createRouter(init: RouterConfig) {
   let config = init;
 
+  const cookieOptions = {
+    secure: !init.dev,
+    httpOnly: true, 
+    // assume we're being proxied through an SSL server
+    ignoreInsecure: true,
+  };
+
   const updateConfig = (newConfig: Partial<RouterConfig>) => {
     config = {
       ...config,
@@ -277,15 +284,16 @@ export function createRouter(init: RouterConfig) {
     }
 
     state.userId = userId;
-    await cookies.set("userId", `${userId}`, {
-      secure: mode !== "dev",
-      httpOnly: mode !== "dev",
-      // assume we're being proxied through an SSL server
-      ignoreInsecure: true,
-    });
+    await cookies.set("userId", `${userId}`, cookieOptions);
 
     const user: User = getUser(userId);
     response.body = user;
+  });
+
+  router.get("/logout", requireUser, async ({ cookies, response }) => {
+    await cookies.set("userId", '', cookieOptions);
+    response.type = "application/json";
+    response.body = { success: true };
   });
 
   router.get("/create-game", requireUser, ({ response, state }) => {

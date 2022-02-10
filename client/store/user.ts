@@ -27,6 +27,16 @@ export const signin = createAsyncThunk<
       games,
       words,
     };
+
+export const signout = createAsyncThunk<
+  void,
+  void,
+  { dispatch: AppDispatch }
+>(
+  "user/signout",
+  async (_, { dispatch }) => {
+    await api.logout();
+    dispatch(reset());
   },
 );
 
@@ -53,7 +63,7 @@ export const userSlice = createSlice({
   initialState,
 
   reducers: {
-    signout: (state) => {
+    reset: (state) => {
       state.user = null;
       state.games = [];
     },
@@ -88,7 +98,6 @@ export const userSlice = createSlice({
 });
 
 const { clearError } = userSlice.actions;
-export const { signout } = userSlice.actions;
 export default userSlice.reducer;
 
 export const selectGames = (state: AppState) => state.user.games;
