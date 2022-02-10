@@ -31,6 +31,7 @@ async function configureLogger(args: Arguments) {
 const parser = yargs(Deno.args)
   .strict()
   .version("0.1.0")
+  .scriptName('spellingcee')
   .option("v", {
     alias: "verbose",
     describe: "Enable more verbose output",
