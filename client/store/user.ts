@@ -1,7 +1,7 @@
-import { Game, Words, OtherUser, User } from "../../types.ts";
-import { createAsyncThunk, createSlice } from "../deps.ts";
+import { Game, OtherUser, User, Words } from "../../types.ts";
+import { createAsyncThunk, createSlice, PayloadAction } from "../deps.ts";
 import { AppDispatch, AppState } from "./mod.ts";
-import { getGames, getWords, login } from "../api.ts";
+import * as api from "../api.ts";
 import { activateGame } from "./game.ts";
 
 export type UserState = {
@@ -19,14 +19,26 @@ export const signin = createAsyncThunk<
   "user/signin",
   async ({ username, password }, { dispatch }) => {
     dispatch(clearError());
-    const user = await login(username, password);
-    const games = await getGames();
-    const words = user.currentGame ? await getWords(user.currentGame) : {};
-    return {
-      user,
-      games,
-      words,
-    };
+
+    try {
+      const user = await api.login(username, password);
+      const games = await api.getGames();
+      const otherUsers = await api.getOtherUsers();
+      dispatch(setUser(user));
+      dispatch(setGames(games));
+      dispatch(setOtherUsers(otherUsers));
+
+      return {
+        user,
+        games,
+        words: user.currentGame ? api.getWords(user.currentGame) : {}
+      };
+    } catch (error) {
+      dispatch(setError(error.message || `${error}`));
+      throw error;
+    }
+  },
+);
 
 export const signout = createAsyncThunk<
   void,
@@ -46,8 +58,15 @@ export const getUserGames = createAsyncThunk<
   { dispatch: AppDispatch }
 >(
   "user/getGames",
-  async () => {
-    return await getGames();
+  async (_, { dispatch }) => {
+    try {
+      const games = await api.getGames();
+      dispatch(setGames(games));
+      return games;
+    } catch (error) {
+      dispatch(setError(error.message || `${error}`));
+      throw error;
+    }
   },
 );
 
@@ -63,9 +82,24 @@ export const userSlice = createSlice({
   initialState,
 
   reducers: {
+    setUser: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+    },
+    setGames: (state, action: PayloadAction<Game[]>) => {
+      state.games = action.payload;
+    },
+    setOtherUsers: (state, action: PayloadAction<OtherUser[]>) => {
+      state.otherUsers = action.payload;
+    },
+    setError: (state, action: PayloadAction<Error | string>) => {
+      const error = action.payload;
+      state.error = (error as Error).message || `${error}`;
+    },
     reset: (state) => {
       state.user = null;
       state.games = [];
+      state.error = undefined;
+      state.otherUsers = [];
     },
     clearError: (state) => {
       state.error = undefined;
@@ -73,22 +107,6 @@ export const userSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    builder.addCase(signin.fulfilled, (state, { payload }) => {
-      state.user = payload.user;
-      state.games = payload.games;
-      console.log('set user to', state.user);
-    });
-    builder.addCase(signin.rejected, (state, { error }) => {
-      state.error = error.message || `${error}`;
-    });
-
-    builder.addCase(getUserGames.fulfilled, (state, { payload }) => {
-      state.games = payload;
-    });
-    builder.addCase(getUserGames.rejected, (state, { error }) => {
-      state.error = error.message || `${error}`;
-    });
-
     builder.addCase(activateGame.fulfilled, (state, { payload }) => {
       if (state.user) {
         state.user.currentGame = payload;
@@ -97,7 +115,8 @@ export const userSlice = createSlice({
   },
 });
 
-const { clearError } = userSlice.actions;
+const { clearError, reset, setGames, setError, setOtherUsers, setUser } =
+  userSlice.actions;
 export default userSlice.reducer;
 
 export const selectGames = (state: AppState) => state.user.games;

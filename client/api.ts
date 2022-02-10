@@ -1,4 +1,4 @@
-import { Game, GameWord, User, Words } from "../types.ts";
+import { Game, GameWord, OtherUser, User, Words } from "../types.ts";
 
 /**
  * An error thrown when a response indicates failure
@@ -148,6 +148,13 @@ async function post<T = unknown>(
  */
 export async function getGames(): Promise<Game[]> {
   return await get<Game[]>(`/games`);
+}
+
+/**
+ * Get the other users
+ */
+export async function getOtherUsers(): Promise<OtherUser[]> {
+  return await get<OtherUser[]>(`/users`);
 }
 
 /**

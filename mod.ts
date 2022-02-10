@@ -67,7 +67,7 @@ const parser = yargs(Deno.args)
           password,
         };
         try {
-          const response = await fetch(`http://localhost:${port}/user`, {
+          const response = await fetch(`http://localhost:${port}/users`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

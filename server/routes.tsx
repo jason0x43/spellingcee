@@ -36,8 +36,6 @@ function toString(value: unknown): string {
   return JSON.stringify(value ?? null).replace(/</g, "\\u003c");
 }
 
-const mode = Deno.env.get("SC_MODE") ?? "prod";
-
 const requireUser: Middleware<AppState> = async ({ response, state }, next) => {
   log.debug("Checking for user");
   if (state.userId === undefined) {
@@ -120,36 +118,44 @@ export function createRouter(init: RouterConfig) {
   addLiveReloadRoute(router);
 
   router.get("/user", requireUser, ({ response, state }) => {
-    const user = getUser(state.userId);
-    response.type = "application/json";
-    response.body = user;
-  });
-
-  router.patch("/user", requireUser, async ({ request, response, state }) => {
-    if (!request.hasBody) {
-      response.status = 400;
-      response.body = { error: "Missing request body" };
-      return;
-    }
-
-    const body = request.body();
-    const data = await body.value as { currentGame: number };
-    const dataKeys = Object.keys(data);
-
-    // currently only currentGame can be patched
-    if (dataKeys.length !== 1 || dataKeys[0] !== "currentGame") {
-      response.status = 400;
-      response.body = { error: "Only 'currentGame' may be modified" };
-      return;
-    }
-
-    setCurrentGameId({ userId: state.userId, gameId: data.currentGame });
-
     response.type = "application/json";
     response.body = getUser(state.userId);
   });
 
-  router.post("/user", async ({ request, response }) => {
+  router.patch(
+    "/user",
+    requireUser,
+    async ({ request, response, state }) => {
+      if (!request.hasBody) {
+        response.status = 400;
+        response.body = { error: "Missing request body" };
+        return;
+      }
+
+      const body = request.body();
+      const data = await body.value as { currentGame: number };
+      const dataKeys = Object.keys(data);
+
+      // currently only currentGame can be patched
+      if (dataKeys.length !== 1 || dataKeys[0] !== "currentGame") {
+        response.status = 400;
+        response.body = { error: "Only 'currentGame' may be modified" };
+        return;
+      }
+
+      setCurrentGameId({ userId: state.userId, gameId: data.currentGame });
+
+      response.type = "application/json";
+      response.body = getUser(state.userId);
+    },
+  );
+
+  router.get("/users", requireUser, ({ response, state }) => {
+    response.type = "application/json";
+    response.body = getOtherUsers(state.userId);
+  });
+
+  router.post("/users", async ({ request, response }) => {
     if (!request.hasBody) {
       response.status = 400;
       response.body = { error: "Missing request body" };
