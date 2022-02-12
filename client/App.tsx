@@ -118,27 +118,35 @@ const Login: React.FC = () => {
   const dispatch = useAppDispatch();
   const error = useAppSelector(selectUserError);
 
+  const doSignin = () => {
+    dispatch(signin({ username, password }));
+  };
+
+  const handleKey = (event: React.KeyboardEvent<HTMLFormElement>) => {
+    if (event.key === "Enter") {
+      doSignin();
+    }
+  };
+
   return (
-    <form className="Login">
-      <Input
-        placeholder="Username"
-        value={username}
-        onChange={setUsername}
-      />
-      <Input
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={setPassword}
-      />
-      <Button
-        onClick={() => dispatch(signin({ username, password }))}
-      >
-        Login
-      </Button>
+    <>
+      <form className="Login" onKeyDown={handleKey}>
+        <Input
+          placeholder="Username"
+          value={username}
+          onChange={setUsername}
+        />
+        <Input
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={setPassword}
+        />
+        <Button onClick={doSignin}>Login</Button>
+      </form>
 
       {error && <div className="LoginError">{error}</div>}
-    </form>
+    </>
   );
 };
 

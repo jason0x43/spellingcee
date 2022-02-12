@@ -34,7 +34,7 @@ export const signin = createAsyncThunk<
         words: user.currentGame ? api.getWords(user.currentGame) : {}
       };
     } catch (error) {
-      dispatch(setError(error.message || `${error}`));
+      dispatch(setError(error.error || error.message || `${error}`));
       throw error;
     }
   },
