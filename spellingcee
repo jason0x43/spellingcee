@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/zsh
 
-args=()
+args=""
 mode=prod
 serve=0
 
@@ -11,17 +11,19 @@ fi
 for arg in $@; do
 	if [ "$arg" = "-d" ] || [ "$arg" = "--dev" ]; then
 		mode=dev
+	elif [ "$args" = "" ]; then
+		args=$arg
 	else
-		args+=($arg)
+		args="$args $arg"
 	fi
 done
 
-cmd="deno run \
-	--allow-net \
-	--allow-env \
-	--allow-read=./ \
-	--allow-write=data.db,data.db-journal \
-	--unstable"
+cmd="deno run"
+cmd="$cmd --allow-net"
+cmd="$cmd --allow-env"
+cmd="$cmd --allow-read=./"
+cmd="$cmd --allow-write=data.db,data.db-journal"
+cmd="$cmd --unstable"
 
 if [ "$mode" = "dev" ]; then
 	if [ "$serve" ]; then
@@ -37,4 +39,4 @@ else
 	export SC_IMPORT_MAP="import_map.json"
 fi
 
-$cmd --import-map ./$SC_IMPORT_MAP mod.ts ${args[@]}
+echo $cmd --import-map ./$SC_IMPORT_MAP mod.ts $args
