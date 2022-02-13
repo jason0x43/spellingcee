@@ -39,4 +39,4 @@ else
 	export SC_IMPORT_MAP="import_map.json"
 fi
 
-echo $cmd --import-map ./$SC_IMPORT_MAP mod.ts $args
+eval $cmd --import-map ./$SC_IMPORT_MAP mod.ts $args
