@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/sh
 
 args=""
 mode=prod
@@ -21,14 +21,14 @@ done
 cmd="deno run"
 cmd="$cmd --allow-net"
 cmd="$cmd --allow-env"
-cmd="$cmd --allow-read=./"
+cmd="$cmd --allow-read"
 cmd="$cmd --allow-write=data.db,data.db-journal"
 cmd="$cmd --unstable"
 
 if [ "$mode" = "dev" ]; then
 	if [ "$serve" ]; then
 		echo "Enabling watch mode"
-		cmd="$cmd --watch --allow-run=touch"
+		cmd="$cmd --watch --no-clear-screen --allow-run=touch"
 	fi
 	cmd="$cmd --no-check=remote"
 	echo "Using dev import map"
@@ -36,6 +36,7 @@ if [ "$mode" = "dev" ]; then
 	export SC_MODE="dev"
 else
 	cmd="$cmd --no-check"
+	echo "Using prod import map"
 	export SC_IMPORT_MAP="import_map.json"
 fi
 
