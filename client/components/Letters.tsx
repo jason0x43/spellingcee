@@ -1,4 +1,4 @@
-import { React } from "../deps.ts";
+import React, { useEffect, useState } from "react";
 import { selectGameLetters, submitWord } from "../store/game.ts";
 import { useAppDispatch, useAppSelector } from "../store/mod.ts";
 import {
@@ -11,7 +11,6 @@ import {
 } from "../store/ui.ts";
 import { classNames } from "../util.ts";
 
-const { useEffect, useState } = React;
 const tileSize = 100;
 
 // Vertexes of hexagonal tiles
@@ -98,7 +97,7 @@ const Letters: React.FC = () => {
 
   const renderLetter = (letter: string) => {
     const index = letters!.indexOf(letter);
-    const letterIndex = letterIndices[index] || 'center';
+    const letterIndex = letterIndices[index] || "center";
     const letterClassName = `Letters-letter Letters-letter-${letterIndex}`;
     const shapeClassName = classNames({
       "Letters-letter-shape": true,

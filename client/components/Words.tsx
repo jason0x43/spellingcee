@@ -1,5 +1,5 @@
 import { classNames } from "../util.ts";
-import { React } from "../deps.ts";
+import React, { useRef, useState } from "react";
 import { useVerticalMediaQuery } from "../hooks/mod.ts";
 import { isPangram } from "../../shared/util.ts";
 import Button from "./Button.tsx";
@@ -15,8 +15,6 @@ import {
   selectWordListExpanded,
   setWordListExpanded,
 } from "../store/ui.ts";
-
-const { useRef, useState } = React;
 
 const Words: React.FC = () => {
   const dispatch = useAppDispatch();

@@ -1,8 +1,6 @@
-import { React } from "../deps.ts";
+import React, { useEffect, useState } from "react";
 import { Message } from "../store/ui.ts";
 import { classNames } from "../util.ts";
-
-const { useEffect, useState } = React;
 
 export type ToastMessageProps = {
   message: Message | undefined;

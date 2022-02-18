@@ -1,4 +1,4 @@
-import { React } from "../deps.ts";
+import React from "react";
 import { selectGameLetters } from "../store/game.ts";
 import { useAppSelector } from "../store/mod.ts";
 import { selectInput } from "../store/ui.ts";

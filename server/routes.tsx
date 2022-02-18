@@ -1,5 +1,5 @@
 import { log, Middleware, path, ReactDOMServer, Router } from "./deps.ts";
-import { React } from "../client/deps.ts";
+import React from "react";
 import {
   addGameWord,
   addUser,
@@ -17,7 +17,7 @@ import {
   Words,
 } from "../types.ts";
 import { getDefinition } from "./dictionary.ts";
-import { Provider } from "../client/deps.ts";
+import { Provider } from "react-redux";
 import App from "../client/App.tsx";
 import {
   AppState as ClientAppState,
@@ -54,7 +54,7 @@ export function createRouter(init: RouterConfig) {
 
   const cookieOptions = {
     secure: !init.dev,
-    httpOnly: true, 
+    httpOnly: true,
     // assume we're being proxied through an SSL server
     ignoreInsecure: true,
   };
@@ -297,7 +297,7 @@ export function createRouter(init: RouterConfig) {
   });
 
   router.get("/logout", requireUser, async ({ cookies, response }) => {
-    await cookies.set("userId", '', cookieOptions);
+    await cookies.set("userId", "", cookieOptions);
     response.type = "application/json";
     response.body = { success: true };
   });

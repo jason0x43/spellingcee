@@ -1,5 +1,5 @@
 import { Game, GameWord, Words } from "../../types.ts";
-import { createAsyncThunk, createSlice, PayloadAction } from "../deps.ts";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import * as api from "../api.ts";
 import { AppDispatch, AppState } from "./mod.ts";
 import { selectGames, signin } from "./user.ts";

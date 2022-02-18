@@ -1,4 +1,4 @@
-import { React } from "../deps.ts";
+import React from "react";
 
 export type SpinnerProps = {
   label?: string;

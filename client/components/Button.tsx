@@ -1,4 +1,4 @@
-import { React } from "../deps.ts";
+import React from "react";
 import { classNames } from "../util.ts";
 
 export type ButtonProps = {

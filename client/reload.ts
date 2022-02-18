@@ -9,6 +9,7 @@ export default function initReloader() {
     }
 
     socket = new WebSocket(url);
+    console.log(`opening websocket ${Date.now()}`);
 
     socket.addEventListener("open", () => {
       console.log("live-reload socket connected");
@@ -30,6 +31,7 @@ export default function initReloader() {
       console.log("reconnecting live-reload socket...");
       clearTimeout(reconnectTimer);
       reconnectTimer = setTimeout(() => {
+        console.log(`starting reconnect timer ${Date.now()}`);
         connect();
       }, 1000);
     });

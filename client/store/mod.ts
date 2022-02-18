@@ -1,11 +1,5 @@
-import {
-  combineReducers,
-  configureStore,
-  Middleware,
-  TypedUseSelectorHook,
-  useDispatch,
-  useSelector,
-} from "../deps.ts";
+import { combineReducers, configureStore, Middleware } from "@reduxjs/toolkit";
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import user from "./user.ts";
 import game from "./game.ts";
 import ui from "./ui.ts";

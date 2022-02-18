@@ -1,5 +1,5 @@
 import { classNames } from "./util.ts";
-import { React } from "./deps.ts";
+import React, { useState } from "react";
 import Button from "./components/Button.tsx";
 import Input from "./components/Input.tsx";
 import LetterInput from "./components/LetterInput.tsx";
@@ -23,8 +23,6 @@ import {
   selectWarning,
   selectWordListExpanded,
 } from "./store/ui.ts";
-
-const { useState } = React;
 
 const LoggedIn: React.FC = () => {
   const isVertical = useVerticalMediaQuery();

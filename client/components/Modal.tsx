@@ -1,8 +1,7 @@
-import { React, ReactDOM } from "../deps.ts";
+import React, { useCallback, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import { classNames } from "../util.ts";
 import Spinner from "./Spinner.tsx";
-
-const { useCallback, useEffect, useRef } = React;
 
 type ModalProps = {
   children?: React.ReactNode;

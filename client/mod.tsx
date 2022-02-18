@@ -1,4 +1,6 @@
-import { Provider, React, ReactDOM } from "./deps.ts";
+import React from "react";
+import ReactDOM from "react-dom";
+import { Provider } from "react-redux";
 import App from "./App.tsx";
 import { createStore } from "./store/mod.ts";
 import initReloader from './reload.ts';

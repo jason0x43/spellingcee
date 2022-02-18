@@ -28,7 +28,7 @@ cmd="$cmd --unstable"
 if [ "$mode" = "dev" ]; then
 	if [ "$serve" ]; then
 		echo "Enabling watch mode"
-		cmd="$cmd --watch --no-clear-screen --allow-run=touch"
+		cmd="$cmd --watch --no-clear-screen --allow-run"
 	fi
 	cmd="$cmd --no-check=remote"
 	echo "Using dev import map"

@@ -1,4 +1,8 @@
-import { AiIcons, GoIcons, GrIcons, IoIcons, React } from "../deps.ts";
+import React from "react";
+import { GrFormClose as CloseIcon } from "react-icons/gr";
+import { GoPrimitiveDot as NotifyIcon } from "react-icons/go";
+import { IoPeopleCircle as ShareIcon } from "react-icons/io5";
+import { AiFillStar as NewGameIcon } from "react-icons/ai";
 import { classNames } from "../util.ts";
 import Modal from "./Modal.tsx";
 import Spinner from "./Spinner.tsx";
@@ -14,10 +18,6 @@ import {
 import { clearNewGameIds, selectNewGameIds } from "../store/ui.ts";
 
 const { useRef, useState } = React;
-const { GrFormClose: CloseIcon } = GrIcons;
-const { GoPrimitiveDot: NotifyIcon } = GoIcons;
-const { IoPeopleCircle: ShareIcon } = IoIcons;
-const { AiFillStar: NewGameIcon } = AiIcons;
 
 type MenuGameProps = {
   game: Game;

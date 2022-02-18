@@ -1,5 +1,5 @@
 import { Game, OtherUser, User, Words } from "../../types.ts";
-import { createAsyncThunk, createSlice, PayloadAction } from "../deps.ts";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppDispatch, AppState } from "./mod.ts";
 import * as api from "../api.ts";
 import { activateGame } from "./game.ts";
@@ -31,7 +31,7 @@ export const signin = createAsyncThunk<
       return {
         user,
         games,
-        words: user.currentGame ? api.getWords(user.currentGame) : {}
+        words: user.currentGame ? api.getWords(user.currentGame) : {},
       };
     } catch (error) {
       dispatch(setError(error.error || error.message || `${error}`));

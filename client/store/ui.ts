@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "../deps.ts";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppState } from "./mod.ts";
 import { getDefinition as getDef } from "../api.ts";
 import { AppDispatch } from "./mod.ts";
