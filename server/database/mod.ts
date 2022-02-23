@@ -17,7 +17,7 @@ export function openDatabase(name = "data.db") {
     getDb();
   } catch {
     createDb(name);
-    migrateDatabase(1);
+    migrateDatabase(2);
     log.debug(`Database using v${getSchemaVersion()} schema`);
   }
 }
@@ -127,6 +127,26 @@ const migrations: Migration[] = [
         db.query("DROP TABLE games");
         db.query("DROP TABLE user_games");
         db.query("DROP TABLE game_words");
+      });
+    },
+  },
+
+  {
+    up: (db) => {
+      inTransaction(() => {
+        db.query(
+          `CREATE TABLE sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+            expires INTEGER NOT NULL
+          )`,
+        );
+      });
+    },
+
+    down: (db) => {
+      inTransaction(() => {
+        db.query("DROP TABLE sessions");
       });
     },
   },

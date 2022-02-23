@@ -28,3 +28,9 @@ export type GameWord = {
   word: string;
   addedAt: number;
 };
+
+export type Session = {
+  id: number;
+  userId: number;
+  expires: number;
+}

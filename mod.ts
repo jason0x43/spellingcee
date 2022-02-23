@@ -131,6 +131,51 @@ const parser = yargs(Deno.args)
       }
     },
   )
+  .command(
+    "session [-r] <username>",
+    "Get or remove a user session",
+    (yargs: Yargs) => {
+      yargs.option("remove", {
+        alias: "r",
+        describe: "Remove the session",
+        type: "boolean",
+      });
+      yargs.positional("username", {
+        describe: "An existing account username",
+        type: "string",
+      });
+    },
+    async (args: Arguments & { username: string; remove?: boolean }) => {
+      try {
+        const params = new URLSearchParams();
+        params.set("username", args.username);
+
+        const resp = await fetch(
+          `http://localhost:${port}/sessions?${params}`,
+        );
+        if (resp.status !== 200) {
+          console.warn(`Response: ${resp.status}`);
+          throw new Error(`No session for "${args.username}"`);
+        }
+        const session = await resp.json();
+
+        if (!args.remove) {
+          console.log(session);
+        } else {
+          const response = await fetch(
+            `http://localhost:${port}/sessions?${params}`,
+            { method: "DELETE" },
+          );
+
+          if (response.status !== 200) {
+            throw new Error(`Couldn't remove session for ${args.username}`);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  )
   .demandCommand(1, "");
 
 let code = 0;

@@ -3,6 +3,7 @@ import { AppState } from "../types.ts";
 import { createRouter, RouterConfig } from "./routes.tsx";
 import { openDatabase } from "./database/mod.ts";
 import { addLiveReloadMiddleware } from "./reload.ts";
+import { hasActiveSession } from "./database/sessions.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -119,9 +120,14 @@ export async function serve(port = 8083) {
   });
 
   app.use(async (ctx, next) => {
-    const userId = await ctx.cookies.get("userId");
-    if (userId) {
-      ctx.state.userId = Number(userId);
+    const userIdStr = await ctx.cookies.get("userId");
+    if (userIdStr) {
+      const userId = Number(userIdStr);
+      log.debug(`user: ${userId}`);
+      if (hasActiveSession(userId)) {
+        log.debug(`user has active session`);
+        ctx.state.userId = userId;
+      }
     }
     await next();
   });

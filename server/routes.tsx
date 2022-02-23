@@ -28,6 +28,12 @@ import { getOtherUsers, getUser } from "./users.ts";
 import { validateWord } from "./words.ts";
 import { setCurrentGameId } from "./database/user_games.ts";
 import { addLiveReloadRoute } from "./reload.ts";
+import {
+  addSession,
+  getSession,
+  getSessions,
+  removeSession,
+} from "./database/sessions.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -42,6 +48,20 @@ const requireUser: Middleware<AppState> = async ({ response, state }, next) => {
     response.type = "application/json";
     response.status = 403;
     response.body = { error: "Must be logged in" };
+  } else {
+    await next();
+  }
+};
+
+const requireLocal: Middleware<AppState> = async (
+  { request, response },
+  next,
+) => {
+  log.debug("Checking for local connection");
+  if (request.ip !== "127.0.0.1") {
+    response.type = "application/json";
+    response.status = 403;
+    response.body = { error: "Must be running locally" };
   } else {
     await next();
   }
@@ -290,7 +310,11 @@ export function createRouter(init: RouterConfig) {
     }
 
     state.userId = userId;
-    await cookies.set("userId", `${userId}`, cookieOptions);
+    const session = addSession({ userId });
+    await cookies.set("userId", `${userId}`, {
+      ...cookieOptions,
+      expires: new Date(session.expires),
+    });
 
     const user: User = getUser(userId);
     response.body = user;
@@ -357,6 +381,56 @@ export function createRouter(init: RouterConfig) {
 
     log.debug(`Rendered app in ${Date.now() - start} ms`);
   });
+
+  // local service endpoints
+
+  router.get(
+    "/sessions",
+    requireLocal,
+    ({ request, response }) => {
+      const params = request.url.searchParams;
+      const username = params.get("username");
+
+      response.type = "application/json";
+
+      try {
+        if (username) {
+          const userId = getUserIdFromUsername(username);
+          response.body = getSession(userId);
+        } else {
+          response.body = getSessions();
+        }
+      } catch (error) {
+        response.status = 400;
+        response.body = { error: `${error}` };
+      }
+    },
+  );
+
+  router.delete(
+    "/sessions",
+    requireLocal,
+    ({ request, response }) => {
+      const params = request.url.searchParams;
+      const username = params.get("username");
+
+      response.type = "application/json";
+
+      try {
+        if (!username) {
+          throw new Error("A username is required");
+        }
+
+        const userId = getUserIdFromUsername(username);
+        const session = getSession(userId);
+        removeSession(session.id);
+        response.body = { success: true };
+      } catch (error) {
+        response.status = 400;
+        response.body = { error: `${error}` };
+      }
+    },
+  );
 
   return {
     router,
