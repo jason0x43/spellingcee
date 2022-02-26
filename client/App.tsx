@@ -1,5 +1,5 @@
 import { classNames } from "./util.ts";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "./components/Button.tsx";
 import Input from "./components/Input.tsx";
 import LetterInput from "./components/LetterInput.tsx";
@@ -125,6 +125,10 @@ const Login: React.FC = () => {
       doSignin();
     }
   };
+
+  useEffect(() => {
+    setPassword('');
+  }, [error]);
 
   return (
     <>
