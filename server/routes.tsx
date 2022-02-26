@@ -1,4 +1,4 @@
-import { log, Middleware, path, ReactDOMServer, Router } from "./deps.ts";
+import { log, path, ReactDOMServer, Router } from "./deps.ts";
 import React from "react";
 import {
   addGameWord,
@@ -28,12 +28,12 @@ import { getOtherUsers, getUser } from "./users.ts";
 import { validateWord } from "./words.ts";
 import { setCurrentGameId } from "./database/user_games.ts";
 import { addLiveReloadRoute } from "./reload.ts";
+import { requireLocal, requireUser, requireUserOrLocal } from "./middleware.ts";
 import {
-  addSession,
-  getSession,
-  getSessions,
-  removeSession,
-} from "./database/sessions.ts";
+  addSessionManagementRoutes,
+  createSession,
+  deleteSession,
+} from "./sessions.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -41,31 +41,6 @@ const __dirname = path.dirname(__filename);
 function toString(value: unknown): string {
   return JSON.stringify(value ?? null).replace(/</g, "\\u003c");
 }
-
-const requireUser: Middleware<AppState> = async ({ response, state }, next) => {
-  log.debug("Checking for user");
-  if (state.userId === undefined) {
-    response.type = "application/json";
-    response.status = 403;
-    response.body = { error: "Must be logged in" };
-  } else {
-    await next();
-  }
-};
-
-const requireLocal: Middleware<AppState> = async (
-  { request, response },
-  next,
-) => {
-  log.debug("Checking for local connection");
-  if (request.ip !== "127.0.0.1") {
-    response.type = "application/json";
-    response.status = 403;
-    response.body = { error: "Must be running locally" };
-  } else {
-    await next();
-  }
-};
 
 export type RouterConfig = { client: string; styles: string; dev: boolean };
 
@@ -310,18 +285,14 @@ export function createRouter(init: RouterConfig) {
     }
 
     state.userId = userId;
-    const session = addSession({ userId });
-    await cookies.set("userId", `${userId}`, {
-      ...cookieOptions,
-      expires: new Date(session.expires),
-    });
+    await createSession({ userId, cookies, cookieOptions });
 
     const user: User = getUser(userId);
     response.body = user;
   });
 
   router.get("/logout", requireUser, async ({ cookies, response }) => {
-    await cookies.set("userId", "", cookieOptions);
+    await deleteSession({ cookies, cookieOptions });
     response.type = "application/json";
     response.body = { success: true };
   });
@@ -384,37 +355,23 @@ export function createRouter(init: RouterConfig) {
 
   // local service endpoints
 
-  router.get(
-    "/sessions",
+  router.patch(
+    "/users/:id",
     requireLocal,
-    ({ request, response }) => {
-      const params = request.url.searchParams;
-      const username = params.get("username");
-
-      response.type = "application/json";
-
-      try {
-        if (username) {
-          const userId = getUserIdFromUsername(username);
-          response.body = getSession(userId);
-        } else {
-          response.body = getSessions();
-        }
-      } catch (error) {
+    async ({ request, response, params }) => {
+      if (!request.hasBody) {
         response.status = 400;
-        response.body = { error: `${error}` };
+        response.body = { error: "Missing request body" };
+        return;
       }
-    },
-  );
 
-  router.delete(
-    "/sessions",
-    requireLocal,
-    ({ request, response }) => {
-      const params = request.url.searchParams;
-      const username = params.get("username");
+      const { id } = params;
+      const body = request.body();
+      const data = await body.value as Partial<User>;
 
-      response.type = "application/json";
+      if (data.currentGame !== undefined) {
+        setCurrentGameId({ userId: Number(id), gameId: data.currentGame });
+      }
 
       try {
         if (!username) {
@@ -429,8 +386,13 @@ export function createRouter(init: RouterConfig) {
         response.status = 400;
         response.body = { error: `${error}` };
       }
+
+      response.type = "application/json";
+      response.body = getUser(Number(id));
     },
   );
+
+  addSessionManagementRoutes(router);
 
   return {
     router,

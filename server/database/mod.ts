@@ -1,5 +1,6 @@
 import { DB, log } from "../deps.ts";
 import { closeDb, createDb, getDb, inTransaction, query } from "./db.ts";
+import { createSessionId } from "./sessions.ts";
 
 export { inTransaction };
 export {
@@ -17,7 +18,7 @@ export function openDatabase(name = "data.db") {
     getDb();
   } catch {
     createDb(name);
-    migrateDatabase(2);
+    migrateDatabase(3);
     log.debug(`Database using v${getSchemaVersion()} schema`);
   }
 }
@@ -147,6 +148,67 @@ const migrations: Migration[] = [
     down: (db) => {
       inTransaction(() => {
         db.query("DROP TABLE sessions");
+      });
+    },
+  },
+
+  {
+    // use a unique session ID
+    up: (db) => {
+      inTransaction(() => {
+        db.query(
+          `CREATE TABLE _sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL UNIQUE,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            expires INTEGER NOT NULL
+          )`,
+        );
+
+        const rows = db.query("SELECT user_id, expires FROM sessions");
+        for (const row of rows) {
+          const [userId, expires] = row as [number, number];
+          db.query(
+            `INSERT INTO _sessions (session_id, user_id, expires)
+            VALUES (:sessionId, :userId, :expires)`,
+            {
+              sessionId: createSessionId(),
+              userId: userId,
+              expires: expires,
+            },
+          );
+        }
+
+        db.query("DROP TABLE sessions");
+        db.query("ALTER TABLE _sessions RENAME TO sessions");
+      });
+    },
+
+    down: (db) => {
+      inTransaction(() => {
+        db.query(
+          `CREATE TABLE _sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id UNIQUE INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            expires INTEGER NOT NULL
+          )`,
+        );
+
+        const rows = db.query("SELECT user_id, expires FROM sessions");
+        for (const row of rows) {
+          const [userId, expires] = row as [number, number];
+          db.query(
+            `INSERT INTO _sessions (user_id, expires)
+            VALUES (:userId, :expires)`,
+            {
+              userId: userId,
+              expires: expires,
+            },
+          );
+        }
+
+        db.query("DROP TABLE sessions");
+        db.query("ALTER TABLE _sessions RENAME TO sessions");
       });
     },
   },

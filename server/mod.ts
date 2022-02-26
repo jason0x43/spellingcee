@@ -3,7 +3,8 @@ import { AppState } from "../types.ts";
 import { createRouter, RouterConfig } from "./routes.tsx";
 import { openDatabase } from "./database/mod.ts";
 import { addLiveReloadMiddleware } from "./reload.ts";
-import { hasActiveSession } from "./database/sessions.ts";
+import { getSession, isActiveSession } from "./database/sessions.ts";
+import { addSessionMiddleware } from "./sessions.ts";
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -43,7 +44,7 @@ async function watchStyles() {
           // If only styles were updated _and_ live reload is enabled, only
           // rebuild and reload the styles
           updateRouterConfig({ styles: await buildStyles() });
-          sendReloadMessage('reloadStyles');
+          sendReloadMessage("reloadStyles");
         }
       }, 250);
     }
@@ -119,18 +120,7 @@ export async function serve(port = 8083) {
     await next();
   });
 
-  app.use(async (ctx, next) => {
-    const userIdStr = await ctx.cookies.get("userId");
-    if (userIdStr) {
-      const userId = Number(userIdStr);
-      log.debug(`user: ${userId}`);
-      if (hasActiveSession(userId)) {
-        log.debug(`user has active session`);
-        ctx.state.userId = userId;
-      }
-    }
-    await next();
-  });
+  addSessionMiddleware(app);
 
   app.use(router.routes());
   app.use(router.allowedMethods());
