@@ -9,6 +9,7 @@ import {
 } from "./server/database/mod.ts";
 import { promptSecret } from "./util.ts";
 import { User } from "./server/database/types.ts";
+import { setUserIsAdmin } from "./server/database/users.ts";
 
 const defaultPort = 8084;
 const envPort = Deno.env.get("SC_PORT");
@@ -31,7 +32,7 @@ async function configureLogger(args: Arguments) {
 const parser = yargs(Deno.args)
   .strict()
   .version("0.1.0")
-  .scriptName('spellingcee')
+  .scriptName("spellingcee")
   .option("v", {
     alias: "verbose",
     describe: "Enable more verbose output",
@@ -45,7 +46,7 @@ const parser = yargs(Deno.args)
     await serve(port);
   })
   .command(
-    "adduser <username> <email>",
+    "adduser <username> <email> [role]",
     "Add a new user",
     (yargs: Yargs) => {
       yargs.positional("username", {
@@ -56,14 +57,21 @@ const parser = yargs(Deno.args)
         describe: "An email address for the new account",
         type: "string",
       });
+      yargs.positional("role", {
+        describe: "The user's role, 'admin' or 'user'",
+        type: "string",
+      });
     },
-    async (args: Arguments & { email: string; username: string }) => {
+    async (
+      args: Arguments & { email: string; username: string; role?: string },
+    ) => {
       const password = await promptSecret("Password: ");
       if (password) {
         let user: User;
         const userData = {
           email: args.email,
           username: args.username,
+          isAdmin: args.role === "admin",
           password,
         };
         try {
@@ -106,6 +114,57 @@ const parser = yargs(Deno.args)
         console.log(`Updated password for user ${userId}`);
       } else {
         console.log("Update cancelled");
+      }
+    },
+  )
+  .command(
+    "setrole <username> <role>",
+    "Set a user's role",
+    (yargs: Yargs) => {
+      yargs.positional("username", {
+        describe: "An existing account username",
+        type: "string",
+      });
+      yargs.positional("role", {
+        describe: "A user role, 'admin' or 'user'",
+        type: "string",
+      });
+    },
+    async (args: Arguments & { username: string; role: string }) => {
+      const role = args.role;
+
+      try {
+        const params = new URLSearchParams();
+        params.set("username", args.username);
+
+        const userResp = await fetch(
+          `http://localhost:${port}/users?${params}`,
+        );
+        if (userResp.status !== 200) {
+          console.warn(`Response: ${userResp.status}`);
+          throw new Error(`Unknown user "${args.username}"`);
+        }
+        const user = await userResp.json();
+
+        const response = await fetch(
+          `http://localhost:${port}/users/${user.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ isAdmin: role === "admin" }),
+          },
+        );
+        if (response.status !== 200) {
+          throw new Error("Couldn't add user through server");
+        }
+      } catch (error) {
+        console.log(error);
+        openDatabase();
+        const userId = getUserIdFromUsername(args.username);
+        setUserIsAdmin(userId, role === "admin");
+        console.log(`Updated role for user ${userId}`);
       }
     },
   )

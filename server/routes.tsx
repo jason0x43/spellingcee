@@ -28,6 +28,7 @@ import { getOtherUsers, getUser } from "./users.ts";
 import { validateWord } from "./words.ts";
 import { setCurrentGameId } from "./database/user_games.ts";
 import { addLiveReloadRoute } from "./reload.ts";
+import { setUserIsAdmin } from "./database/users.ts";
 import { requireLocal, requireUser, requireUserOrLocal } from "./middleware.ts";
 import {
   addSessionManagementRoutes,
@@ -128,7 +129,7 @@ export function createRouter(init: RouterConfig) {
       }
 
       const body = request.body();
-      const data = await body.value as { currentGame: number };
+      const data = await body.value as Partial<User>;
       const dataKeys = Object.keys(data);
 
       // currently only currentGame can be patched
@@ -138,17 +139,42 @@ export function createRouter(init: RouterConfig) {
         return;
       }
 
-      setCurrentGameId({ userId: state.userId, gameId: data.currentGame });
+      if (data.currentGame !== undefined) {
+        setCurrentGameId({ userId: state.userId, gameId: data.currentGame });
+      }
+
+      if (data.isAdmin !== undefined) {
+        setUserIsAdmin(state.userId, data.isAdmin);
+      }
 
       response.type = "application/json";
       response.body = getUser(state.userId);
     },
   );
 
-  router.get("/users", requireUser, ({ response, state }) => {
-    response.type = "application/json";
-    response.body = getOtherUsers(state.userId);
-  });
+  router.get(
+    "/users",
+    requireUserOrLocal,
+    ({ request, response, state }) => {
+      const params = request.url.searchParams;
+      const username = params.get("username");
+
+      log.debug(`trying to get user ${username}`);
+
+      if (username) {
+        const id = getUserIdFromUsername(username);
+        if (id) {
+          response.body = getUser(id);
+        } else {
+          response.status = 404;
+        }
+      } else {
+        response.body = getOtherUsers(state.userId);
+      }
+
+      response.type = "application/json";
+    },
+  );
 
   router.post("/users", async ({ request, response }) => {
     if (!request.hasBody) {
@@ -373,18 +399,8 @@ export function createRouter(init: RouterConfig) {
         setCurrentGameId({ userId: Number(id), gameId: data.currentGame });
       }
 
-      try {
-        if (!username) {
-          throw new Error("A username is required");
-        }
-
-        const userId = getUserIdFromUsername(username);
-        const session = getSession(userId);
-        removeSession(session.id);
-        response.body = { success: true };
-      } catch (error) {
-        response.status = 400;
-        response.body = { error: `${error}` };
+      if (data.isAdmin !== undefined) {
+        setUserIsAdmin(Number(id), data.isAdmin);
       }
 
       response.type = "application/json";

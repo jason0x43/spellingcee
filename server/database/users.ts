@@ -11,24 +11,27 @@ const {
 >()(
   "id",
   "email",
-  "username"
+  "username",
+  // TODO: this should be read out as a boolean
+  "isAdmin",
 );
 
-export function addUser({ username, email, password }: {
+export function addUser({ username, email, password, role = "user" }: {
   username: string;
   email: string;
   password: string;
+  role?: "user" | "admin";
 }): User {
   log.debug(`Adding user ${username} with email ${email}`);
   const hashedPassword = bcrypt.hashSync(password);
-  log.debug('Hashed the password');
+  log.debug("Hashed the password");
   const user = userQuery(
-    `INSERT INTO users (username, email, password)
-    VALUES (:username, :email, :password)
+    `INSERT INTO users (username, email, password, is_admin)
+    VALUES (:username, :email, :password, :isAdmin)
     RETURNING ${userColumns}`,
-    { username, email, password: hashedPassword },
+    { username, email, password: hashedPassword, isAdmin: role === "admin" },
   )[0];
-  log.debug('Finished add');
+  log.debug("Finished add");
   return user;
 }
 
@@ -86,4 +89,12 @@ export function isUserPassword(userId: number, password: string): boolean {
     throw new Error(`No user with id ${userId}`);
   }
   return bcrypt.compareSync(password, userPassword);
+}
+
+export function setUserIsAdmin(userId: number, isAdmin: boolean): void {
+  log.debug(`Setting user ${userId} admin flag to ${isAdmin}`);
+  query(
+    "UPDATE users SET is_admin = (:isAdmin) WHERE id = (:userId)",
+    { isAdmin, userId },
+  );
 }

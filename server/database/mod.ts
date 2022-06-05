@@ -80,6 +80,7 @@ const migrations: Migration[] = [
             username TEXT NOT NULL UNIQUE,
             email TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
+            is_admin BOOLEAN NOT NULL DEFAULT FALSE,
             deleted BOOLEAN NOT NULL DEFAULT FALSE
           )`,
         );

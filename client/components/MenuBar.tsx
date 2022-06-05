@@ -173,6 +173,14 @@ const MenuBar: React.FC = () => {
               Share
             </div>
           )}
+          {Boolean(user?.isAdmin) && (
+            <div
+              className="MenuBar-item"
+              onClick={() => setSelectingUser(true)}
+            >
+              Admin
+            </div>
+          )}
         </div>
 
         <div className="MenuBar-right">

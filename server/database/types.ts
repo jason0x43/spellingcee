@@ -14,6 +14,8 @@ export type User = {
   username: string;
   /** The user's email address */
   email: string;
+  /** True if the user is an admin */
+  isAdmin: boolean;
 };
 
 export type UserGame = {
