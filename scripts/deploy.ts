@@ -47,17 +47,9 @@ async function main() {
   });
 
   console.log('>>> Restarting app server...');
-  execSync(`ssh ${deployHost} systemctl --user restart --now simple-news`, {
+  execSync(`ssh ${deployHost} systemctl --user restart --now spellingcee`, {
     stdio: 'inherit'
   });
-
-  console.log('>>> Restarting feed downloader...');
-  execSync(
-    `ssh ${deployHost} systemctl --user restart --now simple-news-downloader`,
-    {
-      stdio: 'inherit'
-    }
-  );
 
   console.log('>>> Done');
 }
