@@ -11,7 +11,9 @@
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --check --plugin-search-dir=. . && eslint .",
     "format": "prettier --write --plugin-search-dir=. .",
-    "db": "ts-node ./scripts/db.ts"
+    "db": "ts-node ./scripts/db.ts",
+    "deploy": "ts-node ./scripts/deploy.ts",
+    "migrate": "prisma migrate deploy"
   },
   "devDependencies": {
     "@prisma/client": "^4.0.0",
