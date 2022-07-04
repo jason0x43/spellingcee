@@ -27,7 +27,7 @@ async function main() {
   console.log(`>>> Deploying ${deployRepo}`);
 
   console.log('>>> Pushing main branch...');
-  execSync(`git push origin main`, {
+  execSync(`git push origin master`, {
     stdio: 'inherit'
   });
 
@@ -36,7 +36,7 @@ async function main() {
     input: [
       `cd ${deployRepo}`,
       'echo ">>> Pulling changes into remote repo..."',
-      'git pull origin main',
+      'git pull origin master',
       'echo ">>> Installing updated npm packages..."',
       'pnpm install --frozen-lockfile',
       'echo ">>> Running migrations..."',

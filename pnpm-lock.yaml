@@ -13,6 +13,7 @@ specifiers:
   '@typescript-eslint/parser': ^5.30.5
   bcryptjs: ^2.4.3
   cookie: ^0.5.0
+  dotenv: ^16.0.1
   eslint: ^8.19.0
   eslint-config-prettier: ^8.5.0
   eslint-plugin-svelte3: ^4.0.0
@@ -43,6 +44,7 @@ devDependencies:
   '@typescript-eslint/parser': 5.30.5_4x5o4skxv6sl53vpwefgt23khm
   bcryptjs: 2.4.3
   cookie: 0.5.0
+  dotenv: 16.0.1
   eslint: 8.19.0
   eslint-config-prettier: 8.5.0_eslint@8.19.0
   eslint-plugin-svelte3: 4.0.0_m4jpobot6gi3xtcba7bv5cflma
@@ -811,6 +813,11 @@ packages:
     engines: {node: '>=6.0.0'}
     dependencies:
       esutils: 2.0.3
+    dev: true
+
+  /dotenv/16.0.1:
+    resolution: {integrity: sha512-1K6hR6wtk2FviQ4kEiSjFiH5rpzEVi8WW0x96aztHVMhEspNpc4DVOUTEHtEva5VThQ8IaBX1Pe4gSzpVVUsKQ==}
+    engines: {node: '>=12'}
     dev: true
 
   /eastasianwidth/0.2.0:
