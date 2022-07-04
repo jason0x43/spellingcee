@@ -6,7 +6,8 @@ game with some additional features (eventually).
 ## Getting started
 
 1. Clone this repo
-2. `./spellingcee`
+2. `pnpm install`
+3. `pnpm dev`
 
 To enable dictionary support (for word lookups), see
 [Dictionary lookups](#dictionary-lookups).
@@ -28,8 +29,8 @@ Players can access past games via a dropdown.
 
 If dictionary support is enabled, clicking a guessed word will retrieve its
 definition from the Merriam-Webster online dictionary and display it. To enable
-dictionary support, add a `.env.local` file to your local repository containing
-an API key, like:
+dictionary support, add a `.env` file to your local repository containing an
+API key, like:
 
 ```sh
 SC_DICTIONARY_API_KEY="12345678-abcd-1234-12ab-1234abcd1234"
@@ -43,5 +44,4 @@ developer account. Request a key for the Collegiate Dictionary. Only one key is
 needed. The application info (name, URL, description, launch date) is required
 but is not important.
 
-Once you have created the `.env.local` file, stop and restart the development
-server.
+Once you have created the `.env` file, stop and restart the development server.

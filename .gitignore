@@ -1,22 +1,9 @@
-# dependencies
-/node_modules
-/web_modules
-
-# production
-/build
-
-# misc
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-.firebase/
-.vim/
-
-data.db
+node_modules
+/build
+/.svelte-kit
+/package
+.env
+.env.*
+!.env.example
+data.db*
