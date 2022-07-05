@@ -45,8 +45,6 @@
     }
   }
 
-  $: console.log(game);
-
   onMount(() => {
     return onMediaQuery('(max-width: 640px)', (matches) => {
       isVertical = matches;
