@@ -11,7 +11,7 @@
 
   export let words: WordAndRating[];
 
-  let index = 0;
+  let index = words.findIndex((entry) => typeof entry[1] !== 'number');
 
   async function rateWord(rating: Rating) {
     const entry = words[index];
@@ -25,7 +25,9 @@
         [entry[0], rating],
         ...words.slice(index + 1)
       ];
-      index++;
+      index = words.findIndex(
+        (entry, i) => i > index && typeof entry[1] !== 'number'
+      );
     } catch (error) {
       console.warn(error);
     }
