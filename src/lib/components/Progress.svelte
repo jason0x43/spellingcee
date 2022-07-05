@@ -39,7 +39,7 @@
     {#each thresholds as entry, i}
       <li
         class="threshold"
-        class:met={score > maxScore * entry.threshold}
+        class:met={score >= maxScore * entry.threshold}
         class:current={i === currentThreshold}
         class:next={i === currentThreshold + 1}
       >

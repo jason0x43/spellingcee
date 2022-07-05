@@ -28,12 +28,12 @@ export const wordlist = [
 /**
  * Linearly search the word list for a pangram, starting from a random position.
  */
-export function getRandomPangram(): string {
-  const maxIndex = wordlist.length - 1;
+export function getRandomPangram(words = wordlist): string {
+  const maxIndex = words.length - 1;
   const startIndex = random(maxIndex);
-  for (let i = 0; i < wordlist.length; i++) {
-    const index = (i + startIndex) % wordlist.length;
-    const word = wordlist[index];
+  for (let i = 0; i < words.length; i++) {
+    const index = (i + startIndex) % words.length;
+    const word = words[index];
     if (isPangram(word)) {
       return word;
     }

@@ -17,7 +17,7 @@
 <div class="menubar">
   <div class="left">
     <a href="/app/classify">Classify</a>
-    <a href="/app/game">Play</a>
+    <a href="/app/game">Game</a>
   </div>
   <div class="right">
     {user?.username}

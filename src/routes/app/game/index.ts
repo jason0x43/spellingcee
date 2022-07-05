@@ -16,17 +16,27 @@ export const get: RequestHandler = async ({ request }) => {
   }
 
   const user = session.user;
-  const dailyGameKey = await getDailyGameKey();
-  let userGame = user?.games.find(({ key }) => key === dailyGameKey);
-  if (!userGame) {
-    // The user doesn't have an instance of the daily game yet -- create one
-    userGame = await createUserGame({ userId: user.id, key: dailyGameKey });
-    user.games.push(userGame);
-  }
 
-  // Send the user to the daily game
-  return {
-    status: 302,
-    headers: { location: `/app/game/${userGame.id}` }
-  };
+  try {
+    const dailyGameKey = await getDailyGameKey();
+    let userGame = user?.games.find(({ key }) => key === dailyGameKey);
+    if (!userGame) {
+      // The user doesn't have an instance of the daily game yet -- create one
+      userGame = await createUserGame({ userId: user.id, key: dailyGameKey });
+      user.games.push(userGame);
+    }
+
+    // Send the user to the daily game
+    return {
+      status: 302,
+      headers: { location: `/app/game/${userGame.id}` }
+    };
+  } catch (error) {
+    return {
+      status: 200,
+      body: {
+        errors: `${error}`
+      }
+    };
+  }
 };

@@ -1,7 +1,7 @@
 import { prisma } from '$lib/db';
 import { permute } from '$lib/util';
 import { getRandomPangram, getValidWords } from '$lib/wordlist';
-import { computeScore, type Rating } from '$lib/words';
+import { computeScore, ratingNames, type Rating } from '$lib/words';
 import type { Game, GameWord, User } from '@prisma/client';
 import type { GameWithStats } from './user';
 
@@ -78,7 +78,7 @@ export async function createUserGame({
   };
 }
 
-export async function getDailyGameKey() {
+export async function getDailyGameKey(maxRating = ratingNames.medium) {
   const today = new Date();
   const year = `${today.getFullYear()}`;
   const month = `${today.getMonth() + 1}`.padStart(2, '0');
@@ -93,18 +93,41 @@ export async function getDailyGameKey() {
   // Not the most elegant solution ever, but it will be fine for small numbers
   // of players
   while (!dailyGame) {
-    const pangram = getRandomPangram();
+    const validWords = (
+      await prisma.word.findMany({
+        where: {
+          rating: {
+            lte: maxRating
+          }
+        },
+        select: {
+          word: true
+        }
+      })
+    ).map(({ word }) => word);
+
+    if (validWords.length === 0) {
+      throw new Error('No valid words');
+    }
+
+    const pangram = getRandomPangram(validWords);
+    if (!pangram) {
+      throw new Error('Unable to find pangram');
+    }
+
     const uniqueLetters = Array.from(new Set(pangram));
     const randomizedLetters = permute(uniqueLetters).join('');
     const key = [
       randomizedLetters[0],
       ...randomizedLetters.slice(1).split('').sort()
     ].join('');
+
     const dg = await prisma.dailyGame.findUnique({
       where: {
         key
       }
     });
+
     if (!dg) {
       dailyGame = await prisma.dailyGame.create({
         data: {
