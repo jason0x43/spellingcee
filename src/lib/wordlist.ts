@@ -45,28 +45,3 @@ export function getRandomPangram(words = wordlist): string {
   }
   return '';
 }
-
-/**
- * Get all the valid words for a given key
- */
-export function getValidWords(key: string) {
-  const center = key[0];
-  const keySet = new Set(key);
-  return wordlist.filter((word) => {
-    const wordSet = new Set(word);
-
-    // The word must contain the center letter
-    if (!wordSet.has(center)) {
-      return false;
-    }
-
-    // All the characters in the word must be in the game key
-    for (const char of wordSet) {
-      if (!keySet.has(char)) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-}

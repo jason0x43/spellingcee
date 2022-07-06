@@ -1,9 +1,10 @@
 import { prisma } from '$lib/db';
 import { permute } from '$lib/util';
-import { getRandomPangram, getValidWords } from '$lib/wordlist';
+import { getRandomPangram } from '$lib/wordlist';
 import { computeScore, ratingNames, type Rating } from '$lib/words';
 import type { Game, GameWord, User } from '@prisma/client';
 import type { GameWithStats } from './user';
+import { getWords } from './word';
 
 export type GameWithWords = Game & {
   words: GameWord[];
@@ -37,25 +38,12 @@ export async function getUserGameByGameId({
     return null;
   }
 
-  const validWords = getValidWords(game.key);
-
-  const ratedWords = await prisma.word.findMany({
-    where: {
-      word: {
-        in: validWords
-      }
-    }
-  });
-
-  const reallyValidWords = validWords.filter((word) => {
-    const info = ratedWords.find((info) => info.word === word);
-    return info && info.rating <= maxRating;
-  });
+  const words = await getWords({ key: game.key, maxRating });
 
   return {
     ...game,
-    maxWords: reallyValidWords.length,
-    maxScore: computeScore(reallyValidWords)
+    maxWords: words.length,
+    maxScore: computeScore(words)
   };
 }
 

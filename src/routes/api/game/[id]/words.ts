@@ -2,7 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { errorResponse } from '$lib/request';
 import { prisma } from '$lib/db';
 import type { GameWord } from '@prisma/client';
-import { getValidWords } from '$lib/wordlist';
+import { getWords } from '$lib/db/word';
 
 export type AddWordRequest = {
   word: string;
@@ -44,7 +44,7 @@ export const post: RequestHandler<
     return errorResponse({ gameId: 'Invalid game ID' });
   }
 
-  const gameWords = getValidWords(game.key);
+  const gameWords = await getWords({ key: game.key });
 
   if (!gameWords.includes(data.word)) {
     return errorResponse({ word: 'Invalid word' });
