@@ -4,12 +4,17 @@ import words35 from 'wordlist-english/english-words-35.json';
 import words40 from 'wordlist-english/english-words-40.json';
 import words50 from 'wordlist-english/english-words-50.json';
 import { random } from './util';
-import { isPangram } from './words';
+import { isPangram, numUniqueLetters } from './words';
 
 const filterWords = (word: string) =>
+  // short words
   word.length >= 4 &&
+  // no words with 's'
   !word.includes('s') &&
-  !(word.includes('e') && word.includes('r'));
+  // no words with both 'e' and 'r'
+  !(word.includes('e') && word.includes('r')) &&
+  // no words with more than 7 unique letters
+  numUniqueLetters(word) <= 7;
 
 const filteredWords10 = words10.filter(filterWords);
 const filteredWords20 = words20.filter(filterWords);
@@ -46,9 +51,9 @@ export function getRandomPangram(words = wordlist): string {
  */
 export function getValidWords(key: string) {
   const center = key[0];
-  const keySet = new Set([...key]);
+  const keySet = new Set(key);
   return wordlist.filter((word) => {
-    const wordSet = new Set([...word]);
+    const wordSet = new Set(word);
 
     // The word must contain the center letter
     if (!wordSet.has(center)) {

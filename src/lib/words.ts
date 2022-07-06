@@ -13,25 +13,34 @@ export const ratingNames = {
 export type Rating = keyof typeof ratings;
 
 /**
+ * Return the number of unique letters in a word
+ */
+export function numUniqueLetters(word: string): number {
+  return new Set(word).size;
+}
+
+/**
  * Indicate whether a word is a pangram (a word containing 7 unique letters).
  */
 export function isPangram(word: string): boolean {
-  return new Set(word).size === 7;
+  return numUniqueLetters(word) === 7;
 }
 
 /**
  * Compute the score of a set of words
  */
 export function computeScore(words: string[]): number {
-  return words.reduce(
-    (sum, word) =>
-      word.length === 4
-        ? sum + 1
-        : isPangram(word)
-        ? sum + 2 * word.length
-        : sum + word.length,
-    0
-  );
+  let score = 0;
+  for (const word of words) {
+    if (word.length === 4) {
+      score += 1;
+    } else if (isPangram(word)) {
+      score += 2 * word.length;
+    } else {
+      score += word.length;
+    }
+  }
+  return score;
 }
 
 type DictionaryResult = [
