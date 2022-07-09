@@ -2,7 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@prisma/client': ^4.0.0
-  '@sveltejs/adapter-node': ^1.0.0-next.79
+  '@sveltejs/adapter-node': 1.0.0-next.78
   '@sveltejs/kit': next
   '@swc/core': ^1.2.210
   '@types/bcryptjs': ^2.4.2
@@ -34,7 +34,7 @@ specifiers:
 
 devDependencies:
   '@prisma/client': 4.0.0_prisma@4.0.0
-  '@sveltejs/adapter-node': 1.0.0-next.79
+  '@sveltejs/adapter-node': 1.0.0-next.78
   '@sveltejs/kit': 1.0.0-next.367_svelte@3.49.0+vite@2.9.14
   '@swc/core': 1.2.210
   '@types/bcryptjs': 2.4.2
@@ -180,8 +180,8 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@sveltejs/adapter-node/1.0.0-next.79:
-    resolution: {integrity: sha512-cPD28X6qoI53rZzGhaBmE+88vgv4oc/S/jJ1t+rUMpz4d/X2Wo3zuShXpWDhqj8Vix8SbggV0JRCtu4a0hoYQg==}
+  /@sveltejs/adapter-node/1.0.0-next.78:
+    resolution: {integrity: sha512-TXB5Ii0z/7o1B05p/YLsS4t+JUHFHWBzFv1U16TKvM3HMbMUJIx+AhpM2WJfDX8HtAyfd1m9OawGoUB+1ed24A==}
     dependencies:
       tiny-glob: 0.2.9
     dev: true
