@@ -20,7 +20,6 @@
     <a href="/app/game">Game</a>
   </div>
   <div class="right">
-    {user?.username}
     <button
       class="user-menu"
       class:highlight={showMenu}
@@ -35,7 +34,7 @@
 
 {#if showMenu}
   <Menu
-    items={[{ label: 'Logout', value: 'logout' }]}
+    items={[user?.username ?? 'User', { label: 'Logout', value: 'logout' }]}
     anchor={loginButton}
     onClose={() => (showMenu = false)}
     onSelect={(value) => {
