@@ -11,8 +11,14 @@
 
   export let words: WordAndRating[];
 
-  let index = words.findIndex((entry) => typeof entry[1] !== 'number');
+  function isUnrated(entry: WordAndRating) {
+    return typeof entry[1] !== 'number';
+  }
 
+  // The initial index should be the first unrated word
+  let index = words.findIndex(isUnrated);
+
+  // Rate the current index word
   async function rateWord(rating: Rating) {
     const entry = words[index];
     try {
@@ -20,14 +26,17 @@
         word: entry[0],
         rating
       });
+
+      // The request succeeded; update the entry rating in the word list.
+      // Reassign the word list so svelte picks up the update.
       words = [
         ...words.slice(0, index),
         [entry[0], rating],
         ...words.slice(index + 1)
       ];
-      index = words.findIndex(
-        (entry, i) => i > index && typeof entry[1] !== 'number'
-      );
+
+      // Update index to point to the next unrated word
+      index = words.findIndex((entry, i) => i > index && isUnrated(entry));
     } catch (error) {
       console.warn(error);
     }
@@ -38,8 +47,10 @@
   <div class="card">
     <div class="center">
       <button
+        disabled={index === 0}
         on:click={(event) => {
-          index = Math.max(index - 1, 0);
+          index--;
+          // Prevent double tapping from zooming on mobile
           event.preventDefault();
         }}><ChevronLeft size={30} /></button
       >
@@ -57,8 +68,10 @@
         <p>{index + 1} / {words.length}</p>
       </div>
       <button
+        disabled={index >= words.length - 1}
         on:click={(event) => {
-          index = Math.min(index + 1, words.length - 1);
+          index++;
+          // Prevent double tapping from zooming on mobile
           event.preventDefault();
         }}><ChevronRight size={30} /></button
       >
@@ -150,6 +163,10 @@
   }
   button.hard {
     background: var(--hard);
+  }
+
+  button:disabled {
+    color: var(--text-color-dim);
   }
 
   .word.easy {
