@@ -1,11 +1,12 @@
 import type { RequestHandler } from '@sveltejs/kit';
 
 export const get: RequestHandler = async ({ locals }) => {
-  const user = locals.session?.user;
-  if (user) {
+  if (locals.session?.user) {
     return {
       status: 302,
-      redirect: '/app'
+      headers: {
+        location: '/app/classify'
+      }
     };
   }
   return {};
