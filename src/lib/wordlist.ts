@@ -3,6 +3,8 @@ import words20 from 'wordlist-english/english-words-20.json';
 import words35 from 'wordlist-english/english-words-35.json';
 import words40 from 'wordlist-english/english-words-40.json';
 import words50 from 'wordlist-english/english-words-50.json';
+import words55 from 'wordlist-english/english-words-55.json';
+import words60 from 'wordlist-english/english-words-60.json';
 import { random } from './util';
 import { isPangram, numUniqueLetters } from './words';
 
@@ -16,19 +18,9 @@ const filterWords = (word: string) =>
   // no words with more than 7 unique letters
   numUniqueLetters(word) <= 7;
 
-const filteredWords10 = words10.filter(filterWords);
-const filteredWords20 = words20.filter(filterWords);
-const filteredWords35 = words35.filter(filterWords);
-const filteredWords40 = words40.filter(filterWords);
-const filteredWords50 = words50.filter(filterWords);
-
-export const wordlist = [
-  ...filteredWords10,
-  ...filteredWords20,
-  ...filteredWords35,
-  ...filteredWords40,
-  ...filteredWords50
-];
+export const wordlist = ([] as string[])
+  .concat(words10, words20, words35, words40, words50, words55, words60)
+  .filter(filterWords);
 
 /**
  * Linearly search the word list for a pangram, starting from a random position.
