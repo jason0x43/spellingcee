@@ -12,7 +12,7 @@
     "lint": "prettier --check --plugin-search-dir=. . && eslint .",
     "format": "prettier --write --plugin-search-dir=. .",
     "db": "ts-node ./scripts/db.ts",
-    "deploy": "ts-node ./scripts/deploy.ts",
+    "push": "ts-node ./scripts/deploy.ts",
     "migrate": "prisma migrate deploy"
   },
   "devDependencies": {
