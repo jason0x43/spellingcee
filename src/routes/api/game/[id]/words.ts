@@ -45,8 +45,10 @@ export const post: RequestHandler<
   }
 
   const gameWords = await getWords({ key: game.key });
+  const { compare } = new Intl.Collator('en', { sensitivity: 'base' });
+  const foundWord = gameWords.find((word) => compare(word, data.word) === 0);
 
-  if (!gameWords.includes(data.word)) {
+  if (!foundWord) {
     return errorResponse({ word: 'Invalid word' });
   }
 
@@ -54,7 +56,7 @@ export const post: RequestHandler<
     data: {
       userId: user.id,
       gameId,
-      word: data.word
+      word: foundWord
     }
   });
 
