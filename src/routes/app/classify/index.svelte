@@ -41,11 +41,19 @@
       console.warn(error);
     }
   }
+
+  function handleScroll(event: WheelEvent) {
+    if (event.deltaY < 0 && index < words.length - 1) {
+      index += 1;
+    } else if (event.deltaY > 0 && index > 0) {
+      index -= 1;
+    }
+  }
 </script>
 
 <div class="root">
   <div class="card">
-    <div class="center">
+    <div class="center" on:wheel={handleScroll}>
       <button
         disabled={index === 0}
         on:click={(event) => {
