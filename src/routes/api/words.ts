@@ -18,7 +18,7 @@ export type UpdateWordResponse =
 /**
  * Update a word's info
  */
-export const put: RequestHandler<
+export const PUT: RequestHandler<
   Record<string, string>,
   UpdateWordResponse
 > = async ({ request, locals }) => {

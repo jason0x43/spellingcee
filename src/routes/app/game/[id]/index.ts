@@ -1,7 +1,7 @@
 import { getUserGameByGameId } from '$lib/db/game';
 import type { RequestHandler } from '@sveltejs/kit';
 
-export const get: RequestHandler = async ({ params, locals }) => {
+export const GET: RequestHandler = async ({ params, locals }) => {
   const userId = locals.session?.userId;
 
   if (!userId) {

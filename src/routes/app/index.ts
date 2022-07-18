@@ -1,1 +1,1 @@
-export { get } from './game/index';
+export { GET } from './game/index';

@@ -6,7 +6,7 @@ import { getRatedWords } from '$lib/db/word';
 
 export type WordAndRating = [word: string, rating: number | undefined];
 
-export const get: RequestHandler<
+export const GET: RequestHandler<
   Record<string, string>,
   { words: WordAndRating[] }
 > = async ({ request }) => {

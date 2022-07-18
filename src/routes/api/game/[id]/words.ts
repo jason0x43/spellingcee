@@ -17,7 +17,7 @@ export type AddWordResponse =
 /**
  * Add a word
  */
-export const post: RequestHandler<
+export const POST: RequestHandler<
   Record<string, string>,
   AddWordResponse
 > = async ({ request, locals, params }) => {

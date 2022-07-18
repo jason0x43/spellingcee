@@ -3,7 +3,7 @@ import { getSessionWithUser } from '$lib/db/session';
 import type { RequestHandler } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 
-export const get: RequestHandler = async ({ request }) => {
+export const GET: RequestHandler = async ({ request }) => {
   const cookies = cookie.parse(request.headers.get('cookie') ?? '');
   const session = await getSessionWithUser(cookies.session);
 
