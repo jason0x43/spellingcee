@@ -37,7 +37,10 @@ export const GET: RequestHandler<
   }
 
   const ratedWords = await getRatedWords({ maxRating });
+
+  const { compare } = new Intl.Collator('en', { sensitivity: 'base' });
   const wordsStr = ratedWords
+    .sort((a, b) => compare(a.word, b.word))
     .map((rw) => {
       if (includeRating) {
         return `${rw.word} ${rw.rating}`;
