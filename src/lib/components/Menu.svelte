@@ -1,12 +1,16 @@
 <script type="ts">
-  import Portal from './Portal.svelte';
+  import Portal, { type Position } from './Portal.svelte';
 
-  type Item = string | { label?: string; value: string };
+  type Item =
+    | string
+    | { label?: string; type?: never; value: string }
+    | { label: string; type: 'link'; value: string };
 
   export let items: Item[];
   export let anchor: HTMLElement;
+  export let position: Position | undefined = undefined;
   export let onClose: () => void;
-  export let onSelect: (value: string) => void;
+  export let onSelect: ((value: string) => void) | undefined = undefined;
 
   let listElem: HTMLUListElement;
 
@@ -16,29 +20,37 @@
     }
   }
 
-  function handleItemClick(
-    event: MouseEvent & { currentTarget: EventTarget & HTMLElement }
-  ) {
-    const value = event.currentTarget.getAttribute('data-value');
-    if (value) {
-      onSelect(value);
+  function handleItemClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'A') {
       onClose();
+    } else {
+      const value = target.getAttribute('data-value');
+      if (value) {
+        onSelect?.(value);
+        onClose();
+      }
     }
   }
 </script>
 
 <svelte:window on:click={handleClick} />
 
-<Portal {anchor}>
+<Portal {anchor} {position}>
   <ul class="menu" bind:this={listElem} on:click={handleItemClick}>
     {#each items as item (typeof item === 'string' ? item : item.value)}
       {#if typeof item === 'string'}
         <li class="label">{item}</li>
       {/if}
       {#if typeof item !== 'string'}
-        <li data-value={item.value}>
-          {item.label ?? item.value}
-        </li>
+        {#if item.type === 'link'}
+          <li><a href={item.value}>{item.label}</a></li>
+        {/if}
+        {#if item.type !== 'link'}
+          <li data-value={item.value}>
+            {item.label ?? item.value}
+          </li>
+        {/if}
       {/if}
     {/each}
   </ul>
@@ -71,6 +83,10 @@
 
   li[data-value] {
     cursor: pointer;
+  }
+
+  a {
+    text-decoration: none;
   }
 
   @media (hover: hover) {

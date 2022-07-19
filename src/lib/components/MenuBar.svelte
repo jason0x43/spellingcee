@@ -6,25 +6,42 @@
   const user = $session.user;
 
   let loginButton: HTMLButtonElement;
-  let showMenu = false;
+  let classifyButton: HTMLButtonElement;
+  let activeMenu: string | undefined;
 
   async function logout() {
     await fetch('/auth/logout');
     $session.user = undefined;
   }
+
+  function toggleMenu(id?: string) {
+    if (id && !activeMenu) {
+      activeMenu = id;
+    } else {
+      activeMenu = undefined;
+    }
+  }
 </script>
 
 <div class="menubar">
   <div class="left">
-    <a href="/app/classify">Classify</a>
+    <button
+      class="user-menu"
+      class:highlight={activeMenu === 'classify'}
+      on:click={(event) => {
+        toggleMenu('classify');
+        event.stopPropagation();
+      }}
+      bind:this={classifyButton}>Classify</button
+    >
     <a href="/app/game">Game</a>
   </div>
   <div class="right">
     <button
       class="user-menu"
-      class:highlight={showMenu}
+      class:highlight={activeMenu === 'user'}
       on:click={(event) => {
-        showMenu = !showMenu;
+        toggleMenu('user');
         event.stopPropagation();
       }}
       bind:this={loginButton}><UserIcon size={20} /></button
@@ -32,16 +49,29 @@
   </div>
 </div>
 
-{#if showMenu}
+{#if activeMenu === 'user'}
   <Menu
     items={[user?.username ?? 'User', { label: 'Logout', value: 'logout' }]}
     anchor={loginButton}
-    onClose={() => (showMenu = false)}
+    position={{ vert: 'below', horz: 'right' }}
+    onClose={() => toggleMenu()}
     onSelect={(value) => {
       if (value === 'logout') {
         logout();
       }
     }}
+  />
+{/if}
+
+{#if activeMenu === 'classify'}
+  <Menu
+    items={[
+      { label: 'Classify', type: 'link', value: '/app/classify' },
+      { label: 'Word list', type: 'link', value: '/api/words' }
+    ]}
+    anchor={classifyButton}
+    position={{ vert: 'below', horz: 'left' }}
+    onClose={() => toggleMenu()}
   />
 {/if}
 
@@ -65,7 +95,6 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    padding: calc(var(--gap) / 2);
     gap: var(--gap);
   }
 

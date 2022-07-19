@@ -1,8 +1,55 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { errorResponse } from '$lib/request';
 import type { Word } from '@prisma/client';
-import { rateWord } from '$lib/db/word';
+import { getRatedWords, rateWord } from '$lib/db/word';
 import { ratings, type Rating } from '$lib/words';
+
+export type GetWordsResponse =
+  | string
+  | {
+      errors?: Record<string, string>;
+    };
+
+export const GET: RequestHandler<
+  Record<string, string>,
+  GetWordsResponse
+> = async ({ locals, url }) => {
+  const user = locals.session?.user;
+  if (!user) {
+    return errorResponse({ user: 'No active user' });
+  }
+
+  const maxRatingStr = url.searchParams.get('maxRating');
+  const maxRating = (maxRatingStr ? Number(maxRatingStr) : undefined) as
+    | 1
+    | 2
+    | 3
+    | undefined;
+  if (maxRating !== undefined && !(maxRating >= 1 && maxRating <= 3)) {
+    return errorResponse({ maxRating: 'maxRating must be between 1 and 3' });
+  }
+
+  const includeStr = url.searchParams.get('include');
+  let includeRating = false;
+  if (includeStr) {
+    const parts = includeStr.split(',');
+    includeRating = parts.includes('rating');
+  }
+
+  const ratedWords = await getRatedWords({ maxRating });
+  const wordsStr = ratedWords
+    .map((rw) => {
+      if (includeRating) {
+        return `${rw.word} ${rw.rating}`;
+      }
+      return rw.word;
+    })
+    .join('\n');
+
+  return {
+    body: wordsStr
+  };
+};
 
 export type UpdateWordRequest = {
   word: string;

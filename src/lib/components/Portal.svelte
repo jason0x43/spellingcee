@@ -1,3 +1,10 @@
+<script context="module" type="ts">
+  export type Position = {
+    vert: 'above' | 'below';
+    horz: 'left' | 'right';
+  };
+</script>
+
 <script lang="ts">
   import { getAppContext } from '$lib/contexts';
   import { onMount } from 'svelte';
@@ -6,21 +13,47 @@
   const context = getAppContext();
 
   export let target: HTMLElement | null | undefined = undefined;
+  /** The location or element to anchor to */
   export let anchor:
     | HTMLElement
     | { x: number; y: number }
     | 'modal'
     | undefined = undefined;
+  /**
+   * The position of the portal in relation to the anchor. If the position is
+   * above-left, the bottom-left corner of the portal will be placed at the
+   * bottom left corner of the anchor. Similarly, if the position is
+   * bottom-right, the top-right corner of the portal will be placed at the
+   * bottom-right corner of the anchor.
+   */
+  export let position: Position | undefined = undefined;
 
   let ref: HTMLElement;
   let style: string | undefined;
 
   $: {
+    const translateY = position?.vert === 'above' ? '-100%' : '0%';
+    const translateX = position?.horz === 'right' ? '-100%' : '0%';
+
+    console.log('position:', position);
+
     if (anchor instanceof HTMLElement) {
       const box = anchor.getBoundingClientRect();
-      style = `top:${box.bottom}px;left:${box.right}px;transform:translateX(-100%)`;
+      const top = position?.vert === 'above' ? box.top : box.bottom;
+      const left = position?.horz === 'left' ? box.left : box.right;
+      console.log('box.left: ' + box.left);
+      style = [
+        `top:${top}px`,
+        `left:${left}px`,
+        `transform:translate(${translateX}, ${translateY})`
+      ].join(';');
+      console.log('style: ' + style);
     } else if (anchor && typeof anchor === 'object') {
-      style = `top:${anchor.y}px;left:${anchor.x}px`;
+      style = [
+        `top:${anchor.y}px`,
+        `left:${anchor.x}px`,
+        `transform:translate(${translateX}, ${translateY})`
+      ].join(';');
     } else if (!anchor) {
       style = `top:50%;left:50%;transform:translate(-50%,-50%)`;
     } else {
