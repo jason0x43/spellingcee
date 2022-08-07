@@ -13,7 +13,9 @@
     "format": "prettier --write --plugin-search-dir=. .",
     "db": "ts-node ./scripts/db.ts",
     "push": "ts-node ./scripts/deploy.ts",
-    "migrate": "prisma migrate deploy"
+    "migrate": "prisma migrate deploy",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@prisma/client": "^4.1.1",
