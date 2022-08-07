@@ -17,10 +17,14 @@
 
   // The initial index should be the first unrated word
   let index = words.findIndex(isUnrated);
+  $: entry = index >= 0 ? words[index] : undefined;
 
   // Rate the current index word
   async function rateWord(rating: Rating) {
-    const entry = words[index];
+    if (!entry) {
+      return;
+    }
+
     try {
       await put<UpdateWordRequest, UpdateWordResponse>('/api/words', {
         word: entry[0],
@@ -55,7 +59,7 @@
   <div class="card">
     <div class="center" on:wheel={handleScroll}>
       <button
-        disabled={index === 0}
+        disabled={index <= 0}
         on:click={(event) => {
           index--;
           // Prevent double tapping from zooming on mobile
@@ -66,17 +70,18 @@
         <div class="word-wrapper">
           <h3
             class="word"
-            class:easy={words[index][1] === ratingNames.easy}
-            class:medium={words[index][1] === ratingNames.medium}
-            class:hard={words[index][1] === ratingNames.hard}
+            class:easy={entry?.[1] === ratingNames.easy}
+            class:medium={entry?.[1] === ratingNames.medium}
+            class:hard={entry?.[1] === ratingNames.hard}
+            data-testid="word"
           >
-            {words[index][0]}
+            {entry?.[0] ?? '?'}
           </h3>
         </div>
         <p>{index + 1} / {words.length}</p>
       </div>
       <button
-        disabled={index >= words.length - 1}
+        disabled={index >= words.length - 1 || index < 0}
         on:click={(event) => {
           index++;
           // Prevent double tapping from zooming on mobile

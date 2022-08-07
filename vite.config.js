@@ -8,6 +8,7 @@ export default defineConfig({
       all: true,
       include: ['src/**']
     },
-    restoreMocks: true
+    restoreMocks: true,
+    environment: 'jsdom'
   }
 });
