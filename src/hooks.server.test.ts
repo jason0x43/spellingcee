@@ -2,7 +2,7 @@ import type { SessionWithUser } from '$lib/db/session.js';
 import type { User } from '@prisma/client';
 import type { RequestEvent } from '@sveltejs/kit';
 import { describe, expect, it, vi } from 'vitest';
-import { handle, getSession } from './hooks.js';
+import { handle, getSession } from './hooks.server.js';
 
 vi.mock('cookie', () => {
   return {
